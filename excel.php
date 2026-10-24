@@ -329,13 +329,17 @@ function _sheet_to_rows($sheet, int $skip): array {
         $empty   = true;
 
         for ($c = 1; $c <= $maxCol; $c++) {
-            $cell = $sheet->getCellByColumnAndRow($c, $r);
+            // PhpSpreadsheet 2.x+ menghapus getCellByColumnAndRow()
+            // Gunakan getCell() dengan koordinat string (misal: getCell('A1'))
+            $colStr = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
+            $cell   = $sheet->getCell($colStr . $r);
+
             // Gunakan nilai yang sudah diformulasi, bukan rumus
-            $val  = (string) $cell->getFormattedValue();
-            // Fallback: getValue() untuk teks yang tidak perlu format
+            $val = (string) $cell->getFormattedValue();
+            // Fallback: getValue() untuk teks yang tidak perlu format angka
             if ($val === '' || $val === '0') {
                 $raw = $cell->getValue();
-                if ($raw !== null && $raw !== '') $val = (string)$raw;
+                if ($raw !== null && $raw !== '') $val = (string) $raw;
             }
             $val = trim($val);
             if ($val !== '') $empty = false;

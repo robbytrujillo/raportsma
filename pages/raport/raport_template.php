@@ -11,6 +11,24 @@
 
 $sekolah      = sekolah_info();
 $bulan_names  = BULAN_ID;
+
+// ── Tentukan logo yang akan dipakai ──────────────────────────
+// Prioritas: 1) logoihbs.png di uploads/logos/  2) logo dari setting sekolah  3) placeholder
+$logo_candidates = ['logoihbs.png', 'logo.png', 'logo.jpg', 'logo.webp'];
+$logo_url  = '';
+$logo_path = '';
+// Cek file fisik di uploads/logos/
+foreach ($logo_candidates as $lc) {
+    if (file_exists(UPLOAD_DIR . 'logos/' . $lc)) {
+        $logo_url  = UPLOAD_URL . 'logos/' . $lc;
+        $logo_path = UPLOAD_DIR . 'logos/' . $lc;
+        break;
+    }
+}
+// Fallback ke logo dari setting sekolah di DB
+if (!$logo_url && !empty($sekolah['logo'])) {
+    $logo_url = UPLOAD_URL . htmlspecialchars($sekolah['logo']);
+}
 $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 $is_bulanan   = ($jenis === 'bulanan');
 $is_sts       = ($jenis === 'sts');
@@ -130,11 +148,11 @@ $row_no = 0;
     <tr>
       <!-- Logo -->
       <td style="width:80px;vertical-align:middle;text-align:center">
-        <?php if ($sekolah['logo']): ?>
-          <img src="<?= UPLOAD_URL . htmlspecialchars($sekolah['logo']) ?>"
+        <?php if ($logo_url): ?>
+          <img src="<?= $logo_url ?>"
                alt="Logo" style="width:70px;height:70px;object-fit:contain">
         <?php else: ?>
-          <!-- Placeholder logo -->
+          <!-- Placeholder logo jika file tidak ada -->
           <div style="width:70px;height:70px;border:2px solid #333;border-radius:50%;
                       display:flex;align-items:center;justify-content:center;
                       margin:0 auto;font-size:9pt;font-weight:700;color:#333;text-align:center;

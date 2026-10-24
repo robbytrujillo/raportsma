@@ -189,8 +189,10 @@ if ($role === 'admin' || $role === 'kepala_sekolah') {
 $siswa_raport = [];
 if ($kelas_id) {
     // Filter bulan jika jenis bulanan/sts
-    $bulan_cond   = '';
-    $rank_params  = [':kid'=>$kelas_id, ':ta'=>$ta_id, ':jenis'=>$jenis];
+    $bulan_cond  = '';
+    // :kid dipakai 2x di query (JOIN dan WHERE) — PDO tidak boleh duplikat named param
+    // Gunakan :kid2 dengan nilai sama sebagai workaround
+    $rank_params = [':kid'=>$kelas_id, ':kid2'=>$kelas_id, ':ta'=>$ta_id, ':jenis'=>$jenis];
     if (in_array($jenis, ['bulanan','sts']) && $bulan) {
         $bulan_cond = 'AND n.bulan = :bulan';
         $rank_params[':bulan'] = $bulan;
@@ -206,7 +208,7 @@ if ($kelas_id) {
                            AND n.tahun_ajaran_id = :ta
                            AND n.jenis_raport = :jenis
                            $bulan_cond
-         WHERE s.kelas_id = :kid
+         WHERE s.kelas_id = :kid2
          GROUP BY u.id, u.nama_lengkap, s.nis
          ORDER BY avg_nilai DESC",
         $rank_params
