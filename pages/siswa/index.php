@@ -62,9 +62,10 @@ if ($search) {
 $whereStr = implode(' AND ', $where);
 
 // ── Paginasi ────────────────────────────────────────────────────
-$page_n = max(1, (int)($_GET['p'] ?? 1));
-$per    = 20;
-$offset = ($page_n - 1) * $per;
+$per_opts = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+$page_n   = max(1, (int)($_GET['p'] ?? 1));
+$offset   = ($page_n - 1) * $per;
 
 $total = (int)(db_row(
     "SELECT COUNT(*) as n
@@ -75,6 +76,8 @@ $total = (int)(db_row(
     $params
 )['n'] ?? 0);
 $pages = max(1, (int)ceil($total / $per));
+if ($page_n > $pages) $page_n = $pages;
+$offset = ($page_n - 1) * $per;
 
 $siswa_list = db_query(
     "SELECT u.id, u.nama_lengkap, u.username, u.email,
@@ -89,7 +92,7 @@ $siswa_list = db_query(
 );
 
 // Bangun query string untuk tautan paginasi (pertahankan semua filter)
-$qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$search]);
+$qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$search,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -125,7 +128,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
 
   <div class="card mb-4">
     <div class="card-body">
-      <form method="GET" action="index.php" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <form method="GET" action="index.php" class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <input type="hidden" name="page" value="siswa">
         <div>
           <label class="form-label">Tahun Ajaran</label>
@@ -149,6 +152,14 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
         <div>
           <label class="form-label">Cari</label>
           <input type="text" name="q" class="form-control" placeholder="Nama / NIS..." value="<?= e($search) ?>">
+        </div>
+        <div>
+          <label class="form-label">Tampil</label>
+          <select name="per" class="form-control" onchange="this.form.submit()">
+            <?php foreach ([10,25,50,100] as $opt): ?>
+            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+            <?php endforeach; ?>
+          </select>
         </div>
         <div class="flex items-end">
           <button type="submit" class="btn btn-primary w-full">Filter</button>

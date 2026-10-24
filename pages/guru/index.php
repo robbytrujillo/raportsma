@@ -45,15 +45,18 @@ if ($search) {
 }
 
 // ── Paginasi ────────────────────────────────────────────────────
-$page_n = max(1, (int)($_GET['p'] ?? 1));
-$per    = 20;
-$offset = ($page_n - 1) * $per;
+$per_opts = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+$page_n   = max(1, (int)($_GET['p'] ?? 1));
+$offset   = ($page_n - 1) * $per;
 
 $total = (int)(db_row(
     "SELECT COUNT(*) as n FROM users u LEFT JOIN guru g ON g.user_id = u.id WHERE $where",
     $params
 )['n'] ?? 0);
 $pages = max(1, (int)ceil($total / $per));
+if ($page_n > $pages) $page_n = $pages;
+$offset = ($page_n - 1) * $per;
 
 $guru_list = db_query(
     "SELECT u.id, u.nama_lengkap, u.username, u.email, u.is_active, u.tanda_tangan,
@@ -66,7 +69,7 @@ $guru_list = db_query(
 );
 
 $status_map = ['guru'=>['Guru','badge-blue'], 'wali_kelas'=>['Wali Kelas','badge-orange'], 'koordinator'=>['Koordinator','badge-purple']];
-$qstr = http_build_query(['page'=>'guru','q'=>$search]);
+$qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -102,11 +105,24 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search]);
 
   <div class="card">
     <div class="card-header">
-      <form method="GET" action="index.php" class="flex gap-2 flex-wrap">
+      <form method="GET" action="index.php" class="flex gap-2 flex-wrap items-end">
         <input type="hidden" name="page" value="guru">
-        <input type="text" name="q" placeholder="Cari nama / NIP..." value="<?= e($search) ?>" class="form-control" style="max-width:240px">
-        <button type="submit" class="btn btn-primary btn-sm">Cari</button>
-        <?php if ($search): ?><a href="index.php?page=guru" class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+        <div>
+          <label class="form-label">Cari Guru</label>
+          <input type="text" name="q" placeholder="Nama / NIP..." value="<?= e($search) ?>" class="form-control" style="max-width:220px">
+        </div>
+        <div>
+          <label class="form-label">Tampil</label>
+          <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+            <?php foreach ([10,25,50,100] as $opt): ?>
+            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="flex gap-2 items-end" style="padding-bottom:0">
+          <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+          <?php if ($search || $per !== 10): ?><a href="index.php?page=guru" class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+        </div>
       </form>
       <span class="text-sm text-gray-500"><?= $total ?> guru</span>
     </div>

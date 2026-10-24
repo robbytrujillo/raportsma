@@ -54,9 +54,10 @@ if ($search_p) {
 }
 
 // ── Paginasi ────────────────────────────────────────────────────
-$page_n  = max(1, (int)($_GET['p'] ?? 1));
-$per     = 25;
-$offset  = ($page_n - 1) * $per;
+$per_opts = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+$page_n   = max(1, (int)($_GET['p'] ?? 1));
+$offset   = ($page_n - 1) * $per;
 
 $total_p = (int)(db_row(
     "SELECT COUNT(*) as n
@@ -68,6 +69,8 @@ $total_p = (int)(db_row(
     $params_p
 )['n'] ?? 0);
 $pages_p = max(1, (int)ceil($total_p / $per));
+if ($page_n > $pages_p) $page_n = $pages_p;
+$offset  = ($page_n - 1) * $per;
 
 $penugasan = db_query(
     "SELECT gmk.*, u.nama_lengkap as nama_guru, m.nama_mapel, k.nama_kelas
@@ -80,7 +83,7 @@ $penugasan = db_query(
      LIMIT $per OFFSET $offset",
     $params_p
 );
-$qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p]);
+$qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -97,24 +100,39 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p]);
   </div>
 
   <!-- Filter TA -->
-  <div class="flex gap-2 mb-4 flex-wrap">
-    <?php foreach ($ta_list as $ta): ?>
-    <a href="index.php?page=penugasan&ta=<?= $ta['id'] ?>"
-      class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_id ? 'badge-orange' : 'badge-gray' ?>" style="text-decoration:none;cursor:pointer">
-      <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-    </a>
-    <?php endforeach; ?>
+  <!-- Filter TA + Search + Per-page -->
+  <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
+    <div class="flex gap-2 flex-wrap">
+      <?php foreach ($ta_list as $ta): ?>
+      <a href="index.php?page=penugasan&ta=<?= $ta['id'] ?>&per=<?= $per ?>"
+        class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_id ? 'badge-orange' : 'badge-gray' ?>" style="text-decoration:none;cursor:pointer">
+        <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+      </a>
+      <?php endforeach; ?>
+    </div>
   </div>
 
-  <!-- Search -->
   <div class="card mb-4">
     <div class="card-body">
-      <form method="GET" action="index.php" class="flex gap-2 flex-wrap">
+      <form method="GET" action="index.php" class="flex gap-2 flex-wrap items-end">
         <input type="hidden" name="page" value="penugasan">
         <input type="hidden" name="ta" value="<?= $ta_id ?>">
-        <input type="text" name="q" placeholder="Cari guru / mapel / kelas..." value="<?= e($search_p) ?>" class="form-control" style="max-width:280px">
-        <button type="submit" class="btn btn-primary btn-sm">Cari</button>
-        <?php if ($search_p): ?><a href="index.php?page=penugasan&ta=<?= $ta_id ?>" class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+        <div>
+          <label class="form-label">Cari</label>
+          <input type="text" name="q" placeholder="Guru / mapel / kelas..." value="<?= e($search_p) ?>" class="form-control" style="max-width:240px">
+        </div>
+        <div>
+          <label class="form-label">Tampil</label>
+          <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+            <?php foreach ([10,25,50,100] as $opt): ?>
+            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+          <?php if ($search_p || $per !== 10): ?><a href="index.php?page=penugasan&ta=<?= $ta_id ?>" class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+        </div>
       </form>
     </div>
   </div>

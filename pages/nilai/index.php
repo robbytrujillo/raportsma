@@ -147,9 +147,10 @@ if (isset($_GET['export'])) {
 }
 
 // ── Paginasi ────────────────────────────────────────────────────
-$page_n = max(1, (int)($_GET['p'] ?? 1));
-$per    = 25;
-$offset = ($page_n - 1) * $per;
+$per_opts = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+$page_n   = max(1, (int)($_GET['p'] ?? 1));
+$offset   = ($page_n - 1) * $per;
 
 $total = (int)(db_row(
     "SELECT COUNT(*) as n
@@ -161,6 +162,8 @@ $total = (int)(db_row(
     $params
 )['n'] ?? 0);
 $pages = max(1, (int)ceil($total / $per));
+if ($page_n > $pages) $page_n = $pages;
+$offset = ($page_n - 1) * $per;
 
 $nilai_list = db_query(
     "SELECT n.*, u.nama_lengkap as nama_siswa, m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru
@@ -175,7 +178,7 @@ $nilai_list = db_query(
 );
 
 // Query string untuk tautan paginasi (pertahankan semua filter)
-$qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis]);
+$qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -216,7 +219,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
   <form method="GET" action="index.php" class="card mb-5">
     <div class="card-body">
       <input type="hidden" name="page" value="nilai">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div>
           <label class="form-label">Tahun Ajaran</label>
           <select name="ta" class="form-control" onchange="this.form.submit()">
@@ -243,6 +246,14 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
             <option value="bulanan"  <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
             <option value="sts"      <?= $jenis==='sts'     ?'selected':'' ?>>STS</option>
             <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Tampil</label>
+          <select name="per" class="form-control" onchange="this.form.submit()">
+            <?php foreach ([10,25,50,100] as $opt): ?>
+            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+            <?php endforeach; ?>
           </select>
         </div>
         <div class="flex items-end">

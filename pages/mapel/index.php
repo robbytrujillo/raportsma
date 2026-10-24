@@ -52,8 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ── Paginasi ────────────────────────────────────────────────────
 $search_m = trim($_GET['q'] ?? '');
+$per_opts  = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
-$per      = 25;
 $offset   = ($page_n - 1) * $per;
 
 $where_m  = '1=1';
@@ -65,6 +66,9 @@ if ($search_m) {
 
 $total_m = (int)(db_row("SELECT COUNT(*) as n FROM mapel WHERE $where_m", $params_m)['n'] ?? 0);
 $pages_m = max(1, (int)ceil($total_m / $per));
+// Jika page_n melebihi jumlah halaman, reset ke halaman terakhir
+if ($page_n > $pages_m) $page_n = $pages_m;
+$offset  = ($page_n - 1) * $per;
 
 $mapel_list  = db_query(
     "SELECT * FROM mapel WHERE $where_m ORDER BY kelompok, urutan, nama_mapel LIMIT $per OFFSET $offset",
@@ -72,7 +76,7 @@ $mapel_list  = db_query(
 );
 $mapel_induk   = db_query("SELECT * FROM mapel WHERE parent_id IS NULL ORDER BY kelompok, urutan, nama_mapel");
 $kelompok_opts = ['A','B','C','Muatan Lokal'];
-$qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m]);
+$qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -106,14 +110,29 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m]);
     </div>
   </div>
 
-  <!-- Search Bar -->
+  <!-- Search Bar + Per-page selector -->
   <div class="card mb-4">
     <div class="card-body">
-      <form method="GET" action="index.php" class="flex gap-2 flex-wrap">
+      <form method="GET" action="index.php" class="flex gap-2 flex-wrap items-end">
         <input type="hidden" name="page" value="mapel">
-        <input type="text" name="q" placeholder="Cari nama / kode mapel..." value="<?= e($search_m) ?>" class="form-control" style="max-width:280px">
-        <button type="submit" class="btn btn-primary btn-sm">Cari</button>
-        <?php if ($search_m): ?><a href="index.php?page=mapel" class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+        <div>
+          <label class="form-label">Cari Mapel</label>
+          <input type="text" name="q" placeholder="Nama / kode mapel..." value="<?= e($search_m) ?>" class="form-control" style="max-width:240px">
+        </div>
+        <div>
+          <label class="form-label">Tampil</label>
+          <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+            <?php foreach ([10,25,50,100] as $opt): ?>
+            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+          <?php if ($search_m || $per !== 10): ?>
+          <a href="index.php?page=mapel" class="btn btn-secondary btn-sm">Reset</a>
+          <?php endif; ?>
+        </div>
       </form>
     </div>
   </div>

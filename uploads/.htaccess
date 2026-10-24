@@ -1,4 +1,18 @@
-# Mencegah eksekusi file PHP di folder uploads (keamanan)
-<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
-    deny from all
+# =============================================================================
+# uploads/.htaccess — Proteksi folder upload Raportku
+# Kompatibel: Laragon (lokal) + cPanel Shared Hosting
+# =============================================================================
+
+# Sembunyikan daftar file
+Options -Indexes
+
+# Blokir eksekusi semua jenis script — cegah webshell
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|phar|pl|py|jsp|asp|aspx|sh|bash|cgi|exe)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
 </FilesMatch>

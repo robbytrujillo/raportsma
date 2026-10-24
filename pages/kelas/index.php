@@ -68,15 +68,18 @@ $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_filter  = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 
 // ── Paginasi ────────────────────────────────────────────────────
-$page_n = max(1, (int)($_GET['p'] ?? 1));
-$per    = 20;
-$offset = ($page_n - 1) * $per;
+$per_opts = [10, 25, 50, 100];
+$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+$page_n   = max(1, (int)($_GET['p'] ?? 1));
+$offset   = ($page_n - 1) * $per;
 
 $total = (int)(db_row(
     'SELECT COUNT(*) as n FROM kelas k WHERE k.tahun_ajaran_id = :ta',
     [':ta' => $ta_filter]
 )['n'] ?? 0);
 $pages = max(1, (int)ceil($total / $per));
+if ($page_n > $pages) $page_n = $pages;
+$offset = ($page_n - 1) * $per;
 
 $kelas_list = db_query(
     'SELECT k.*, u.nama_lengkap as nama_wali, ta.nama as ta_nama, ta.semester
@@ -87,7 +90,7 @@ $kelas_list = db_query(
      LIMIT ' . $per . ' OFFSET ' . $offset,
     [':ta' => $ta_filter]
 );
-$qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter]);
+$qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
 ?>
 <div class="page-content">
   <div class="page-header">
@@ -121,16 +124,28 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter]);
     </div>
   </div>
 
-  <!-- Filter Tahun Ajaran -->
-  <div class="flex gap-3 mb-4 flex-wrap">
-    <?php foreach ($ta_list as $ta): ?>
-    <a href="index.php?page=kelas&ta=<?= $ta['id'] ?>"
-      class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
-      style="text-decoration:none;cursor:pointer">
-      <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-      <?= $ta['is_aktif'] ? ' ★' : '' ?>
-    </a>
-    <?php endforeach; ?>
+  <!-- Filter Tahun Ajaran + Per-page -->
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+    <div class="flex gap-2 flex-wrap">
+      <?php foreach ($ta_list as $ta): ?>
+      <a href="index.php?page=kelas&ta=<?= $ta['id'] ?>&per=<?= $per ?>"
+        class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
+        style="text-decoration:none;cursor:pointer">
+        <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+        <?= $ta['is_aktif'] ? ' ★' : '' ?>
+      </a>
+      <?php endforeach; ?>
+    </div>
+    <form method="GET" action="index.php" class="flex items-center gap-2">
+      <input type="hidden" name="page" value="kelas">
+      <input type="hidden" name="ta" value="<?= $ta_filter ?>">
+      <label class="text-sm text-gray-500">Tampil:</label>
+      <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+        <?php foreach ([10,25,50,100] as $opt): ?>
+        <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+        <?php endforeach; ?>
+      </select>
+    </form>
   </div>
 
   <div class="card">
