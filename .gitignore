@@ -1,0 +1,55 @@
+﻿# ============================================================
+# .gitignore ï¿½ Raportku
+# ============================================================
+
+# -- Konfigurasi sensitif -------------------------------------
+# config.php berisi kredensial DB ï¿½ JANGAN pernah di-push
+config.php
+
+# -- Dependensi PHP (Composer) --------------------------------
+# vendor/ diinstall ulang via `composer install`
+/vendor/
+
+# -- File upload pengguna -------------------------------------
+# Tidak masuk repo; direktori tetap dibuat via .gitkeep
+/uploads/logos/*
+/uploads/photos/*
+/uploads/signatures/*
+# Pertahankan struktur direktori (folder tetap ada di repo)
+!/uploads/logos/.gitkeep
+!/uploads/photos/.gitkeep
+!/uploads/signatures/.gitkeep
+# Pertahankan .htaccess proteksi upload
+!/uploads/.htaccess
+
+# -- Cache & temporary ----------------------------------------
+*.cache
+*.tmp
+*.log
+/tmp/
+
+# -- OS & editor ----------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# -- File backup & archive ------------------------------------
+*.bak
+*.zip
+*.tar.gz
+*.rar
+
+# -- Environment file (jika ada) ------------------------------
+.env
+.env.local
+.env.production
+
+# -- File SQL -------------------------------------------------
+# Semua file SQL tidak di-push ke repo (private deployment)
+# Sediakan instruksi setup DB manual di README
+*.sql
