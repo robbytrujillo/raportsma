@@ -7,27 +7,34 @@ Aplikasi web untuk mengelola nilai dan mencetak raport siswa, berbasis **PHP 8 +
 ## 🚀 Cara Setup (Instalasi)
 
 ### 1. Persyaratan
+
 - PHP 8.0 atau lebih baru
 - MySQL 5.7+ / MariaDB
 - Web server: Apache / Nginx (atau Laragon / XAMPP)
 - Composer (untuk PhpSpreadsheet — sudah include, tinggal jalankan)
 
 ### 2. Letakkan file
+
 Copy folder proyek ke direktori web server Anda.  
 Contoh: `C:\laragon\www\raportku23102026\`
 
 ### 3. Install dependensi PHP
+
 ```bash
 composer install
 ```
 
 ### 4. Buat database
+
 Di **phpMyAdmin** atau terminal MySQL:
+
 1. Jalankan `database.sql` — membuat database `db_raport` lengkap dengan semua tabel dan data awal.
-2. *(Jika sudah punya database lama)* Jalankan `update_db_v3.sql` → lalu `update_db_v4.sql`.
+2. _(Jika sudah punya database lama)_ Jalankan `update_db_v3.sql` → lalu `update_db_v4.sql`.
 
 ### 5. Konfigurasi
+
 Edit `config.php` sesuai kebutuhan:
+
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'db_raport');
@@ -37,7 +44,9 @@ define('BASE_URL', 'http://localhost/raportku23102026');
 ```
 
 ### 6. Buat direktori upload
+
 Pastikan direktori `uploads/` beserta sub-direktorinya dapat ditulis (writable):
+
 ```
 uploads/
 ├── signatures/   ← tanda tangan digital
@@ -46,6 +55,7 @@ uploads/
 ```
 
 ### 7. Buka di browser
+
 ```
 http://localhost/raportku23102026
 ```
@@ -54,10 +64,10 @@ http://localhost/raportku23102026
 
 ## 👤 Akun Default
 
-| Username | Password | Role           |
-|----------|----------|----------------|
-| admin    | password | Admin          |
-| kepsek   | password | Kepala Sekolah |
+| Username | Password     | Role           |
+| -------- | ------------ | -------------- |
+| admin    | **\*\*\*\*** | Admin          |
+| kepsek   | **\*\*\*\*** | Kepala Sekolah |
 
 > Ganti password setelah login pertama melalui **Profil**.
 
@@ -120,31 +130,32 @@ raportku23102026/
 
 ## 👥 Role & Hak Akses
 
-| Role               | Hak Akses |
-|--------------------|-----------|
+| Role               | Hak Akses                                                                   |
+| ------------------ | --------------------------------------------------------------------------- |
 | **admin**          | Semua fitur: CRUD semua data, input nilai, cetak raport, pengaturan sekolah |
-| **kepala_sekolah** | Lihat raport semua kelas, upload tanda tangan (tampil di raport) |
+| **kepala_sekolah** | Lihat raport semua kelas, upload tanda tangan (tampil di raport)            |
 | **wali_kelas**     | Input nilai semua mapel di kelas yang dipimpin + mapel yang diajar, absensi |
-| **guru**           | Input nilai mapel yang ditugaskan (via Penugasan Guru) di kelas tertentu |
-| **siswa**          | Lihat raport milik sendiri saja, peringkat kelas |
+| **guru**           | Input nilai mapel yang ditugaskan (via Penugasan Guru) di kelas tertentu    |
+| **siswa**          | Lihat raport milik sendiri saja, peringkat kelas                            |
 
 ---
 
 ## 📄 Jenis Raport & Formula Nilai
 
-| Jenis        | Komponen Nilai Akhir                              |
-|--------------|---------------------------------------------------|
+| Jenis        | Komponen Nilai Akhir                            |
+| ------------ | ----------------------------------------------- |
 | **Bulanan**  | `(Rata-rata NH1+NH2+NH3 × 70%) + (Tugas × 30%)` |
-| **STS**      | Nilai STS saja                                    |
-| **Semester** | Nilai SAS (Sumatif Akhir Semester) saja           |
+| **STS**      | Nilai STS saja                                  |
+| **Semester** | Nilai SAS (Sumatif Akhir Semester) saja         |
 
 ### Predikat Default
-| Predikat | Rentang              |
-|----------|----------------------|
-| A        | ≥ 92 (dapat diubah)  |
-| B        | 83 – 91              |
-| C        | 76 – 82              |
-| D        | < 76                 |
+
+| Predikat | Rentang             |
+| -------- | ------------------- |
+| A        | ≥ 92 (dapat diubah) |
+| B        | 83 – 91             |
+| C        | 76 – 82             |
+| D        | < 76                |
 
 > Ubah kriteria di **Pengaturan Sekolah → Kriteria Nilai**.
 
@@ -153,6 +164,7 @@ raportku23102026/
 ## 📥 Import / Export Data
 
 Semua halaman manajemen (guru, siswa, kelas, mapel, nilai) mendukung:
+
 - **Export CSV** — download data tabel sesuai filter aktif
 - **Import Excel (.xlsx)** — upload file template yang didownload dari aplikasi  
   Template sudah include: judul, dropdown validasi, freeze panes, sheet Referensi
