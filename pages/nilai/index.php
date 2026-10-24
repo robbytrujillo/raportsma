@@ -181,170 +181,187 @@ $nilai_list = db_query(
 $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'per'=>$per]);
 ?>
 <div class="page-content">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Data Nilai</h1>
-      <p class="page-subtitle">Input dan kelola nilai siswa</p>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Data Nilai</h1>
+            <p class="page-subtitle">Input dan kelola nilai siswa</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <a href="index.php?page=nilai&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
+                class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+            </a>
+            <a href="index.php?page=nilai.import" class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import CSV
+            </a>
+            <?php if ($role !== 'kepala_sekolah'): ?>
+            <a href="index.php?page=nilai.input" class="btn btn-primary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Input Nilai
+            </a>
+            <?php endif; ?>
+        </div>
     </div>
-    <div class="flex gap-2 flex-wrap">
-      <a href="index.php?page=nilai&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
-         class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </a>
-      <a href="index.php?page=nilai.import" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Import CSV
-      </a>
-      <?php if ($role !== 'kepala_sekolah'): ?>
-      <a href="index.php?page=nilai.input" class="btn btn-primary" style="border-radius: 30px">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Input Nilai
-      </a>
-      <?php endif; ?>
-    </div>
-  </div>
 
-  <!-- Filter Bar -->
-  <form method="GET" action="index.php" class="card mb-5">
-    <div class="card-body">
-      <input type="hidden" name="page" value="nilai">
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div>
-          <label class="form-label">Tahun Ajaran</label>
-          <select name="ta" class="form-control" onchange="this.form.submit()">
-            <?php foreach ($ta_list as $ta): ?>
-            <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
-              <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-            </option>
-            <?php endforeach; ?>
-          </select>
+    <!-- Filter Bar -->
+    <form method="GET" action="index.php" class="card mb-5">
+        <div class="card-body">
+            <input type="hidden" name="page" value="nilai">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div>
+                    <label class="form-label">Tahun Ajaran</label>
+                    <select name="ta" class="form-control" onchange="this.form.submit()">
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Kelas</label>
+                    <select name="kelas" class="form-control">
+                        <option value="">Semua Kelas</option>
+                        <?php foreach ($kelas_list as $k): ?>
+                        <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
+                            <?= e($k['nama_kelas']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Jenis Raport</label>
+                    <select name="jenis" class="form-control">
+                        <option value="">Semua</option>
+                        <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
+                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS</option>
+                        <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Tampil</label>
+                    <select name="per" class="form-control" onchange="this.form.submit()">
+                        <?php foreach ([10,25,50,100] as $opt): ?>
+                        <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-primary w-full">Filter</button>
+                </div>
+            </div>
         </div>
-        <div>
-          <label class="form-label">Kelas</label>
-          <select name="kelas" class="form-control">
-            <option value="">Semua Kelas</option>
-            <?php foreach ($kelas_list as $k): ?>
-            <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>><?= e($k['nama_kelas']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Jenis Raport</label>
-          <select name="jenis" class="form-control">
-            <option value="">Semua</option>
-            <option value="bulanan"  <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-            <option value="sts"      <?= $jenis==='sts'     ?'selected':'' ?>>STS</option>
-            <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Tampil</label>
-          <select name="per" class="form-control" onchange="this.form.submit()">
-            <?php foreach ([10,25,50,100] as $opt): ?>
-            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="flex items-end">
-          <button type="submit" class="btn btn-primary w-full">Filter</button>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 
-  <div class="card">
-    <div class="card-header">
-      <span>Daftar Nilai</span>
-      <span class="text-sm text-gray-500"><?= $total ?> data</span>
-    </div>
-    <div class="table-container">
-      <table class="data-table" id="dataTable">
-        <thead>
-          <tr>
-            <th>#</th><th>Siswa</th><th>Kelas</th><th>Mata Pelajaran</th>
-            <th>Jenis</th><th>Bln</th>
-            <th>NH1</th><th>NH2</th><th>NH3</th><th>Tugas</th><th>STS</th><th>SAS</th>
-            <th>Nilai Akhir</th><th>Pred.</th>
-            <?php if ($role === 'admin'): ?><th>Guru</th><?php endif; ?>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php if (empty($nilai_list)): ?>
-          <tr><td colspan="16" class="text-center py-8 text-gray-400">Belum ada data nilai.</td></tr>
-          <?php else: ?>
-          <?php foreach ($nilai_list as $i => $n): ?>
-          <?php $pred = $n['predikat'] ?? get_predikat((float)$n['nilai_akhir']); ?>
-          <tr>
-            <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
-            <td class="font-semibold whitespace-nowrap"><?= e($n['nama_siswa']) ?></td>
-            <td><?= e($n['nama_kelas']) ?></td>
-            <td><?= e($n['nama_mapel']) ?></td>
-            <td>
-              <?php
+    <div class="card">
+        <div class="card-header">
+            <span>Daftar Nilai</span>
+            <span class="text-sm text-gray-500"><?= $total ?> data</span>
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Siswa</th>
+                        <th>Kelas</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Jenis</th>
+                        <th>Bln</th>
+                        <th>NH1</th>
+                        <th>NH2</th>
+                        <th>NH3</th>
+                        <th>Tugas</th>
+                        <th>STS</th>
+                        <th>SAS</th>
+                        <th>Nilai Akhir</th>
+                        <th>Pred.</th>
+                        <?php if ($role === 'admin'): ?><th>Guru</th><?php endif; ?>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($nilai_list)): ?>
+                    <tr>
+                        <td colspan="16" class="text-center py-8 text-gray-400">Belum ada data nilai.</td>
+                    </tr>
+                    <?php else: ?>
+                    <?php foreach ($nilai_list as $i => $n): ?>
+                    <?php $pred = $n['predikat'] ?? get_predikat((float)$n['nilai_akhir']); ?>
+                    <tr>
+                        <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
+                        <td class="font-semibold whitespace-nowrap"><?= e($n['nama_siswa']) ?></td>
+                        <td><?= e($n['nama_kelas']) ?></td>
+                        <td><?= e($n['nama_mapel']) ?></td>
+                        <td>
+                            <?php
                 $j = $n['jenis_raport'];
                 $jBadge = $j==='bulanan' ? 'badge-blue' : ($j==='sts' ? 'badge-purple' : 'badge-orange');
                 $jLabel = $j==='bulanan' ? 'Bulanan' : ($j==='sts' ? 'STS' : 'Semester');
               ?>
-              <span class="badge <?= $jBadge ?>"><?= $jLabel ?></span>
-            </td>
-            <td><?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : '—' ?></td>
-            <td><?= $n['nilai_harian_1'] ?></td>
-            <td><?= $n['nilai_harian_2'] ?></td>
-            <td><?= $n['nilai_harian_3'] ?></td>
-            <td><?= $n['nilai_tugas'] ?></td>
-            <td><?= $n['nilai_sts'] ?></td>
-            <td><?= $n['nilai_sas'] ?></td>
-            <td class="font-bold text-orange-600"><?= number_format($n['nilai_akhir'],2) ?></td>
-            <td>
-              <span class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
-                <?= $pred ?>
-              </span>
-            </td>
-            <?php if ($role === 'admin'): ?>
-            <td class="text-xs text-gray-500"><?= e($n['nama_guru']) ?></td>
-            <?php endif; ?>
-            <td>
-              <div class="flex gap-1">
-                <?php if ($role !== 'kepala_sekolah'): ?>
-                <a href="index.php?page=nilai.input&id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary">Edit</a>
-                <form method="POST" action="index.php?page=nilai" style="display:inline"
-                  onsubmit="return confirm('Hapus nilai ini?')">
-                  <?= csrf_field() ?>
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="id" value="<?= $n['id'] ?>">
-                  <button type="submit" class="btn btn-sm btn-danger">×</button>
-                </form>
-                <?php else: ?>
-                <span class="text-xs text-gray-400">—</span>
-                <?php endif; ?>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-          <?php endif; ?>
-        </tbody>
-      </table>
-    </div>
+                            <span class="badge <?= $jBadge ?>"><?= $jLabel ?></span>
+                        </td>
+                        <td><?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : '—' ?></td>
+                        <td><?= $n['nilai_harian_1'] ?></td>
+                        <td><?= $n['nilai_harian_2'] ?></td>
+                        <td><?= $n['nilai_harian_3'] ?></td>
+                        <td><?= $n['nilai_tugas'] ?></td>
+                        <td><?= $n['nilai_sts'] ?></td>
+                        <td><?= $n['nilai_sas'] ?></td>
+                        <td class="font-bold text-orange-600"><?= number_format($n['nilai_akhir'],2) ?></td>
+                        <td>
+                            <span
+                                class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
+                                <?= $pred ?>
+                            </span>
+                        </td>
+                        <?php if ($role === 'admin'): ?>
+                        <td class="text-xs text-gray-500"><?= e($n['nama_guru']) ?></td>
+                        <?php endif; ?>
+                        <td>
+                            <div class="flex gap-1">
+                                <?php if ($role !== 'kepala_sekolah'): ?>
+                                <a href="index.php?page=nilai.input&id=<?= $n['id'] ?>"
+                                    class="btn btn-sm btn-secondary">Edit</a>
+                                <form method="POST" action="index.php?page=nilai" style="display:inline"
+                                    onsubmit="return confirm('Hapus nilai ini?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $n['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">×</button>
+                                </form>
+                                <?php else: ?>
+                                <span class="text-xs text-gray-400">—</span>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Paginasi -->
-    <?php if ($pages > 1): ?>
-    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-      <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> data)</span>
-      <div class="pagination">
-        <a href="?<?= $qstr_n ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹ Prev</a>
-        <?php
+        <!-- Paginasi -->
+        <?php if ($pages > 1): ?>
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> data)</span>
+            <div class="pagination">
+                <a href="?<?= $qstr_n ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹
+                    Prev</a>
+                <?php
           $start = max(1, $page_n - 3); $end = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_n ?>&p=1" class="page-link">1</a><?php
             if ($start > 2): ?><span class="page-link disabled">…</span><?php endif;
@@ -357,9 +374,10 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
             ?><a href="?<?= $qstr_n ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-        <a href="?<?= $qstr_n ?>&p=<?= min($pages,$page_n+1) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
-      </div>
+                <a href="?<?= $qstr_n ?>&p=<?= min($pages,$page_n+1) ?>"
+                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
-  </div>
 </div>
