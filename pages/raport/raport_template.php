@@ -360,12 +360,22 @@ $row_no = 0;
 
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
   <?php if ($is_bulanan): ?>
-  <!-- Raport BULANAN: kriteria teks miring per baris seperti foto referensi -->
-  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt;font-style:italic">
-    <em>Kriteria :</em> A : <?= (int)$krit_a ?> - 100<br>
-    <span style="margin-left:52px">B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?></span><br>
-    <span style="margin-left:52px">C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?></span><br>
-    <span style="margin-left:52px">D : &lt; <?= (int)$krit_c ?></span>
+  <!-- Raport BULANAN: kriteria tabel kotak, teks miring per baris -->
+  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
+    <table style="border-collapse:collapse;border:1px solid #000">
+      <tr>
+        <td style="border:1px solid #000;padding:4px 10px;font-style:italic;vertical-align:top;
+                   font-weight:600;white-space:nowrap;background:#fafafa">
+          Kriteria :
+        </td>
+        <td style="border:1px solid #000;padding:4px 14px;font-style:italic;line-height:1.7">
+          A : <?= (int)$krit_a ?> - 100<br>
+          B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?><br>
+          C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?><br>
+          D : &lt; <?= (int)$krit_c ?>
+        </td>
+      </tr>
+    </table>
   </div>
   <?php else: ?>
   <!-- Raport STS/Semester: kriteria teks inline -->
@@ -454,7 +464,7 @@ $row_no = 0;
                  style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
           <?php endif; ?>
         </div>
-        <div style="font-weight:700;text-decoration:underline">
+        <div style="font-weight:700">
           <?= htmlspecialchars($kepsek['nama_lengkap'] ?? '__________________________') ?>
         </div>
       </td>
@@ -489,7 +499,7 @@ $row_no = 0;
                  style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
           <?php endif; ?>
         </div>
-        <div style="font-weight:700;text-decoration:underline">
+        <div style="font-weight:700">
           <?= htmlspecialchars($wali_kelas['nama_lengkap'] ?? '__________________________') ?>
         </div>
       </td>
