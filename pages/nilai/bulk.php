@@ -574,14 +574,47 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 </tr>
                 <!-- Baris deskripsi siswa (tersembunyi, expand via tombol) -->
                 <tr id="deskRow_<?= $s['id'] ?>" style="display:none;background:#fffbf5">
-                  <td colspan="<?= $jenis==='bulanan'?10:8 ?>" style="padding:6px 12px">
-                    <div class="flex items-start gap-2">
-                      <label class="text-xs font-semibold text-gray-500 mt-1 whitespace-nowrap">Deskripsi Siswa:</label>
-                      <textarea name="deskripsi_<?= $s['id'] ?>" rows="2"
-                        class="form-control text-sm flex-1"
-                        placeholder="Kosongkan untuk menggunakan deskripsi dari kriteria predikat secara otomatis"><?= e($nv['deskripsi'] ?? '') ?></textarea>
-                      <input type="hidden" name="catatan_<?= $s['id'] ?>" value="<?= e($nv['catatan'] ?? '') ?>">
+                  <td colspan="<?= $jenis==='bulanan'?10:8 ?>" style="padding:8px 12px">
+                    <div class="flex flex-col gap-2">
+                      <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">
+                          Deskripsi — <?= e($s['nama_lengkap']) ?>:
+                        </label>
+                        <!-- Status simpan -->
+                        <span id="deskStatus_<?= $s['id'] ?>" class="text-xs text-gray-400"></span>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <!-- textarea: cegah Enter/S memicu submit form -->
+                        <textarea
+                          id="deskArea_<?= $s['id'] ?>"
+                          name="deskripsi_<?= $s['id'] ?>"
+                          rows="3"
+                          class="form-control text-sm flex-1"
+                          placeholder="Kosongkan untuk menggunakan deskripsi predikat otomatis..."
+                          onkeydown="return event.key !== 'Enter' || (event.shiftKey ? true : false)"
+                        ><?= e($nv['deskripsi'] ?? '') ?></textarea>
+                        <!-- Tombol simpan deskripsi (AJAX-free: langsung set hidden field + feedback) -->
+                        <div class="flex flex-col gap-1">
+                          <button type="button"
+                            class="btn btn-sm btn-primary"
+                            style="min-width:70px"
+                            onclick="simpanDeskripsi(<?= $s['id'] ?>)">
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                              <polyline points="17 21 17 13 7 13 7 21"/>
+                            </svg>
+                            Simpan
+                          </button>
+                          <button type="button"
+                            class="btn btn-sm btn-secondary"
+                            style="min-width:70px"
+                            onclick="toggleDeskSiswa(<?= $s['id'] ?>)">
+                            Tutup
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                    <input type="hidden" name="catatan_<?= $s['id'] ?>" value="<?= e($nv['catatan'] ?? '') ?>">
                   </td>
                 </tr>
                 <?php endforeach; ?>
@@ -745,15 +778,43 @@ function toggleDeskSiswa(sid) {
 }
 
 /**
+ * Simpan deskripsi siswa — konfirmasi visual tanpa reload halaman.
+ * Nilai textarea sudah otomatis ikut form submit (name="deskripsi_SID"),
+ * tombol ini hanya memberi feedback visual bahwa teks sudah terkunci.
+ */
+function simpanDeskripsi(sid) {
+  const ta     = document.getElementById(`deskArea_${sid}`);
+  const status = document.getElementById(`deskStatus_${sid}`);
+  if (!ta) return;
+
+  const val = ta.value.trim();
+  // Tandai textarea sebagai "tersimpan" secara visual
+  ta.style.borderColor = '#16a34a';
+  ta.style.background  = '#f0fdf4';
+  if (status) {
+    status.textContent   = '✓ Deskripsi siap disimpan';
+    status.style.color   = '#16a34a';
+  }
+
+  // Reset visual setelah 3 detik
+  setTimeout(() => {
+    ta.style.borderColor = '';
+    ta.style.background  = '';
+    if (status) { status.textContent = ''; }
+  }, 3000);
+}
+
+/**
  * Auto-fill deskripsi siswa yang predikatnya sama (hanya yang masih kosong)
  */
 function updateDeskPreview(kr, val) {
   document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
     if (predEl.textContent.trim() !== kr) return;
     const sid = predEl.id.replace('pred_', '');
-    const deskEl = document.querySelector(`[name="deskripsi_${sid}"]`);
-    if (deskEl && deskEl.value.trim() === '') {
-      deskEl.value = val;
+    // Gunakan id-based agar konsisten dengan simpanDeskripsi()
+    const ta = document.getElementById(`deskArea_${sid}`);
+    if (ta && ta.value.trim() === '') {
+      ta.value = val;
     }
   });
 }
@@ -767,8 +828,9 @@ function applyDeskToAll(kr, val) {
   document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
     if (predEl.textContent.trim() !== kr) return;
     const sid = predEl.id.replace('pred_', '');
-    const deskEl = document.querySelector(`[name="deskripsi_${sid}"]`);
-    if (deskEl) { deskEl.value = val; count++; }
+    // Sync ke textarea (id-based) bukan hanya name-based
+    const ta = document.getElementById(`deskArea_${sid}`);
+    if (ta) { ta.value = val; count++; }
     // Otomatis tampilkan baris deskripsi
     const deskRow = document.getElementById(`deskRow_${sid}`);
     if (deskRow) deskRow.style.display = '';
