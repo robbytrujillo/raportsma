@@ -1,0 +1,90 @@
+# =============================================================================
+# .htaccess — Raportku
+# Kompatibel: Laragon (lokal) + cPanel Shared Hosting
+# =============================================================================
+
+# ── 1. SEMBUNYIKAN DAFTAR DIREKTORI ──────────────────────────────────────────
+Options -Indexes
+Options -MultiViews
+ServerSignature Off
+
+# ── 2. FRONT CONTROLLER (semua request → index.php) ──────────────────────────
+# RewriteBase di-set otomatis oleh Apache dari letak file ini.
+# Tidak perlu hardcode path — cocok baik di subdirektori maupun public_html/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Biarkan request ke file/folder yang benar-benar ada (CSS, JS, gambar)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# ── 3. BLOKIR AKSES LANGSUNG KE FILE BACKEND SENSITIF ────────────────────────
+<FilesMatch "^(config|auth|db|excel)\.(php|php[0-9])$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── 4. BLOKIR EKSTENSI FILE YANG TIDAK BOLEH DIAKSES PUBLIK ─────────────────
+<FilesMatch "\.(sql|log|ini|env|sh|bash|htpasswd|bak|tmp|lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── 5. PROTEKSI FOLDER .git DAN FILE DOT-FILE ────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteRule (^|/)\.(?!well-known) - [F,L]
+</IfModule>
+
+# ── 6. SECURITY HEADERS ───────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
+# ── 7. CACHE FILE STATIS ──────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css                "access plus 1 week"
+    ExpiresByType application/javascript  "access plus 1 week"
+    ExpiresByType image/jpeg              "access plus 1 month"
+    ExpiresByType image/png               "access plus 1 month"
+    ExpiresByType image/gif               "access plus 1 month"
+    ExpiresByType image/webp              "access plus 1 month"
+    ExpiresByType image/x-icon            "access plus 1 month"
+</IfModule>
+
+# ── 8. GZIP COMPRESSION ───────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+</IfModule>
+
+# ── 9. UPLOAD LIMIT (sesuaikan kebutuhan) ────────────────────────────────────
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size       12M
+    php_value max_execution_time  60
+    php_value memory_limit        256M
+</IfModule>
+
+# ── 10. FORCE HTTPS — aktifkan hanya di production (hapus komentar) ──────────
+# <IfModule mod_rewrite.c>
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>

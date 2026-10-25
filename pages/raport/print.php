@@ -31,6 +31,9 @@ if (!$siswa) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
   <style>
     body { background: #fff; margin: 0; }
@@ -39,7 +42,7 @@ if (!$siswa) {
       background: #f97316; color: #fff; padding: 10px 24px;
       display: flex; align-items: center; justify-content: space-between;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Poppins', sans-serif;
     }
     .print-toolbar button, .print-toolbar a {
       background: rgba(255,255,255,0.2);
