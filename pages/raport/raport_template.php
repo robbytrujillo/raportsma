@@ -242,20 +242,20 @@ $row_no = 0;
   <table class="raport-nilai-table" style="font-family:'Times New Roman',serif;font-size:10pt">
     <thead>
       <tr style="background:#fff">
-        <!-- Kolom Mata Pelajaran: No | sub | Nama -->
+        <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama — 5 kolom total (Pred dihapus) -->
         <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
           MATA PELAJARAN
         </th>
-        <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
+        <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
           NILAI PENGETAHUAN
         </th>
       </tr>
       <tr style="background:#fff">
-        <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center">No</th>
+        <!-- No: header kosong, angka tetap tampil di tbody -->
+        <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
         <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
         <th style="border:1px solid #000;padding:4px 6px;text-align:left">Nama Mata Pelajaran</th>
         <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px">Angka</th>
-        <th style="border:1px solid #000;padding:4px 6px;text-align:center;width:30px">Pred.</th>
         <th style="border:1px solid #000;padding:4px 8px;text-align:center">Deskripsi</th>
       </tr>
     </thead>
@@ -266,13 +266,13 @@ $row_no = 0;
       <?php if ($row['type'] === 'group'): ?>
         <!-- ── Baris Header Kelompok (Kelompok A / B / C) ── -->
         <tr style="background:#f0f0f0">
-          <td colspan="6" style="border:1px solid #000;padding:4px 8px;font-weight:700">
+          <td colspan="5" style="border:1px solid #000;padding:4px 8px;font-weight:700">
             Kelompok <?= htmlspecialchars($row['kelompok']) ?>
           </td>
         </tr>
 
       <?php elseif ($row['type'] === 'parent_header'): ?>
-        <!-- ── Baris Induk Mapel (misal "Pendidikan Agama Islam:") ── -->
+        <!-- ── Baris Induk Mapel — nomor tampil, Pred dihapus ── -->
         <?php $row_no++; ?>
         <tr>
           <td style="border:1px solid #000;padding:4px 6px;text-align:center;
@@ -281,19 +281,16 @@ $row_no = 0;
           <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
             <?= htmlspecialchars($row['nama_mapel']) ?>:
           </td>
-          <!-- Tidak ada nilai di baris induk -->
-          <td style="border:1px solid #000;padding:4px 6px"></td>
           <td style="border:1px solid #000;padding:4px 6px"></td>
           <td style="border:1px solid #000;padding:4px 8px"></td>
         </tr>
 
       <?php elseif ($row['type'] === 'child'): ?>
-        <!-- ── Baris Sub-Mapel (indented, label a/b/c) ── -->
+        <!-- ── Baris Sub-Mapel — kolom Pred dihapus ── -->
         <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          $pred = predikat_lokal($na, $krit_a, $krit_b, $krit_c);
-          $desk = $n['deskripsi'] ?? '';
+          $desk = $n['catatan'] ?? ($n['deskripsi'] ?? '');
         ?>
         <tr>
           <td style="border:1px solid #000;padding:4px 6px;text-align:center"></td>
@@ -306,21 +303,17 @@ $row_no = 0;
           <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
             <?= $na > 0 ? number_format($na, 0) : '' ?>
           </td>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-            <?= $na > 0 ? $pred : '' ?>
-          </td>
           <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
             <?= htmlspecialchars($desk) ?>
           </td>
         </tr>
 
       <?php elseif ($row['type'] === 'single'): ?>
-        <!-- ── Baris Mapel Mandiri ── -->
+        <!-- ── Baris Mapel Mandiri — kolom Pred dihapus ── -->
         <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          $pred = predikat_lokal($na, $krit_a, $krit_b, $krit_c);
-          $desk = $n['deskripsi'] ?? '';
+          $desk = $n['catatan'] ?? ($n['deskripsi'] ?? '');
           $row_no++;
         ?>
         <tr>
@@ -334,9 +327,6 @@ $row_no = 0;
           <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
             <?= $na > 0 ? number_format($na, 0) : '' ?>
           </td>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-            <?= $na > 0 ? $pred : '' ?>
-          </td>
           <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
             <?= htmlspecialchars($desk) ?>
           </td>
@@ -347,23 +337,20 @@ $row_no = 0;
 
     <?php if (empty($ordered_rows)): ?>
       <tr>
-        <td colspan="6" style="border:1px solid #000;padding:14px;text-align:center;
+        <td colspan="5" style="border:1px solid #000;padding:14px;text-align:center;
                                 color:#666;font-style:italic">
           Belum ada data nilai untuk periode ini.
         </td>
       </tr>
     <?php endif; ?>
 
-    <!-- ── Baris Rata-rata ── -->
+    <!-- ── Baris Rata-rata — colspan disesuaikan 5 kolom ── -->
     <tr style="font-weight:700;background:#f9f9f9">
       <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
         Rata-rata
       </td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center">
         <?= $avg_nilai > 0 ? number_format($avg_nilai, 2) : '' ?>
-      </td>
-      <td style="border:1px solid #000;padding:5px 8px;text-align:center">
-        <?= $avg_nilai > 0 ? predikat_lokal($avg_nilai, $krit_a, $krit_b, $krit_c) : '' ?>
       </td>
       <td style="border:1px solid #000;padding:5px 8px"></td>
     </tr>
@@ -373,28 +360,12 @@ $row_no = 0;
 
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
   <?php if ($is_bulanan): ?>
-  <!-- Raport BULANAN: kriteria dalam tabel kotak seperti foto referensi -->
-  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
-    <table style="border-collapse:collapse;border:1px solid #000;font-size:9pt">
-      <tr>
-        <td style="border:1px solid #000;padding:3px 10px;font-style:italic;font-weight:600;
-                   background:#f5f5f5;white-space:nowrap">
-          Kriteria :
-        </td>
-        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
-          A : <?= (int)$krit_a ?> - 100
-        </td>
-        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
-          B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?>
-        </td>
-        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
-          C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?>
-        </td>
-        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
-          D : &lt; <?= (int)$krit_c ?>
-        </td>
-      </tr>
-    </table>
+  <!-- Raport BULANAN: kriteria teks miring per baris seperti foto referensi -->
+  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt;font-style:italic">
+    <em>Kriteria :</em> A : <?= (int)$krit_a ?> - 100<br>
+    <span style="margin-left:52px">B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?></span><br>
+    <span style="margin-left:52px">C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?></span><br>
+    <span style="margin-left:52px">D : &lt; <?= (int)$krit_c ?></span>
   </div>
   <?php else: ?>
   <!-- Raport STS/Semester: kriteria teks inline -->
