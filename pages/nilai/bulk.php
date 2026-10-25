@@ -686,16 +686,26 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 <span class="font-bold text-sm" style="color:<?= $kd['border'] ?>"><?= $kd['label'] ?></span>
                 <span class="text-xs text-gray-400"><?= $kd['range'] ?></span>
               </div>
-              <textarea name="desk_<?= $kr ?>" rows="3"
+              <textarea name="desk_<?= $kr ?>" id="deskKrit_<?= $kr ?>" rows="3"
                 class="form-control text-xs" style="font-size:.8rem;line-height:1.5"
                 placeholder="Masukkan deskripsi untuk siswa dengan predikat <?= $kr ?>..."
                 oninput="updateDeskPreview('<?= $kr ?>', this.value)"><?= e($deskripsi_kriteria[$kr] ?? '') ?></textarea>
               <button type="button" class="btn btn-sm btn-secondary mt-1 w-full text-xs"
-                onclick="applyDeskToAll('<?= $kr ?>', this.previousElementSibling.value)">
+                onclick="applyDeskToAll('<?= $kr ?>', document.getElementById('deskKrit_<?= $kr ?>').value)">
                 Terapkan ke semua siswa predikat <?= $kr ?>
               </button>
             </div>
             <?php endforeach; ?>
+
+            <!-- Tombol sinkronkan semua deskripsi sekaligus -->
+            <button type="button" class="btn btn-primary w-full mt-1 text-xs"
+              style="font-size:.8rem"
+              onclick="sinkronSemuaDeskripsi()">
+              🔄 Sinkronkan Semua Deskripsi
+            </button>
+            <p class="text-xs text-gray-400 mt-1" style="font-size:.73rem">
+              Overwrite deskripsi semua siswa dari kolom kanan sesuai predikat masing-masing.
+            </p>
 
             <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-500">
               <strong>Kriteria nilai:</strong><br>
