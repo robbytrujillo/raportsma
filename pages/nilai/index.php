@@ -188,7 +188,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="index.php?page=nilai&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
-                class="btn btn-secondary">
+                class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -196,7 +196,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=nilai.import" class="btn btn-secondary">
+            <a href="index.php?page=nilai.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
