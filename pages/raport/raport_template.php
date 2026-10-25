@@ -229,7 +229,7 @@ $row_no = 0;
       <td>:</td>
       <td><?= $semester_lbl ?></td>
     </tr>
-    <?php if ($peringkat !== '-'): ?>
+    <?php if ($peringkat !== '-' && !$is_bulanan): ?>
     <tr>
       <td style="padding:1px 0;font-weight:600">Peringkat Kelas</td>
       <td>:</td>
@@ -290,7 +290,8 @@ $row_no = 0;
         <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          $desk = $n['catatan'] ?? ($n['deskripsi'] ?? '');
+          // ?? hanya cek null — pakai ?: agar fallback jika string kosong
+          $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
         ?>
         <tr>
           <td style="border:1px solid #000;padding:4px 6px;text-align:center"></td>
@@ -313,7 +314,8 @@ $row_no = 0;
         <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          $desk = $n['catatan'] ?? ($n['deskripsi'] ?? '');
+          // ?? hanya cek null — pakai ?: agar fallback jika string kosong
+          $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
           $row_no++;
         ?>
         <tr>
@@ -360,15 +362,16 @@ $row_no = 0;
 
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
   <?php if ($is_bulanan): ?>
-  <!-- Raport BULANAN: kriteria tabel kotak, teks miring per baris -->
+  <!-- Raport BULANAN: kriteria tabel kotak tanpa border internal -->
   <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
     <table style="border-collapse:collapse;border:1px solid #000">
       <tr>
-        <td style="border:1px solid #000;padding:4px 10px;font-style:italic;vertical-align:top;
-                   font-weight:600;white-space:nowrap;background:#fafafa">
+        <!-- border-right dihilangkan agar tidak ada garis tengah -->
+        <td style="padding:4px 10px;font-style:italic;vertical-align:top;
+                   font-weight:600;white-space:nowrap">
           Kriteria :
         </td>
-        <td style="border:1px solid #000;padding:4px 14px;font-style:italic;line-height:1.7">
+        <td style="padding:4px 14px;font-style:italic;line-height:1.7">
           A : <?= (int)$krit_a ?> - 100<br>
           B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?><br>
           C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?><br>
