@@ -93,7 +93,7 @@ if ($role === 'siswa') {
           $rjLabel = $rj==='bulanan' ? 'Bulanan' : ($rj==='sts' ? 'STS' : 'Semester');
           $bulan_nama = (in_array($rj,['bulanan','sts']) && $r['bulan']) ? (BULAN_ID[(int)$r['bulan']] ?? '') : '';
           $avg = (float)($r['avg_nilai'] ?? 0);
-          $pred_avg = $avg >= 90 ? 'A' : ($avg >= 80 ? 'B' : ($avg >= 70 ? 'C' : 'D'));
+          $pred_avg = $avg > 0 ? get_predikat($avg) : '-';
           $pred_color = $pred_avg==='A' ? 'text-green-600' : ($pred_avg==='B' ? 'text-blue-600' : ($pred_avg==='C' ? 'text-yellow-600' : 'text-red-500'));
         ?>
         <div class="card hover:shadow-md transition-all">

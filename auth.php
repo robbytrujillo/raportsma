@@ -176,12 +176,21 @@ function get_flash(): ?array {
 }
 
 /**
- * Hitung predikat nilai
+ * Hitung predikat nilai berdasarkan kriteria sekolah.
+ * Jika kriteria tidak diberikan, ambil dari tabel pengaturan (sekolah_info).
+ * Parameter $krit_a, $krit_b, $krit_c bisa diisi manual atau dibiarkan null
+ * agar fungsi membacanya sendiri dari DB.
  */
-function get_predikat(float $nilai): string {
-    if ($nilai >= 90) return 'A';
-    if ($nilai >= 80) return 'B';
-    if ($nilai >= 70) return 'C';
+function get_predikat(float $nilai, float $krit_a = null, float $krit_b = null, float $krit_c = null): string {
+    if ($krit_a === null || $krit_b === null || $krit_c === null) {
+        $s = sekolah_info();
+        $krit_a = (float)($s['kriteria_a_min'] ?? 92);
+        $krit_b = (float)($s['kriteria_b_min'] ?? 83);
+        $krit_c = (float)($s['kriteria_c_min'] ?? 76);
+    }
+    if ($nilai >= $krit_a) return 'A';
+    if ($nilai >= $krit_b) return 'B';
+    if ($nilai >= $krit_c) return 'C';
     return 'D';
 }
 
