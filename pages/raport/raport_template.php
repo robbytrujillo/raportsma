@@ -212,13 +212,15 @@ $row_no = 0;
       <td style="width:12px">:</td>
       <td style="font-weight:600"><?= htmlspecialchars($siswa['nama_lengkap'] ?? '') ?></td>
     </tr>
+    <?php if (!$is_bulanan): ?>
     <tr>
       <td style="padding:1px 0;font-weight:600">NIS / NISN</td>
       <td>:</td>
       <td><?= htmlspecialchars(($siswa['nis'] ?? '') . ($siswa['nisn'] ? ' / ' . $siswa['nisn'] : '')) ?></td>
     </tr>
+    <?php endif; ?>
     <tr>
-      <td style="padding:1px 0;font-weight:600">Kelas</td>
+      <td style="padding:1px 0;font-weight:600">Kelas<?= $is_bulanan ? '/Perminatan' : '' ?></td>
       <td>:</td>
       <td><?= htmlspecialchars($siswa['nama_kelas'] ?? '') ?></td>
     </tr>
@@ -370,21 +372,41 @@ $row_no = 0;
   </table>
 
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
+  <?php if ($is_bulanan): ?>
+  <!-- Raport BULANAN: kriteria dalam tabel kotak seperti foto referensi -->
   <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
-    <table style="border-collapse:collapse;font-size:9.5pt">
+    <table style="border-collapse:collapse;border:1px solid #000;font-size:9pt">
       <tr>
-        <td style="padding:3px 0;font-style:italic;vertical-align:top;line-height:1.8">
-          <em>Keterangan Nilai :</em>&nbsp;&nbsp;
-          A (<?= (int)$krit_a ?>–100) &nbsp;|&nbsp;
-          B (<?= (int)$krit_b ?>–<?= (int)$krit_a - 1 ?>) &nbsp;|&nbsp;
-          C (<?= (int)$krit_c ?>–<?= (int)$krit_b - 1 ?>) &nbsp;|&nbsp;
-          D (&lt;<?= (int)$krit_c ?>)
+        <td style="border:1px solid #000;padding:3px 10px;font-style:italic;font-weight:600;
+                   background:#f5f5f5;white-space:nowrap">
+          Kriteria :
+        </td>
+        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
+          A : <?= (int)$krit_a ?> - 100
+        </td>
+        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
+          B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?>
+        </td>
+        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
+          C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?>
+        </td>
+        <td style="border:1px solid #000;padding:3px 12px;font-style:italic">
+          D : &lt; <?= (int)$krit_c ?>
         </td>
       </tr>
     </table>
   </div>
+  <?php else: ?>
+  <!-- Raport STS/Semester: kriteria teks inline -->
+  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
+    <em>Keterangan Nilai :</em>&nbsp;&nbsp;
+    A (<?= (int)$krit_a ?>–100) &nbsp;|&nbsp;
+    B (<?= (int)$krit_b ?>–<?= (int)$krit_a - 1 ?>) &nbsp;|&nbsp;
+    C (<?= (int)$krit_c ?>–<?= (int)$krit_b - 1 ?>) &nbsp;|&nbsp;
+    D (&lt;<?= (int)$krit_c ?>)
+  </div>
 
-  <!-- ── KETIDAKHADIRAN (ABSENSI) ─────────────────────────── -->
+  <!-- ── KETIDAKHADIRAN (ABSENSI) — hanya untuk STS & Semester ── -->
   <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
     <table style="border:1px solid #000;border-collapse:collapse;width:auto">
       <thead>
@@ -421,7 +443,7 @@ $row_no = 0;
     </table>
   </div>
 
-  <!-- ── CATATAN WALI KELAS ───────────────────────────────── -->
+  <!-- ── CATATAN WALI KELAS — hanya untuk STS & Semester ─── -->
   <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
     <table style="width:100%;border:1px solid #000;border-collapse:collapse">
       <tr style="background:#f0f0f0">
@@ -433,13 +455,9 @@ $row_no = 0;
         <td style="border:1px solid #000;padding:8px 10px;min-height:40px;height:50px;
                    font-size:9.5pt;vertical-align:top">
           <?php
-            // Ambil catatan dari tabel nilai untuk siswa ini (jika ada catatan umum di field catatan)
             $catatan_walas = '';
             foreach ($nilai_list as $nv) {
-                if (!empty($nv['catatan'])) {
-                    $catatan_walas = $nv['catatan'];
-                    break; // Ambil catatan pertama yang ada
-                }
+                if (!empty($nv['catatan'])) { $catatan_walas = $nv['catatan']; break; }
             }
             echo $catatan_walas ? htmlspecialchars($catatan_walas) : '&nbsp;';
           ?>
@@ -447,6 +465,7 @@ $row_no = 0;
       </tr>
     </table>
   </div>
+  <?php endif; ?>
 
   <!-- ── TANDA TANGAN ──────────────────────────────────────── -->
   <table style="width:100%;margin-top:20px;font-family:'Times New Roman',serif;font-size:10.5pt">
@@ -454,7 +473,7 @@ $row_no = 0;
       <!-- Kepala Sekolah — KIRI -->
       <td style="width:45%;vertical-align:top;text-align:center">
         <div>Mengetahui,</div>
-        <div>Kepala <?= htmlspecialchars($sekolah['nama_sekolah']) ?></div>
+        <div>Kepala SMA IHBS</div>
         <!-- Tanda tangan kepala sekolah -->
         <div style="height:<?= ($kepsek && $kepsek['tanda_tangan']) ? 'auto' : '70px' ?>;
                     margin:6px 0;display:flex;align-items:center;justify-content:center">
