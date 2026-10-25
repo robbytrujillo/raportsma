@@ -862,22 +862,31 @@ function simpanDeskripsi(sid) {
 }
 
 /**
- * Auto-fill deskripsi siswa yang predikatnya sama (hanya yang masih kosong)
+ * Real-time preview: saat user mengetik di textarea kanan,
+ * update SEMUA siswa yang predikatnya sama (termasuk yang sudah ada isinya).
+ * Highlight kuning sementara agar user sadar ada perubahan.
  */
 function updateDeskPreview(kr, val) {
   document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
     if (predEl.textContent.trim() !== kr) return;
     const sid = predEl.id.replace('pred_', '');
-    // Gunakan id-based agar konsisten dengan simpanDeskripsi()
     const ta = document.getElementById(`deskArea_${sid}`);
-    if (ta && ta.value.trim() === '') {
-      ta.value = val;
-    }
+    if (!ta) return;
+    ta.value = val;
+    // Highlight kuning sementara sebagai indikator updated
+    ta.style.borderColor = '#f59e0b';
+    ta.style.background  = '#fffbeb';
+    clearTimeout(ta._hlTimer);
+    ta._hlTimer = setTimeout(() => {
+      ta.style.borderColor = '';
+      ta.style.background  = '';
+    }, 2000);
   });
 }
 
 /**
- * Terapkan deskripsi ke SEMUA siswa dengan predikat tertentu (paksa overwrite)
+ * Terapkan deskripsi ke SEMUA siswa dengan predikat tertentu (paksa overwrite).
+ * Membuka baris deskripsi yang masih tersembunyi.
  */
 function applyDeskToAll(kr, val) {
   if (!val.trim()) { alert('Isi deskripsi terlebih dahulu.'); return; }
@@ -885,14 +894,53 @@ function applyDeskToAll(kr, val) {
   document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
     if (predEl.textContent.trim() !== kr) return;
     const sid = predEl.id.replace('pred_', '');
-    // Sync ke textarea (id-based) bukan hanya name-based
     const ta = document.getElementById(`deskArea_${sid}`);
     if (ta) { ta.value = val; count++; }
     // Otomatis tampilkan baris deskripsi
     const deskRow = document.getElementById(`deskRow_${sid}`);
-    if (deskRow) deskRow.style.display = '';
+    if (deskRow) deskRow.style.display = 'table-row';
   });
   if (count > 0) showToast(`Deskripsi diterapkan ke ${count} siswa predikat ${kr}`, 'success');
+}
+
+/**
+ * Sinkronkan SEMUA siswa sekaligus dari textarea kanan sesuai predikat masing-masing.
+ * Berguna jika deskripsi kriteria diubah dan siswa sudah punya deskripsi lama di DB.
+ */
+function sinkronSemuaDeskripsi() {
+  // Baca nilai terkini dari textarea kanan (bukan DESK_KRIT yang dari server)
+  const deskNow = {
+    A: (document.getElementById('deskKrit_A')?.value ?? '').trim(),
+    B: (document.getElementById('deskKrit_B')?.value ?? '').trim(),
+    C: (document.getElementById('deskKrit_C')?.value ?? '').trim(),
+    D: (document.getElementById('deskKrit_D')?.value ?? '').trim(),
+  };
+
+  let count = 0;
+  document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
+    const pred = predEl.textContent.trim();
+    if (!['A','B','C','D'].includes(pred)) return;
+    const sid  = predEl.id.replace('pred_', '');
+    const ta   = document.getElementById(`deskArea_${sid}`);
+    if (!ta) return;
+    if (deskNow[pred] === '') return; // skip jika deskripsi kanan masih kosong
+    ta.value = deskNow[pred];
+    count++;
+    // Highlight hijau sebentar
+    ta.style.borderColor = '#16a34a';
+    ta.style.background  = '#f0fdf4';
+    clearTimeout(ta._hlTimer);
+    ta._hlTimer = setTimeout(() => {
+      ta.style.borderColor = '';
+      ta.style.background  = '';
+    }, 2500);
+  });
+
+  if (count > 0) {
+    showToast(`✓ ${count} deskripsi siswa berhasil disinkronkan`, 'success');
+  } else {
+    alert('Tidak ada deskripsi yang bisa disinkronkan.\nPastikan kolom kanan sudah diisi.');
+  }
 }
 
 /**
