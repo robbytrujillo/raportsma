@@ -63,69 +63,109 @@ foreach ($nilai_list as $n) {
     $nilai_by_mapel[$n['mapel_id']] = $n;
 }
 
-// Query mapel lengkap (termasuk yang tidak ada nilainya, untuk struktur tampilan)
-// Kita pakai mapel yang ada nilai saja, tapi susun hierarchinya
 $mapel_ids = array_column($nilai_list, 'mapel_id');
-
-$ordered_rows = []; // array of ['type'=>'group'|'parent'|'child'|'single', 'data'=>...]
+$ordered_rows = [];
 
 if (!empty($mapel_ids)) {
-    // Ambil info mapel lengkap dengan info parent
+    // ── Pass 1: ambil info mapel beserta parent ──────────────────────────────
     $in = implode(',', array_map('intval', $mapel_ids));
-    $mapel_info = db_query(
-        "SELECT m.*, p.nama_mapel as parent_nama
+    $mapel_info_raw = db_query(
+        "SELECT m.*, p.nama_mapel as parent_nama, p.kelompok as parent_kelompok,
+                p.urutan as parent_urutan
          FROM mapel m
          LEFT JOIN mapel p ON p.id = m.parent_id
          WHERE m.id IN ($in)
          ORDER BY m.kelompok, m.urutan, m.nama_mapel"
     );
 
-    // Indeks mapel_info berdasarkan id
-    $mapel_idx = [];
-    foreach ($mapel_info as $mi) {
-        $mapel_idx[$mi['id']] = $mi;
-    }
+    // ── Pass 2: kumpulkan anak-anak per parent ───────────────────────────────
+    // Kita perlu parent_id → daftar anak secara berurutan.
+    // Juga kita perlu info mapel induk (nama, kelompok, urutan) agar bisa
+    // menyisipkan parent_header di posisi yang BENAR dalam urutan global.
 
-    $kelompok_prev = null;
-    $parent_printed = [];  // parent_id yang sudah ditampilkan header-nya
+    $children_by_parent = [];   // parent_id  => [child_mi, ...]
+    $singles            = [];   // [mi, ...]  — mapel tanpa parent
+    $parent_meta        = [];   // parent_id  => ['nama'=>.., 'kelompok'=>.., 'urutan'=>..]
 
-    foreach ($mapel_info as $mi) {
-        // Group header (Kelompok A/B/C)
-        if ($mi['kelompok'] !== $kelompok_prev) {
-            $kelompok_prev = $mi['kelompok'];
-            $ordered_rows[] = ['type' => 'group', 'kelompok' => $mi['kelompok']];
-        }
-
+    foreach ($mapel_info_raw as $mi) {
         if ($mi['parent_id'] !== null) {
-            // Sub-mapel: tampilkan parent-header jika belum
-            $pid = $mi['parent_id'];
-            if (!isset($parent_printed[$pid])) {
-                $parent_printed[$pid] = true;
-                $ordered_rows[] = [
-                    'type'       => 'parent_header',
-                    'mapel_id'   => $pid,
-                    // Ambil nomor urut dari mapel induk (jika ada di nilai)
-                    'nama_mapel' => isset($nilai_by_mapel[$pid])
-                        ? $nilai_by_mapel[$pid]['nama_mapel']
-                        : ($mi['parent_nama'] ?? ''),
-                ];
-            }
-            // Baris sub-mapel
-            if (isset($nilai_by_mapel[$mi['id']])) {
-                $ordered_rows[] = [
-                    'type'       => 'child',
-                    'sub_label'  => $mi['sub_label'] ?? '',
-                    'nilai'      => $nilai_by_mapel[$mi['id']],
-                    'mapel_info' => $mi,
+            $pid = (int)$mi['parent_id'];
+            $children_by_parent[$pid][] = $mi;
+            if (!isset($parent_meta[$pid])) {
+                $parent_meta[$pid] = [
+                    'kelompok' => $mi['parent_kelompok'] ?? $mi['kelompok'],
+                    'urutan'   => (int)($mi['parent_urutan'] ?? 0),
+                    'nama'     => $mi['parent_nama'] ?? '',
                 ];
             }
         } else {
-            // Mapel mandiri
-            if (isset($nilai_by_mapel[$mi['id']])) {
+            $singles[] = $mi;
+        }
+    }
+
+    // ── Pass 3: bangun daftar "slot" yang akan dirender, terurut ────────────
+    // Setiap slot adalah: ['kelompok'=>, 'urutan'=>, 'type'=>'single'|'parent_group', 'data'=>...]
+    $slots = [];
+
+    foreach ($singles as $mi) {
+        if (!isset($nilai_by_mapel[$mi['id']])) continue;
+        $slots[] = [
+            'kelompok' => $mi['kelompok'],
+            'urutan'   => (int)($mi['urutan'] ?? 0),
+            'type'     => 'single',
+            'mi'       => $mi,
+        ];
+    }
+
+    foreach ($children_by_parent as $pid => $children) {
+        $pm = $parent_meta[$pid];
+        $slots[] = [
+            'kelompok' => $pm['kelompok'],
+            'urutan'   => $pm['urutan'],
+            'type'     => 'parent_group',
+            'pid'      => $pid,
+            'parent_nama' => $pm['nama'],
+            'children' => $children,  // sudah terurut dari query
+        ];
+    }
+
+    // Urutkan slot berdasarkan kelompok → urutan
+    usort($slots, function($a, $b) {
+        $kg = strcmp($a['kelompok'] ?? '', $b['kelompok'] ?? '');
+        if ($kg !== 0) return $kg;
+        return $a['urutan'] <=> $b['urutan'];
+    });
+
+    // ── Pass 4: flatten slot ke ordered_rows (dengan group header) ──────────
+    $kelompok_prev = null;
+
+    foreach ($slots as $slot) {
+        // Header kelompok
+        if (($slot['kelompok'] ?? '') !== $kelompok_prev) {
+            $kelompok_prev = $slot['kelompok'] ?? '';
+            $ordered_rows[] = ['type' => 'group', 'kelompok' => $kelompok_prev];
+        }
+
+        if ($slot['type'] === 'single') {
+            $ordered_rows[] = [
+                'type'       => 'single',
+                'nilai'      => $nilai_by_mapel[$slot['mi']['id']],
+                'mapel_info' => $slot['mi'],
+            ];
+        } else {
+            // parent_group: header dulu, lalu semua anak berurutan
+            $ordered_rows[] = [
+                'type'       => 'parent_header',
+                'mapel_id'   => $slot['pid'],
+                'nama_mapel' => $slot['parent_nama'],
+            ];
+            foreach ($slot['children'] as $cmi) {
+                if (!isset($nilai_by_mapel[$cmi['id']])) continue;
                 $ordered_rows[] = [
-                    'type'  => 'single',
-                    'nilai' => $nilai_by_mapel[$mi['id']],
-                    'mapel_info' => $mi,
+                    'type'       => 'child',
+                    'sub_label'  => $cmi['sub_label'] ?? '',
+                    'nilai'      => $nilai_by_mapel[$cmi['id']],
+                    'mapel_info' => $cmi,
                 ];
             }
         }

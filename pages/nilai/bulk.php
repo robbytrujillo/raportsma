@@ -100,17 +100,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         elseif ($na >= $krit_c)  $pred = 'C';
         else                     $pred = 'D';
 
-        // Auto-isi deskripsi siswa dari deskripsi kriteria jika kosong
-        if ($desk_siswa === '') {
-            $dk = db_row(
-                'SELECT deskripsi FROM nilai_deskripsi
-                 WHERE mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta
-                   AND jenis_raport=:j AND (bulan=:b OR bulan IS NULL) AND kriteria=:kr
-                 LIMIT 1',
-                [':m'=>$p_mapel,':k'=>$p_kelas,':ta'=>$p_ta,
-                 ':j'=>$p_jenis,':b'=>$p_bulan,':kr'=>$pred]
-            );
-            $desk_siswa = $dk['deskripsi'] ?? '';
+        // Ambil semua deskripsi kriteria untuk mapel ini
+        $all_desk = [];
+        $dkRows = db_query(
+            'SELECT kriteria, deskripsi FROM nilai_deskripsi
+             WHERE mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta
+               AND jenis_raport=:j AND (bulan=:b OR bulan IS NULL)',
+            [':m'=>$p_mapel,':k'=>$p_kelas,':ta'=>$p_ta,
+             ':j'=>$p_jenis,':b'=>$p_bulan]
+        );
+        foreach ($dkRows as $dkr) {
+            $all_desk[$dkr['kriteria']] = $dkr['deskripsi'];
+        }
+
+        // Auto-isi deskripsi: jika kosong ATAU jika isinya adalah deskripsi
+        // kriteria lain (stale — predikat siswa berubah), ganti dengan yang benar
+        $deskripsi_kriteria_lain = array_filter($all_desk, fn($k) => $k !== $pred, ARRAY_FILTER_USE_KEY);
+        $is_stale = $desk_siswa !== '' && in_array($desk_siswa, array_values($deskripsi_kriteria_lain), true);
+        if ($desk_siswa === '' || $is_stale) {
+            $desk_siswa = $all_desk[$pred] ?? '';
         }
 
         db_execute(
@@ -707,6 +715,13 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 /* ── Konfigurasi kriteria dari server ───────────────────────── */
 const KRIT = { A: <?= $krit_a ?>, B: <?= $krit_b ?>, C: <?= $krit_c ?> };
 const JENIS = '<?= e($jenis) ?>';
+/* Deskripsi per kriteria yang tersimpan di server (untuk deteksi stale) */
+const DESK_KRIT = {
+  A: <?= json_encode($deskripsi_kriteria['A'] ?? '') ?>,
+  B: <?= json_encode($deskripsi_kriteria['B'] ?? '') ?>,
+  C: <?= json_encode($deskripsi_kriteria['C'] ?? '') ?>,
+  D: <?= json_encode($deskripsi_kriteria['D'] ?? '') ?>
+};
 
 /**
  * Hitung nilai akhir satu baris siswa
@@ -770,11 +785,43 @@ function hitungRataKelas() {
 }
 
 /**
- * Expand/collapse baris deskripsi siswa
+ * Expand/collapse baris deskripsi siswa.
+ * Saat dibuka: auto-koreksi jika isi textarea adalah deskripsi kriteria LAIN
+ * (stale — predikat siswa berubah sejak terakhir disimpan).
  */
 function toggleDeskSiswa(sid) {
   const row = document.getElementById(`deskRow_${sid}`);
-  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+  if (!row) return;
+
+  const isHidden = row.style.display === 'none' || row.style.display === '';
+  row.style.display = isHidden ? 'table-row' : 'none';
+
+  // Koreksi deskripsi stale hanya saat membuka
+  if (isHidden) {
+    const ta   = document.getElementById(`deskArea_${sid}`);
+    const pred = document.getElementById(`pred_${sid}`)?.textContent.trim();
+    if (!ta || !pred || pred === '—') return;
+
+    const current = ta.value.trim();
+    if (current === '') {
+      // Kosong: isi dari deskripsi kriteria yang sesuai predikat
+      if (DESK_KRIT[pred]) ta.value = DESK_KRIT[pred];
+      return;
+    }
+
+    // Cek apakah isi textarea adalah deskripsi kriteria LAIN (stale)
+    const allKriteria = ['A','B','C','D'];
+    const isStale = allKriteria.some(k => k !== pred && DESK_KRIT[k] && DESK_KRIT[k] === current);
+    if (isStale && DESK_KRIT[pred]) {
+      ta.value = DESK_KRIT[pred];
+      const status = document.getElementById(`deskStatus_${sid}`);
+      if (status) {
+        status.textContent = '⚠ Deskripsi dikoreksi sesuai predikat ' + pred;
+        status.style.color = '#d97706';
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      }
+    }
+  }
 }
 
 /**
