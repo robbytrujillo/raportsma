@@ -278,7 +278,22 @@ if ($kelas_id) {
   <div class="card">
     <div class="card-header">
       <span>Daftar Siswa — Peringkat Kelas</span>
-      <span class="badge badge-orange"><?= ucfirst($jenis) ?></span>
+      <div class="flex items-center gap-2">
+        <span class="badge badge-orange"><?= ucfirst($jenis) ?></span>
+        <?php if (!in_array($role, ['siswa'])): ?>
+        <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+           target="_blank"
+           class="btn btn-sm btn-primary"
+           title="Buka halaman cetak semua raport kelas ini">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Cetak Semua (<?= count($siswa_raport) ?> Siswa)
+        </a>
+        <?php endif; ?>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">

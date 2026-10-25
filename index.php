@@ -69,9 +69,10 @@ $routes = [
     'nilai.import'    => 'pages/nilai/import.php',
 
     // Raport
-    'raport'          => 'pages/raport/index.php',
-    'raport.view'     => 'pages/raport/view.php',
-    'raport.print'    => 'pages/raport/print.php',
+    'raport'             => 'pages/raport/index.php',
+    'raport.view'        => 'pages/raport/view.php',
+    'raport.print'       => 'pages/raport/print.php',
+    'raport.print_kelas' => 'pages/raport/print_kelas.php',
 
     // Profil & Tanda Tangan
     'profil'          => 'pages/profil.php',
@@ -98,7 +99,7 @@ $page_file = $routes[$page] ?? 'pages/404.php';
 // ── Render: login tanpa layout, halaman lain dengan layout ─────
 if ($page === 'login') {
     include __DIR__ . '/' . $page_file;
-} elseif ($page === 'raport.print') {
+} elseif ($page === 'raport.print' || $page === 'raport.print_kelas') {
     // Raport print tanpa layout (fullscreen PDF-like)
     include __DIR__ . '/' . $page_file;
 } else {
