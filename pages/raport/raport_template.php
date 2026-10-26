@@ -522,17 +522,21 @@ $row_no = 0;
       <td style="width:45%;vertical-align:top;text-align:center">
         <!-- Tanggal + Kota -->
         <?php
-          // Tentukan tanggal cetak
-          $tgl_cetak = '';
-          if ($is_bulanan && $bulan) {
-              // Hari terakhir bulan tersebut
-              $tgl_cetak = $sekolah['kota'] . ', '
-                         . date('j') . ' '
-                         . ($bulan_names[$bulan] ?? '')
-                         . ' ' . ($ta['nama'] ? substr($ta['nama'],0,4) : date('Y'));
-          } else {
-              $tgl_cetak = $sekolah['kota'] . ', ' . date('j F Y');
-          }
+          // Tentukan tanggal cetak:
+          // Prioritas: $tgl_override (dari ?tgl= di URL) → fallback ke hari ini
+          // $tgl_override diset oleh print.php / print_kelas.php (format Y-m-d)
+          $tgl_ts = isset($tgl_override) && $tgl_override
+              ? strtotime($tgl_override)
+              : time();
+
+          $bulan_id_map = [
+              1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',
+              7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'
+          ];
+          $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
+              . date('j', $tgl_ts) . ' '
+              . ($bulan_id_map[(int)date('n', $tgl_ts)] ?? date('F', $tgl_ts))
+              . ' ' . date('Y', $tgl_ts);
         ?>
         <div><?= htmlspecialchars($tgl_cetak) ?></div>
         <div>Wali Kelas</div>

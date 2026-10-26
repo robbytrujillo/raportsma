@@ -20,6 +20,10 @@ $ta_id    = (int)($_GET['ta']    ?? 0);
 $kelas_id = (int)($_GET['kelas'] ?? 0);
 $jenis    = $_GET['jenis'] ?? 'semester';
 $bulan    = (int)($_GET['bulan']  ?? 0);
+// Tanggal cetak: dari ?tgl= (format Y-m-d), fallback ke hari ini
+$tgl_raw      = $_GET['tgl'] ?? '';
+$tgl_override = ($tgl_raw && preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_raw))
+    ? $tgl_raw : date('Y-m-d');
 
 if (!$ta_id || !$kelas_id) {
     http_response_code(400); echo 'Parameter ta dan kelas wajib diisi.'; exit;
@@ -259,6 +263,19 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             </div>
         </div>
         <div class="tb-btns">
+            <!-- Date picker tanggal cetak -->
+            <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;white-space:nowrap">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Tgl Cetak:
+                <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
+                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);
+                           color:#fff;padding:4px 8px;border-radius:6px;font-size:.82rem;cursor:pointer"
+                    onchange="applyTglCetak(this.value)">
+            </label>
             <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
                onclick="if(window.opener||history.length<=1){window.close();return false;}"
                style="border-radius:30px">
@@ -387,6 +404,15 @@ foreach ($siswa_list as $rank_idx => $sw):
             });
         }
     });
+
+    /**
+     * Ganti tanggal cetak: reload dengan ?tgl= baru.
+     */
+    function applyTglCetak(val) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tgl', val);
+        window.location.href = url.toString();
+    }
 
     /**
      * Cetak semua siswa — jeda kecil agar browser render sempurna.
