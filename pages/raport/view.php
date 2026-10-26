@@ -31,7 +31,7 @@ if (!$siswa) {
             <p class="page-subtitle"><?= e($siswa['nama_lengkap']) ?> — <?= e($ta['nama'] ?? '') ?></p>
         </div>
         <div class="flex gap-2">
-            <a href="javascript:history.back()" class="btn btn-secondary">← Kembali</a>
+            <a href="javascript:history.back()" class="btn btn-secondary" style="border-radius: 30px">← Kembali</a>
             <a href="index.php?page=raport.print&siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                 target="_blank" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

@@ -47,45 +47,49 @@ if ($role === 'siswa') {
         }
     }
     ?>
-    <div class="page-content">
-      <div class="page-header">
+<div class="page-content">
+    <div class="page-header">
         <div>
-          <h1 class="page-title">Raport Saya</h1>
-          <p class="page-subtitle">Nilai akademik per periode</p>
+            <h1 class="page-title">Raport Saya</h1>
+            <p class="page-subtitle">Nilai akademik per periode</p>
         </div>
-      </div>
+    </div>
 
-      <!-- Info Siswa -->
-      <?php if ($siswa_data): ?>
-      <div class="card mb-5">
+    <!-- Info Siswa -->
+    <?php if ($siswa_data): ?>
+    <div class="card mb-5">
         <div class="card-body">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Nama</div>
-              <div class="font-semibold"><?= e($user['nama_lengkap']) ?></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Nama</div>
+                    <div class="font-semibold"><?= e($user['nama_lengkap']) ?></div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Kelas</div>
+                    <div class="font-semibold"><?= e($siswa_data['nama_kelas'] ?? '-') ?></div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase mb-1">NIS</div>
+                    <div class="font-semibold"><?= e($siswa_data['nis'] ?? '-') ?></div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Peringkat</div>
+                    <div class="font-bold text-orange-600"><?= $rank ?></div>
+                </div>
             </div>
-            <div>
-              <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Kelas</div>
-              <div class="font-semibold"><?= e($siswa_data['nama_kelas'] ?? '-') ?></div>
-            </div>
-            <div>
-              <div class="text-xs font-semibold text-gray-400 uppercase mb-1">NIS</div>
-              <div class="font-semibold"><?= e($siswa_data['nis'] ?? '-') ?></div>
-            </div>
-            <div>
-              <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Peringkat</div>
-              <div class="font-bold text-orange-600"><?= $rank ?></div>
-            </div>
-          </div>
         </div>
-      </div>
-      <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
-      <!-- Daftar Raport Tersedia -->
-      <?php if (empty($raport_list)): ?>
-      <div class="card"><div class="card-body empty-state"><p>Belum ada nilai yang tersedia.</p></div></div>
-      <?php else: ?>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Daftar Raport Tersedia -->
+    <?php if (empty($raport_list)): ?>
+    <div class="card">
+        <div class="card-body empty-state">
+            <p>Belum ada nilai yang tersedia.</p>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <?php foreach ($raport_list as $r): ?>
         <?php
           $rj = $r['jenis_raport'];
@@ -97,59 +101,63 @@ if ($role === 'siswa') {
           $pred_color = $pred_avg==='A' ? 'text-green-600' : ($pred_avg==='B' ? 'text-blue-600' : ($pred_avg==='C' ? 'text-yellow-600' : 'text-red-500'));
         ?>
         <div class="card hover:shadow-md transition-all">
-          <div class="card-body">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <div class="font-bold text-gray-800"><?= e($r['ta_nama']) ?></div>
-                <div class="text-xs text-gray-500">Semester <?= $r['semester'] == 1 ? 'Ganjil' : 'Genap' ?></div>
-              </div>
-              <span class="badge <?= $rjBadge ?>">
-                <?= $rjLabel ?>
-                <?php if ($bulan_nama): ?>— <?= $bulan_nama ?><?php endif; ?>
-              </span>
+            <div class="card-body">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <div class="font-bold text-gray-800"><?= e($r['ta_nama']) ?></div>
+                        <div class="text-xs text-gray-500">Semester <?= $r['semester'] == 1 ? 'Ganjil' : 'Genap' ?>
+                        </div>
+                    </div>
+                    <span class="badge <?= $rjBadge ?>">
+                        <?= $rjLabel ?>
+                        <?php if ($bulan_nama): ?>— <?= $bulan_nama ?><?php endif; ?>
+                    </span>
+                </div>
+                <!-- Rata-rata nilai -->
+                <?php if ($avg > 0): ?>
+                <div class="flex items-center gap-3 mt-3 p-2 rounded-lg" style="background:#fff7ed">
+                    <div>
+                        <div class="text-xs text-gray-400">Rata-rata</div>
+                        <div class="font-bold text-lg text-orange-600"><?= number_format($avg, 2) ?></div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">Predikat</div>
+                        <div class="font-bold text-lg <?= $pred_color ?>"><?= $pred_avg ?></div>
+                    </div>
+                    <div class="ml-auto">
+                        <div class="text-xs text-gray-400">Mapel</div>
+                        <div class="font-semibold text-gray-700"><?= $r['jml_mapel'] ?></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <div class="flex gap-2 mt-3">
+                    <a href="index.php?page=raport.view&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
+                        class="btn btn-secondary btn-sm flex-1 justify-center">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        Lihat
+                    </a>
+                    <a href="index.php?page=raport.print&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
+                        target="_blank" class="btn btn-primary btn-sm flex-1 justify-center">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <polyline points="6 9 6 2 18 2 18 9" />
+                            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                            <rect x="6" y="14" width="12" height="8" />
+                        </svg>
+                        Cetak
+                    </a>
+                </div>
             </div>
-            <!-- Rata-rata nilai -->
-            <?php if ($avg > 0): ?>
-            <div class="flex items-center gap-3 mt-3 p-2 rounded-lg" style="background:#fff7ed">
-              <div>
-                <div class="text-xs text-gray-400">Rata-rata</div>
-                <div class="font-bold text-lg text-orange-600"><?= number_format($avg, 2) ?></div>
-              </div>
-              <div>
-                <div class="text-xs text-gray-400">Predikat</div>
-                <div class="font-bold text-lg <?= $pred_color ?>"><?= $pred_avg ?></div>
-              </div>
-              <div class="ml-auto">
-                <div class="text-xs text-gray-400">Mapel</div>
-                <div class="font-semibold text-gray-700"><?= $r['jml_mapel'] ?></div>
-              </div>
-            </div>
-            <?php endif; ?>
-            <div class="flex gap-2 mt-3">
-              <a href="index.php?page=raport.view&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
-                class="btn btn-secondary btn-sm flex-1 justify-center">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-                Lihat
-              </a>
-              <a href="index.php?page=raport.print&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
-                target="_blank" class="btn btn-primary btn-sm flex-1 justify-center">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <polyline points="6 9 6 2 18 2 18 9"/>
-                  <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-                  <rect x="6" y="14" width="12" height="8"/>
-                </svg>
-                Cetak
-              </a>
-            </div>
-          </div>
         </div>
         <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
     </div>
-    <?php
+    <?php endif; ?>
+</div>
+<?php
     return;
 }
 
@@ -216,137 +224,152 @@ if ($kelas_id) {
 }
 ?>
 <div class="page-content">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Raport Siswa</h1>
-      <p class="page-subtitle">Lihat dan cetak raport siswa</p>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Raport Siswa</h1>
+            <p class="page-subtitle">Lihat dan cetak raport siswa</p>
+        </div>
     </div>
-  </div>
 
-  <!-- Filter -->
-  <form method="GET" action="index.php" class="card mb-5">
-    <div class="card-body">
-      <input type="hidden" name="page" value="raport">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div>
-          <label class="form-label">Tahun Ajaran</label>
-          <select name="ta" class="form-control" onchange="this.form.submit()">
-            <?php foreach ($ta_list as $ta): ?>
-            <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
-              <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-            </option>
-            <?php endforeach; ?>
-          </select>
+    <!-- Filter -->
+    <form method="GET" action="index.php" class="card mb-5">
+        <div class="card-body">
+            <input type="hidden" name="page" value="raport">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div>
+                    <label class="form-label">Tahun Ajaran</label>
+                    <select name="ta" class="form-control" onchange="this.form.submit()">
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Kelas</label>
+                    <select name="kelas" class="form-control">
+                        <option value="">— Pilih Kelas —</option>
+                        <?php foreach ($kelas_list as $k): ?>
+                        <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
+                            <?= e($k['nama_kelas']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Jenis Raport</label>
+                    <select name="jenis" class="form-control" onchange="this.form.submit()">
+                        <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
+                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS — Tengah Semester</option>
+                        <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester (SAS)</option>
+                    </select>
+                </div>
+                <!-- Bulan (tampil hanya jika jenis bulanan atau sts) -->
+                <?php if (in_array($jenis, ['bulanan','sts'])): ?>
+                <div>
+                    <label class="form-label">Bulan</label>
+                    <select name="bulan" class="form-control">
+                        <option value="">— Pilih Bulan —</option>
+                        <?php foreach (BULAN_ID as $bk => $bv): ?>
+                        <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-primary w-full" style="border-radius: 30px">Tampilkan</button>
+                </div>
+            </div>
         </div>
-        <div>
-          <label class="form-label">Kelas</label>
-          <select name="kelas" class="form-control">
-            <option value="">— Pilih Kelas —</option>
-            <?php foreach ($kelas_list as $k): ?>
-            <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>><?= e($k['nama_kelas']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Jenis Raport</label>
-          <select name="jenis" class="form-control" onchange="this.form.submit()">
-            <option value="bulanan"  <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-            <option value="sts"      <?= $jenis==='sts'     ?'selected':'' ?>>STS — Tengah Semester</option>
-            <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester (SAS)</option>
-          </select>
-        </div>
-        <!-- Bulan (tampil hanya jika jenis bulanan atau sts) -->
-        <?php if (in_array($jenis, ['bulanan','sts'])): ?>
-        <div>
-          <label class="form-label">Bulan</label>
-          <select name="bulan" class="form-control">
-            <option value="">— Pilih Bulan —</option>
-            <?php foreach (BULAN_ID as $bk => $bv): ?>
-            <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <?php endif; ?>
-        <div class="flex items-end">
-          <button type="submit" class="btn btn-primary w-full">Tampilkan</button>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 
-  <?php if ($kelas_id && !empty($siswa_raport)): ?>
-  <div class="card">
-    <div class="card-header">
-      <span>Daftar Siswa — Peringkat Kelas</span>
-      <div class="flex items-center gap-2">
-        <span class="badge badge-orange"><?= ucfirst($jenis) ?></span>
-        <?php if (!in_array($role, ['siswa'])): ?>
-        <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
-           target="_blank"
-           class="btn btn-sm btn-primary"
-           title="Buka halaman cetak semua raport kelas ini">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="6 9 6 2 18 2 18 9"/>
-            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8"/>
-          </svg>
-          Cetak Semua (<?= count($siswa_raport) ?> Siswa)
-        </a>
-        <?php endif; ?>
-      </div>
+    <?php if ($kelas_id && !empty($siswa_raport)): ?>
+    <div class="card">
+        <div class="card-header">
+            <span>Daftar Siswa — Peringkat Kelas</span>
+            <div class="flex items-center gap-2">
+                <span class="badge badge-orange"><?= ucfirst($jenis) ?></span>
+                <?php if (!in_array($role, ['siswa'])): ?>
+                <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                    target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
+                    style="border-radius: 30px">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    Cetak Semua (<?= count($siswa_raport) ?> Siswa)
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Peringkat</th>
+                        <th>Nama Siswa</th>
+                        <th>NIS</th>
+                        <th>Mapel Dinilai</th>
+                        <th>Rata-rata</th>
+                        <th>Predikat</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($siswa_raport as $i => $s): ?>
+                    <?php $pred = $s['avg_nilai'] ? get_predikat((float)$s['avg_nilai']) : '-'; ?>
+                    <tr>
+                        <td>
+                            <?php if ($i === 0): ?>
+                            <span class="badge badge-orange">🥇 1</span>
+                            <?php elseif ($i === 1): ?>
+                            <span class="badge badge-gray">🥈 2</span>
+                            <?php elseif ($i === 2): ?>
+                            <span class="badge badge-gray">🥉 3</span>
+                            <?php else: ?>
+                            <span class="font-bold text-gray-400"><?= $i+1 ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="font-semibold"><?= e($s['nama_lengkap']) ?></td>
+                        <td class="text-gray-500"><?= e($s['nis']) ?></td>
+                        <td class="text-center"><?= $s['jml_mapel'] ?></td>
+                        <td class="font-bold text-orange-600"><?= number_format($s['avg_nilai'] ?? 0, 2) ?></td>
+                        <td>
+                            <span
+                                class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
+                                <?= $pred ?>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex gap-1">
+                                <a href="index.php?page=raport.view&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                                    class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat</a>
+                                <a href="index.php?page=raport.print&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                                    target="_blank" class="btn btn-sm btn-primary" style="border-radius: 30px">Cetak</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr><th>Peringkat</th><th>Nama Siswa</th><th>NIS</th><th>Mapel Dinilai</th><th>Rata-rata</th><th>Predikat</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-          <?php foreach ($siswa_raport as $i => $s): ?>
-          <?php $pred = $s['avg_nilai'] ? get_predikat((float)$s['avg_nilai']) : '-'; ?>
-          <tr>
-            <td>
-              <?php if ($i === 0): ?>
-                <span class="badge badge-orange">🥇 1</span>
-              <?php elseif ($i === 1): ?>
-                <span class="badge badge-gray">🥈 2</span>
-              <?php elseif ($i === 2): ?>
-                <span class="badge badge-gray">🥉 3</span>
-              <?php else: ?>
-                <span class="font-bold text-gray-400"><?= $i+1 ?></span>
-              <?php endif; ?>
-            </td>
-            <td class="font-semibold"><?= e($s['nama_lengkap']) ?></td>
-            <td class="text-gray-500"><?= e($s['nis']) ?></td>
-            <td class="text-center"><?= $s['jml_mapel'] ?></td>
-            <td class="font-bold text-orange-600"><?= number_format($s['avg_nilai'] ?? 0, 2) ?></td>
-            <td>
-              <span class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
-                <?= $pred ?>
-              </span>
-            </td>
-            <td>
-              <div class="flex gap-1">
-                <a href="index.php?page=raport.view&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
-                  class="btn btn-sm btn-secondary">Lihat</a>
-                <a href="index.php?page=raport.print&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
-                  target="_blank" class="btn btn-sm btn-primary">Cetak</a>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+    <?php elseif ($kelas_id): ?>
+    <div class="card">
+        <div class="card-body empty-state">
+            <p>Belum ada data nilai untuk filter ini.</p>
+        </div>
     </div>
-  </div>
-  <?php elseif ($kelas_id): ?>
-  <div class="card"><div class="card-body empty-state"><p>Belum ada data nilai untuk filter ini.</p></div></div>
-  <?php else: ?>
-  <div class="card"><div class="card-body empty-state">
-    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-    </svg>
-    <p>Pilih kelas dan jenis raport untuk menampilkan data.</p>
-  </div></div>
-  <?php endif; ?>
+    <?php else: ?>
+    <div class="card">
+        <div class="card-body empty-state">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <p>Pilih kelas dan jenis raport untuk menampilkan data.</p>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>

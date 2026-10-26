@@ -272,406 +272,430 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
 <div class="page-content">
 
-  <!-- ── PAGE HEADER ─────────────────────────────────────────── -->
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Input Nilai Kelas</h1>
-      <p class="page-subtitle">Input nilai seluruh siswa dalam satu kelas sekaligus</p>
+    <!-- ── PAGE HEADER ─────────────────────────────────────────── -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Input Nilai Kelas</h1>
+            <p class="page-subtitle">Input nilai seluruh siswa dalam satu kelas sekaligus</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <a href="index.php?page=nilai.import" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import CSV
+            </a>
+            <a href="index.php?page=nilai" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Kembali ke Daftar
+            </a>
+        </div>
     </div>
-    <div class="flex gap-2 flex-wrap">
-      <a href="index.php?page=nilai.import" class="btn btn-secondary">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Import CSV
-      </a>
-      <a href="index.php?page=nilai" class="btn btn-secondary">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        Kembali ke Daftar
-      </a>
-    </div>
-  </div>
 
-  <!-- ── STEP 1: PILIH FILTER ────────────────────────────────── -->
-  <div class="card mb-5">
-    <div class="card-header">
-      <span class="flex items-center gap-2">
-        <span style="background:#f97316;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700">1</span>
-        Pilih Mata Pelajaran, Kelas &amp; Periode
-      </span>
-    </div>
-    <div class="card-body">
-      <form method="GET" action="index.php" id="filterForm">
-        <input type="hidden" name="page" value="nilai.bulk">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <!-- Tahun Ajaran -->
-          <div class="form-group mb-0">
-            <label class="form-label">Tahun Ajaran</label>
-            <select name="ta" class="form-control" onchange="this.form.submit()">
-              <?php foreach ($ta_list as $ta): ?>
-              <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
-                <?= e($ta['nama']) ?>/<?= $ta['semester'] ?>
-              </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <!-- Kelas -->
-          <div class="form-group mb-0">
-            <label class="form-label">Kelas</label>
-            <select name="kelas" class="form-control" onchange="this.form.submit()">
-              <option value="">— Pilih —</option>
-              <?php foreach ($kelas_list as $k): ?>
-              <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>><?= e($k['nama_kelas']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <!-- Mapel -->
-          <div class="form-group mb-0">
-            <label class="form-label">Mata Pelajaran</label>
-            <select name="mapel" class="form-control" onchange="this.form.submit()">
-              <option value="">— Pilih —</option>
-              <?php foreach ($mapel_list as $m): ?>
-              <option value="<?= $m['id'] ?>" <?= $m['id']==$mapel_id?'selected':'' ?>><?= e($m['nama_mapel']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <!-- Jenis -->
-          <div class="form-group mb-0">
-            <label class="form-label">Jenis</label>
-            <select name="jenis" class="form-control" onchange="this.form.submit()">
-              <?php foreach ($jenis_opts as $jk => $jv): ?>
-              <option value="<?= $jk ?>" <?= $jenis===$jk?'selected':'' ?>><?= $jv ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <!-- Bulan (kecuali semester) -->
-          <?php if ($jenis !== 'semester'): ?>
-          <div class="form-group mb-0">
-            <label class="form-label">Bulan</label>
-            <select name="bulan" class="form-control" onchange="this.form.submit()">
-              <option value="">— Pilih —</option>
-              <?php foreach ($bulan_opts as $bk => $bv): ?>
-              <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <?php else: ?>
-          <input type="hidden" name="bulan" value="0">
-          <?php endif; ?>
-          <!-- Tombol -->
-          <div class="form-group mb-0 flex items-end">
-            <button type="submit" class="btn btn-primary w-full">Tampilkan</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <?php if (!$kelas_id || !$mapel_id): ?>
-  <!-- Belum pilih filter -->
-  <div class="card">
-    <div class="card-body empty-state">
-      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="mx-auto mb-3">
-        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-      </svg>
-      <p>Pilih <strong>Kelas</strong> dan <strong>Mata Pelajaran</strong> untuk mulai input nilai.</p>
-    </div>
-  </div>
-
-  <?php else: ?>
-
-  <!-- ── INFO HEADER (seperti format Excel) ──────────────────── -->
-  <div class="card mb-4" style="border-left:4px solid #f97316">
-    <div class="card-body py-3">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Mata Pelajaran</span>
-          <span class="font-bold text-gray-800">: <?= e($mapel_info['nama_mapel'] ?? '-') ?></span>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Kelas</span>
-          <span class="font-bold text-gray-800">: <?= e($kelas_info['nama_kelas'] ?? '-') ?></span>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Guru Mata Pelajaran</span>
-          <span class="font-bold text-orange-600">: <?= e($guru_pengampu['nama_lengkap'] ?? $user['nama_lengkap']) ?></span>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Jenis Raport</span>
-          <span class="font-semibold">: <?= e($jenis_opts[$jenis] ?? $jenis) ?></span>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Periode</span>
-          <span class="font-semibold">: <?= $jenis==='semester' ? 'Akhir Semester' : e($bulan_opts[$bulan] ?? '—') ?></span>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-gray-400 w-36 flex-shrink-0">Jumlah Siswa</span>
-          <span class="font-semibold">: <?= count($siswa_list) ?> siswa</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── STEP 2: FORM INPUT ──────────────────────────────────── -->
-  <form method="POST" action="index.php?page=nilai.bulk" id="formBulk">
-    <?= csrf_field() ?>
-    <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
-    <input type="hidden" name="kelas_id"        value="<?= $kelas_id ?>">
-    <input type="hidden" name="mapel_id"        value="<?= $mapel_id ?>">
-    <input type="hidden" name="jenis_raport"    value="<?= e($jenis) ?>">
-    <input type="hidden" name="bulan"           value="<?= $bulan ?>">
-    <?php foreach ($siswa_list as $s): ?>
-    <input type="hidden" name="siswa_ids[]" value="<?= $s['id'] ?>">
-    <?php endforeach; ?>
-
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-
-      <!-- ── KIRI: Tabel Nilai Siswa ─────────────────────────── -->
-      <div class="xl:col-span-2">
-        <div class="card">
-          <div class="card-header">
+    <!-- ── STEP 1: PILIH FILTER ────────────────────────────────── -->
+    <div class="card mb-5">
+        <div class="card-header">
             <span class="flex items-center gap-2">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-              Nilai Siswa
+                <span
+                    style="background:#f97316;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700">1</span>
+                Pilih Mata Pelajaran, Kelas &amp; Periode
             </span>
-            <div class="flex gap-2">
-              <button type="button" onclick="isiSemuaRata()" class="btn btn-sm btn-secondary">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-                Isi Rata-rata
-              </button>
-              <button type="submit" class="btn btn-sm btn-primary">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                  <polyline points="17 21 17 13 7 13 7 21"/>
-                </svg>
-                Simpan Semua
-              </button>
-            </div>
-          </div>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="index.php" id="filterForm">
+                <input type="hidden" name="page" value="nilai.bulk">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <!-- Tahun Ajaran -->
+                    <div class="form-group mb-0">
+                        <label class="form-label">Tahun Ajaran</label>
+                        <select name="ta" class="form-control" onchange="this.form.submit()">
+                            <?php foreach ($ta_list as $ta): ?>
+                            <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
+                                <?= e($ta['nama']) ?>/<?= $ta['semester'] ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <!-- Kelas -->
+                    <div class="form-group mb-0">
+                        <label class="form-label">Kelas</label>
+                        <select name="kelas" class="form-control" onchange="this.form.submit()">
+                            <option value="">— Pilih —</option>
+                            <?php foreach ($kelas_list as $k): ?>
+                            <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
+                                <?= e($k['nama_kelas']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <!-- Mapel -->
+                    <div class="form-group mb-0">
+                        <label class="form-label">Mata Pelajaran</label>
+                        <select name="mapel" class="form-control" onchange="this.form.submit()">
+                            <option value="">— Pilih —</option>
+                            <?php foreach ($mapel_list as $m): ?>
+                            <option value="<?= $m['id'] ?>" <?= $m['id']==$mapel_id?'selected':'' ?>>
+                                <?= e($m['nama_mapel']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <!-- Jenis -->
+                    <div class="form-group mb-0">
+                        <label class="form-label">Jenis</label>
+                        <select name="jenis" class="form-control" onchange="this.form.submit()">
+                            <?php foreach ($jenis_opts as $jk => $jv): ?>
+                            <option value="<?= $jk ?>" <?= $jenis===$jk?'selected':'' ?>><?= $jv ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <!-- Bulan (kecuali semester) -->
+                    <?php if ($jenis !== 'semester'): ?>
+                    <div class="form-group mb-0">
+                        <label class="form-label">Bulan</label>
+                        <select name="bulan" class="form-control" onchange="this.form.submit()">
+                            <option value="">— Pilih —</option>
+                            <?php foreach ($bulan_opts as $bk => $bv): ?>
+                            <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php else: ?>
+                    <input type="hidden" name="bulan" value="0">
+                    <?php endif; ?>
+                    <!-- Tombol -->
+                    <div class="form-group mb-0 flex items-end">
+                        <button type="submit" class="btn btn-primary w-full"
+                            style="border-radius: 30px">Tampilkan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
-          <div class="table-container">
-            <table class="data-table" id="tblNilai">
-              <thead>
-                <tr>
-                  <th style="width:32px">No</th>
-                  <th>Nama Siswa</th>
-                  <?php if ($jenis === 'bulanan'): ?>
-                  <th style="width:68px">NH1</th>
-                  <th style="width:68px">NH2</th>
-                  <th style="width:68px">NH3</th>
-                  <th style="width:68px">Tugas</th>
-                  <?php elseif ($jenis === 'sts'): ?>
-                  <th style="width:90px">Nilai STS</th>
-                  <?php else: ?>
-                  <th style="width:90px">Nilai SAS</th>
-                  <?php endif; ?>
-                  <th style="width:72px">
-                    <span class="text-orange-600">Nilai</span>
-                  </th>
-                  <th style="width:42px">Pred.</th>
-                  <th style="width:44px" title="Aksi">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-                    </svg>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if (empty($siswa_list)): ?>
-                <tr><td colspan="10" class="text-center py-8 text-gray-400">Tidak ada siswa di kelas ini.</td></tr>
-                <?php endif; ?>
-                <?php foreach ($siswa_list as $i => $s): ?>
-                <?php
+    <?php if (!$kelas_id || !$mapel_id): ?>
+    <!-- Belum pilih filter -->
+    <div class="card">
+        <div class="card-body empty-state">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                class="mx-auto mb-3">
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+            </svg>
+            <p>Pilih <strong>Kelas</strong> dan <strong>Mata Pelajaran</strong> untuk mulai input nilai.</p>
+        </div>
+    </div>
+
+    <?php else: ?>
+
+    <!-- ── INFO HEADER (seperti format Excel) ──────────────────── -->
+    <div class="card mb-4" style="border-left:4px solid #f97316">
+        <div class="card-body py-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Mata Pelajaran</span>
+                    <span class="font-bold text-gray-800">: <?= e($mapel_info['nama_mapel'] ?? '-') ?></span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Kelas</span>
+                    <span class="font-bold text-gray-800">: <?= e($kelas_info['nama_kelas'] ?? '-') ?></span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Guru Mata Pelajaran</span>
+                    <span class="font-bold text-orange-600">:
+                        <?= e($guru_pengampu['nama_lengkap'] ?? $user['nama_lengkap']) ?></span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Jenis Raport</span>
+                    <span class="font-semibold">: <?= e($jenis_opts[$jenis] ?? $jenis) ?></span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Periode</span>
+                    <span class="font-semibold">:
+                        <?= $jenis==='semester' ? 'Akhir Semester' : e($bulan_opts[$bulan] ?? '—') ?></span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="text-gray-400 w-36 flex-shrink-0">Jumlah Siswa</span>
+                    <span class="font-semibold">: <?= count($siswa_list) ?> siswa</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 2: FORM INPUT ──────────────────────────────────── -->
+    <form method="POST" action="index.php?page=nilai.bulk" id="formBulk">
+        <?= csrf_field() ?>
+        <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
+        <input type="hidden" name="kelas_id" value="<?= $kelas_id ?>">
+        <input type="hidden" name="mapel_id" value="<?= $mapel_id ?>">
+        <input type="hidden" name="jenis_raport" value="<?= e($jenis) ?>">
+        <input type="hidden" name="bulan" value="<?= $bulan ?>">
+        <?php foreach ($siswa_list as $s): ?>
+        <input type="hidden" name="siswa_ids[]" value="<?= $s['id'] ?>">
+        <?php endforeach; ?>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+
+            <!-- ── KIRI: Tabel Nilai Siswa ─────────────────────────── -->
+            <div class="xl:col-span-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="flex items-center gap-2">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                                <path d="M16 3.13a4 4 0 010 7.75" />
+                            </svg>
+                            Nilai Siswa
+                        </span>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="isiSemuaRata()" class="btn btn-sm btn-secondary"
+                                style="border-radius: 30px">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                </svg>
+                                Isi Rata-rata
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 30px">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                </svg>
+                                Simpan Semua
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="tblNilai">
+                            <thead>
+                                <tr>
+                                    <th style="width:32px">No</th>
+                                    <th>Nama Siswa</th>
+                                    <?php if ($jenis === 'bulanan'): ?>
+                                    <th style="width:68px">NH1</th>
+                                    <th style="width:68px">NH2</th>
+                                    <th style="width:68px">NH3</th>
+                                    <th style="width:68px">Tugas</th>
+                                    <?php elseif ($jenis === 'sts'): ?>
+                                    <th style="width:90px">Nilai STS</th>
+                                    <?php else: ?>
+                                    <th style="width:90px">Nilai SAS</th>
+                                    <?php endif; ?>
+                                    <th style="width:72px">
+                                        <span class="text-orange-600">Nilai</span>
+                                    </th>
+                                    <th style="width:42px">Pred.</th>
+                                    <th style="width:44px" title="Aksi">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="1" />
+                                            <circle cx="19" cy="12" r="1" />
+                                            <circle cx="5" cy="12" r="1" />
+                                        </svg>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($siswa_list)): ?>
+                                <tr>
+                                    <td colspan="10" class="text-center py-8 text-gray-400">Tidak ada siswa di kelas
+                                        ini.</td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php foreach ($siswa_list as $i => $s): ?>
+                                <?php
                   $nv  = $existing_nilai[$s['id']] ?? null;
                   $na  = (float)($nv['nilai_akhir'] ?? 0);
                   $pred = $nv['predikat'] ?? '';
                   $predClass = $pred==='A'?'text-green-600':($pred==='B'?'text-blue-600':($pred==='C'?'text-yellow-600':'text-red-500'));
                 ?>
-                <tr id="row_<?= $s['id'] ?>" class="hover:bg-orange-50">
-                  <td class="text-gray-400 text-xs text-center"><?= $i+1 ?></td>
-                  <td>
-                    <div class="font-semibold text-sm"><?= e($s['nama_lengkap']) ?></div>
-                    <div class="text-xs text-gray-400"><?= e($s['nis']) ?></div>
-                  </td>
+                                <tr id="row_<?= $s['id'] ?>" class="hover:bg-orange-50">
+                                    <td class="text-gray-400 text-xs text-center"><?= $i+1 ?></td>
+                                    <td>
+                                        <div class="font-semibold text-sm"><?= e($s['nama_lengkap']) ?></div>
+                                        <div class="text-xs text-gray-400"><?= e($s['nis']) ?></div>
+                                    </td>
 
-                  <?php if ($jenis === 'bulanan'): ?>
-                  <td>
-                    <input type="number" name="h1_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_harian_1'] ?? 0 ?>"
-                      class="nilai-input form-control text-center px-1" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="h1" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
-                  <td>
-                    <input type="number" name="h2_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_harian_2'] ?? 0 ?>"
-                      class="nilai-input form-control text-center px-1" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="h2" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
-                  <td>
-                    <input type="number" name="h3_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_harian_3'] ?? 0 ?>"
-                      class="nilai-input form-control text-center px-1" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="h3" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
-                  <td>
-                    <input type="number" name="tugas_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_tugas'] ?? 0 ?>"
-                      class="nilai-input form-control text-center px-1" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="tugas" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
+                                    <?php if ($jenis === 'bulanan'): ?>
+                                    <td>
+                                        <input type="number" name="h1_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_harian_1'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center px-1"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="h1" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="h2_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_harian_2'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center px-1"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="h2" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="h3_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_harian_3'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center px-1"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="h3" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="tugas_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_tugas'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center px-1"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="tugas" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
 
-                  <?php elseif ($jenis === 'sts'): ?>
-                  <td>
-                    <input type="number" name="sts_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_sts'] ?? 0 ?>"
-                      class="nilai-input form-control text-center" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="sts" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
+                                    <?php elseif ($jenis === 'sts'): ?>
+                                    <td>
+                                        <input type="number" name="sts_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_sts'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="sts" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
 
-                  <?php else: ?>
-                  <td>
-                    <input type="number" name="sas_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                      value="<?= $nv['nilai_sas'] ?? 0 ?>"
-                      class="nilai-input form-control text-center" style="padding:4px 2px;font-size:.8rem"
-                      data-sid="<?= $s['id'] ?>" data-field="sas" onchange="hitungBaris(<?= $s['id'] ?>)">
-                  </td>
-                  <?php endif; ?>
+                                    <?php else: ?>
+                                    <td>
+                                        <input type="number" name="sas_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_sas'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center"
+                                            style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
+                                            data-field="sas" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
+                                    <?php endif; ?>
 
-                  <!-- Nilai Akhir (readonly, dihitung JS) -->
-                  <td>
-                    <input type="number" id="na_<?= $s['id'] ?>"
-                      value="<?= $na > 0 ? $na : '' ?>"
-                      class="form-control text-center font-bold text-orange-600"
-                      style="padding:4px 2px;font-size:.85rem;background:#fff7ed;border-color:#fed7aa"
-                      readonly tabindex="-1">
-                  </td>
+                                    <!-- Nilai Akhir (readonly, dihitung JS) -->
+                                    <td>
+                                        <input type="number" id="na_<?= $s['id'] ?>" value="<?= $na > 0 ? $na : '' ?>"
+                                            class="form-control text-center font-bold text-orange-600"
+                                            style="padding:4px 2px;font-size:.85rem;background:#fff7ed;border-color:#fed7aa"
+                                            readonly tabindex="-1">
+                                    </td>
 
-                  <!-- Predikat -->
-                  <td class="text-center">
-                    <span id="pred_<?= $s['id'] ?>"
-                      class="font-bold <?= $predClass ?>"
-                      style="font-size:.9rem">
-                      <?= $pred ?: '—' ?>
-                    </span>
-                  </td>
+                                    <!-- Predikat -->
+                                    <td class="text-center">
+                                        <span id="pred_<?= $s['id'] ?>" class="font-bold <?= $predClass ?>"
+                                            style="font-size:.9rem">
+                                            <?= $pred ?: '—' ?>
+                                        </span>
+                                    </td>
 
-                  <!-- Tombol deskripsi -->
-                  <td class="text-center">
-                    <button type="button"
-                      onclick="toggleDeskSiswa(<?= $s['id'] ?>)"
-                      class="btn btn-sm btn-secondary" style="padding:3px 7px"
-                      title="Deskripsi">
-                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-                <!-- Baris deskripsi siswa (tersembunyi, expand via tombol) -->
-                <tr id="deskRow_<?= $s['id'] ?>" style="display:none;background:#fffbf5">
-                  <td colspan="<?= $jenis==='bulanan'?10:8 ?>" style="padding:8px 12px">
-                    <div class="flex flex-col gap-2">
-                      <div class="flex items-center gap-2">
-                        <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">
-                          Deskripsi — <?= e($s['nama_lengkap']) ?>:
-                        </label>
-                        <!-- Status simpan -->
-                        <span id="deskStatus_<?= $s['id'] ?>" class="text-xs text-gray-400"></span>
-                      </div>
-                      <div class="flex items-start gap-2">
-                        <!-- textarea: cegah Enter/S memicu submit form -->
-                        <textarea
-                          id="deskArea_<?= $s['id'] ?>"
-                          name="deskripsi_<?= $s['id'] ?>"
-                          rows="3"
-                          class="form-control text-sm flex-1"
-                          placeholder="Kosongkan untuk menggunakan deskripsi predikat otomatis..."
-                          onkeydown="return event.key !== 'Enter' || (event.shiftKey ? true : false)"
-                        ><?= e($nv['deskripsi'] ?? '') ?></textarea>
-                        <!-- Tombol simpan deskripsi (AJAX-free: langsung set hidden field + feedback) -->
-                        <div class="flex flex-col gap-1">
-                          <button type="button"
-                            class="btn btn-sm btn-primary"
-                            style="min-width:70px"
-                            onclick="simpanDeskripsi(<?= $s['id'] ?>)">
-                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                              <polyline points="17 21 17 13 7 13 7 21"/>
-                            </svg>
-                            Simpan
-                          </button>
-                          <button type="button"
-                            class="btn btn-sm btn-secondary"
-                            style="min-width:70px"
-                            onclick="toggleDeskSiswa(<?= $s['id'] ?>)">
-                            Tutup
-                          </button>
-                        </div>
-                      </div>
+                                    <!-- Tombol deskripsi -->
+                                    <td class="text-center">
+                                        <button type="button" onclick="toggleDeskSiswa(<?= $s['id'] ?>)"
+                                            class="btn btn-sm btn-secondary" style="padding:3px 7px" title="Deskripsi">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor"
+                                                stroke-width="2" viewBox="0 0 24 24">
+                                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                                <line x1="16" y1="13" x2="8" y2="13" />
+                                                <line x1="16" y1="17" x2="8" y2="17" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Baris deskripsi siswa (tersembunyi, expand via tombol) -->
+                                <tr id="deskRow_<?= $s['id'] ?>" style="display:none;background:#fffbf5">
+                                    <td colspan="<?= $jenis==='bulanan'?10:8 ?>" style="padding:8px 12px">
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">
+                                                    Deskripsi — <?= e($s['nama_lengkap']) ?>:
+                                                </label>
+                                                <!-- Status simpan -->
+                                                <span id="deskStatus_<?= $s['id'] ?>"
+                                                    class="text-xs text-gray-400"></span>
+                                            </div>
+                                            <div class="flex items-start gap-2">
+                                                <!-- textarea: cegah Enter/S memicu submit form -->
+                                                <textarea id="deskArea_<?= $s['id'] ?>" name="deskripsi_<?= $s['id'] ?>"
+                                                    rows="3" class="form-control text-sm flex-1"
+                                                    placeholder="Kosongkan untuk menggunakan deskripsi predikat otomatis..."
+                                                    onkeydown="return event.key !== 'Enter' || (event.shiftKey ? true : false)"><?= e($nv['deskripsi'] ?? '') ?></textarea>
+                                                <!-- Tombol simpan deskripsi (AJAX-free: langsung set hidden field + feedback) -->
+                                                <div class="flex flex-col gap-1">
+                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                        style="min-width:70px; border-radius: 30px;"
+                                                        onclick="simpanDeskripsi(<?= $s['id'] ?>)">
+                                                        <svg width="11" height="11" fill="none" stroke="currentColor"
+                                                            stroke-width="2.5" viewBox="0 0 24 24">
+                                                            <path
+                                                                d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                                            <polyline points="17 21 17 13 7 13 7 21" />
+                                                        </svg>
+                                                        Simpan
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-secondary"
+                                                        style="min-width:70px; border-radius: 30px;"
+                                                        onclick="toggleDeskSiswa(<?= $s['id'] ?>)">
+                                                        Tutup
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="catatan_<?= $s['id'] ?>"
+                                            value="<?= e($nv['catatan'] ?? '') ?>">
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                            <?php if (!empty($siswa_list)): ?>
+                            <tfoot>
+                                <tr style="background:#fff7ed;font-weight:700">
+                                    <td colspan="<?= $jenis==='bulanan'?6:3 ?>" class="text-right px-3 py-2 text-sm">
+                                        Rata-rata Kelas:</td>
+                                    <td class="text-center text-orange-600" id="rataKelas">—</td>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tfoot>
+                            <?php endif; ?>
+                        </table>
                     </div>
-                    <input type="hidden" name="catatan_<?= $s['id'] ?>" value="<?= e($nv['catatan'] ?? '') ?>">
-                  </td>
-                </tr>
-                <?php endforeach; ?>
-              </tbody>
-              <?php if (!empty($siswa_list)): ?>
-              <tfoot>
-                <tr style="background:#fff7ed;font-weight:700">
-                  <td colspan="<?= $jenis==='bulanan'?6:3 ?>" class="text-right px-3 py-2 text-sm">Rata-rata Kelas:</td>
-                  <td class="text-center text-orange-600" id="rataKelas">—</td>
-                  <td colspan="3"></td>
-                </tr>
-              </tfoot>
-              <?php endif; ?>
-            </table>
-          </div>
 
-          <!-- Tombol simpan bawah -->
-          <div class="p-4 border-t border-gray-100 flex justify-end">
-            <button type="submit" class="btn btn-primary">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-              </svg>
-              Simpan Semua Nilai
-            </button>
-          </div>
-        </div>
-      </div>
+                    <!-- Tombol simpan bawah -->
+                    <div class="p-4 border-t border-gray-100 flex justify-end">
+                        <button type="submit" class="btn btn-primary" style="border-radius: 30px">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                            </svg>
+                            Simpan Semua Nilai
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-      <!-- ── KANAN: Deskripsi Kriteria ───────────────────────── -->
-      <div class="xl:col-span-1">
-        <div class="card" style="position:sticky;top:80px">
-          <div class="card-header">
-            <span class="flex items-center gap-2">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-              Deskripsi per Kriteria
-            </span>
-            <span class="text-xs text-gray-400">Otomatis ke deskripsi siswa</span>
-          </div>
-          <div class="card-body" style="padding:12px">
-            <p class="text-xs text-gray-400 mb-3">
-              Isi deskripsi untuk setiap predikat. Saat simpan, siswa akan otomatis mendapat
-              deskripsi sesuai predikatnya (jika deskripsi siswa dikosongkan).
-            </p>
+            <!-- ── KANAN: Deskripsi Kriteria ───────────────────────── -->
+            <div class="xl:col-span-1">
+                <div class="card" style="position:sticky;top:80px">
+                    <div class="card-header">
+                        <span class="flex items-center gap-2">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            Deskripsi per Kriteria
+                        </span>
+                        <span class="text-xs text-gray-400">Otomatis ke deskripsi siswa</span>
+                    </div>
+                    <div class="card-body" style="padding:12px">
+                        <p class="text-xs text-gray-400 mb-3">
+                            Isi deskripsi untuk setiap predikat. Saat simpan, siswa akan otomatis mendapat
+                            deskripsi sesuai predikatnya (jika deskripsi siswa dikosongkan).
+                        </p>
 
-            <?php
+                        <?php
             $krit_data = [
               'A' => ['label'=>'Predikat A', 'range'=>"≥{$krit_a}", 'color'=>'green', 'border'=>'#22c55e', 'bg'=>'#f0fdf4'],
               'B' => ['label'=>'Predikat B', 'range'=>"≥{$krit_b}", 'color'=>'blue',  'border'=>'#3b82f6', 'bg'=>'#eff6ff'],
@@ -680,118 +704,129 @@ $ready = $kelas_id && $mapel_id && $ta_id;
             ];
             foreach ($krit_data as $kr => $kd):
             ?>
-            <div style="border-left:3px solid <?= $kd['border'] ?>;background:<?= $kd['bg'] ?>;
+                        <div style="border-left:3px solid <?= $kd['border'] ?>;background:<?= $kd['bg'] ?>;
                         border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:10px">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-bold text-sm" style="color:<?= $kd['border'] ?>"><?= $kd['label'] ?></span>
-                <span class="text-xs text-gray-400"><?= $kd['range'] ?></span>
-              </div>
-              <textarea name="desk_<?= $kr ?>" id="deskKrit_<?= $kr ?>" rows="3"
-                class="form-control text-xs" style="font-size:.8rem;line-height:1.5"
-                placeholder="Masukkan deskripsi untuk siswa dengan predikat <?= $kr ?>..."
-                oninput="updateDeskPreview('<?= $kr ?>', this.value)"><?= e($deskripsi_kriteria[$kr] ?? '') ?></textarea>
-              <button type="button" class="btn btn-sm btn-secondary mt-1 w-full text-xs"
-                onclick="applyDeskToAll('<?= $kr ?>', document.getElementById('deskKrit_<?= $kr ?>').value)">
-                Terapkan ke semua siswa predikat <?= $kr ?>
-              </button>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm"
+                                    style="color:<?= $kd['border'] ?>"><?= $kd['label'] ?></span>
+                                <span class="text-xs text-gray-400"><?= $kd['range'] ?></span>
+                            </div>
+                            <textarea name="desk_<?= $kr ?>" id="deskKrit_<?= $kr ?>" rows="3"
+                                class="form-control text-xs" style="font-size:.8rem;line-height:1.5"
+                                placeholder="Masukkan deskripsi untuk siswa dengan predikat <?= $kr ?>..."
+                                oninput="updateDeskPreview('<?= $kr ?>', this.value)"><?= e($deskripsi_kriteria[$kr] ?? '') ?></textarea>
+                            <button type="button" class="btn btn-sm btn-secondary mt-1 w-full text-xs"
+                                onclick="applyDeskToAll('<?= $kr ?>', document.getElementById('deskKrit_<?= $kr ?>').value)">
+                                Terapkan ke semua siswa predikat <?= $kr ?>
+                            </button>
+                        </div>
+                        <?php endforeach; ?>
+
+                        <!-- Tombol sinkronkan semua deskripsi sekaligus -->
+                        <button type="button" class="btn btn-primary w-full mt-1 text-xs"
+                            style="font-size:.8rem; border-radius: 30px" onclick="sinkronSemuaDeskripsi()">
+                            🔄 Sinkronkan Semua Deskripsi
+                        </button>
+                        <p class="text-xs text-gray-400 mt-1" style="font-size:.73rem">
+                            Overwrite deskripsi semua siswa dari kolom kanan sesuai predikat masing-masing.
+                        </p>
+
+                        <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-500">
+                            <strong>Kriteria nilai:</strong><br>
+                            A: ≥<?= (int)$krit_a ?> &nbsp; B: ≥<?= (int)$krit_b ?> &nbsp;
+                            C: ≥<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <?php endforeach; ?>
 
-            <!-- Tombol sinkronkan semua deskripsi sekaligus -->
-            <button type="button" class="btn btn-primary w-full mt-1 text-xs"
-              style="font-size:.8rem"
-              onclick="sinkronSemuaDeskripsi()">
-              🔄 Sinkronkan Semua Deskripsi
-            </button>
-            <p class="text-xs text-gray-400 mt-1" style="font-size:.73rem">
-              Overwrite deskripsi semua siswa dari kolom kanan sesuai predikat masing-masing.
-            </p>
-
-            <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-500">
-              <strong>Kriteria nilai:</strong><br>
-              A: ≥<?= (int)$krit_a ?> &nbsp; B: ≥<?= (int)$krit_b ?> &nbsp;
-              C: ≥<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /.grid -->
-  </form>
-  <?php endif; ?>
+        </div><!-- /.grid -->
+    </form>
+    <?php endif; ?>
 </div>
 
 <script>
 /* ── Konfigurasi kriteria dari server ───────────────────────── */
-const KRIT = { A: <?= $krit_a ?>, B: <?= $krit_b ?>, C: <?= $krit_c ?> };
+const KRIT = {
+    A: <?= $krit_a ?>,
+    B: <?= $krit_b ?>,
+    C: <?= $krit_c ?>
+};
 const JENIS = '<?= e($jenis) ?>';
 /* Deskripsi per kriteria yang tersimpan di server (untuk deteksi stale) */
 const DESK_KRIT = {
-  A: <?= json_encode($deskripsi_kriteria['A'] ?? '') ?>,
-  B: <?= json_encode($deskripsi_kriteria['B'] ?? '') ?>,
-  C: <?= json_encode($deskripsi_kriteria['C'] ?? '') ?>,
-  D: <?= json_encode($deskripsi_kriteria['D'] ?? '') ?>
+    A: <?= json_encode($deskripsi_kriteria['A'] ?? '') ?>,
+    B: <?= json_encode($deskripsi_kriteria['B'] ?? '') ?>,
+    C: <?= json_encode($deskripsi_kriteria['C'] ?? '') ?>,
+    D: <?= json_encode($deskripsi_kriteria['D'] ?? '') ?>
 };
 
 /**
  * Hitung nilai akhir satu baris siswa
  */
 function hitungBaris(sid) {
-  let na = 0;
-  if (JENIS === 'bulanan') {
-    const h1  = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value)    || 0;
-    const h2  = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value)    || 0;
-    const h3  = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value)    || 0;
-    const tug = parseFloat(document.querySelector(`[name="tugas_${sid}"]`)?.value) || 0;
-    const rata = (h1 + h2 + h3) / 3;
-    na = (rata * 0.7) + (tug * 0.3);
-  } else if (JENIS === 'sts') {
-    na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
-  } else {
-    na = parseFloat(document.querySelector(`[name="sas_${sid}"]`)?.value) || 0;
-  }
-  na = Math.round(na * 100) / 100;
+    let na = 0;
+    if (JENIS === 'bulanan') {
+        const h1 = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value) || 0;
+        const h2 = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value) || 0;
+        const h3 = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value) || 0;
+        const tug = parseFloat(document.querySelector(`[name="tugas_${sid}"]`)?.value) || 0;
+        const rata = (h1 + h2 + h3) / 3;
+        na = (rata * 0.7) + (tug * 0.3);
+    } else if (JENIS === 'sts') {
+        na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
+    } else {
+        na = parseFloat(document.querySelector(`[name="sas_${sid}"]`)?.value) || 0;
+    }
+    na = Math.round(na * 100) / 100;
 
-  // Tampilkan nilai akhir
-  const naEl = document.getElementById(`na_${sid}`);
-  if (naEl) naEl.value = na > 0 ? na.toFixed(2) : '';
+    // Tampilkan nilai akhir
+    const naEl = document.getElementById(`na_${sid}`);
+    if (naEl) naEl.value = na > 0 ? na.toFixed(2) : '';
 
-  // Predikat
-  let pred = 'D';
-  if      (na >= KRIT.A) pred = 'A';
-  else if (na >= KRIT.B) pred = 'B';
-  else if (na >= KRIT.C) pred = 'C';
+    // Predikat
+    let pred = 'D';
+    if (na >= KRIT.A) pred = 'A';
+    else if (na >= KRIT.B) pred = 'B';
+    else if (na >= KRIT.C) pred = 'C';
 
-  const predEl = document.getElementById(`pred_${sid}`);
-  if (predEl) {
-    predEl.textContent = na > 0 ? pred : '—';
-    predEl.className = 'font-bold ' + {
-      A:'text-green-600', B:'text-blue-600', C:'text-yellow-600', D:'text-red-500'
-    }[pred];
-  }
+    const predEl = document.getElementById(`pred_${sid}`);
+    if (predEl) {
+        predEl.textContent = na > 0 ? pred : '—';
+        predEl.className = 'font-bold ' + {
+            A: 'text-green-600',
+            B: 'text-blue-600',
+            C: 'text-yellow-600',
+            D: 'text-red-500'
+        } [pred];
+    }
 
-  // Highlight baris jika 100
-  const row = document.getElementById(`row_${sid}`);
-  if (row) {
-    row.style.color = na === 100 ? '#ea580c' : '';
-    row.style.fontWeight = na === 100 ? '700' : '';
-  }
+    // Highlight baris jika 100
+    const row = document.getElementById(`row_${sid}`);
+    if (row) {
+        row.style.color = na === 100 ? '#ea580c' : '';
+        row.style.fontWeight = na === 100 ? '700' : '';
+    }
 
-  hitungRataKelas();
+    hitungRataKelas();
 }
 
 /**
  * Hitung rata-rata kelas dari semua nilai akhir
  */
 function hitungRataKelas() {
-  const inputs = document.querySelectorAll('[id^="na_"]');
-  let sum = 0, count = 0;
-  inputs.forEach(el => {
-    const v = parseFloat(el.value);
-    if (!isNaN(v) && v > 0) { sum += v; count++; }
-  });
-  const rataEl = document.getElementById('rataKelas');
-  if (rataEl) rataEl.textContent = count > 0 ? (sum/count).toFixed(2) : '—';
+    const inputs = document.querySelectorAll('[id^="na_"]');
+    let sum = 0,
+        count = 0;
+    inputs.forEach(el => {
+        const v = parseFloat(el.value);
+        if (!isNaN(v) && v > 0) {
+            sum += v;
+            count++;
+        }
+    });
+    const rataEl = document.getElementById('rataKelas');
+    if (rataEl) rataEl.textContent = count > 0 ? (sum / count).toFixed(2) : '—';
 }
 
 /**
@@ -800,38 +835,40 @@ function hitungRataKelas() {
  * (stale — predikat siswa berubah sejak terakhir disimpan).
  */
 function toggleDeskSiswa(sid) {
-  const row = document.getElementById(`deskRow_${sid}`);
-  if (!row) return;
+    const row = document.getElementById(`deskRow_${sid}`);
+    if (!row) return;
 
-  const isHidden = row.style.display === 'none' || row.style.display === '';
-  row.style.display = isHidden ? 'table-row' : 'none';
+    const isHidden = row.style.display === 'none' || row.style.display === '';
+    row.style.display = isHidden ? 'table-row' : 'none';
 
-  // Koreksi deskripsi stale hanya saat membuka
-  if (isHidden) {
-    const ta   = document.getElementById(`deskArea_${sid}`);
-    const pred = document.getElementById(`pred_${sid}`)?.textContent.trim();
-    if (!ta || !pred || pred === '—') return;
+    // Koreksi deskripsi stale hanya saat membuka
+    if (isHidden) {
+        const ta = document.getElementById(`deskArea_${sid}`);
+        const pred = document.getElementById(`pred_${sid}`)?.textContent.trim();
+        if (!ta || !pred || pred === '—') return;
 
-    const current = ta.value.trim();
-    if (current === '') {
-      // Kosong: isi dari deskripsi kriteria yang sesuai predikat
-      if (DESK_KRIT[pred]) ta.value = DESK_KRIT[pred];
-      return;
+        const current = ta.value.trim();
+        if (current === '') {
+            // Kosong: isi dari deskripsi kriteria yang sesuai predikat
+            if (DESK_KRIT[pred]) ta.value = DESK_KRIT[pred];
+            return;
+        }
+
+        // Cek apakah isi textarea adalah deskripsi kriteria LAIN (stale)
+        const allKriteria = ['A', 'B', 'C', 'D'];
+        const isStale = allKriteria.some(k => k !== pred && DESK_KRIT[k] && DESK_KRIT[k] === current);
+        if (isStale && DESK_KRIT[pred]) {
+            ta.value = DESK_KRIT[pred];
+            const status = document.getElementById(`deskStatus_${sid}`);
+            if (status) {
+                status.textContent = '⚠ Deskripsi dikoreksi sesuai predikat ' + pred;
+                status.style.color = '#d97706';
+                setTimeout(() => {
+                    status.textContent = '';
+                }, 4000);
+            }
+        }
     }
-
-    // Cek apakah isi textarea adalah deskripsi kriteria LAIN (stale)
-    const allKriteria = ['A','B','C','D'];
-    const isStale = allKriteria.some(k => k !== pred && DESK_KRIT[k] && DESK_KRIT[k] === current);
-    if (isStale && DESK_KRIT[pred]) {
-      ta.value = DESK_KRIT[pred];
-      const status = document.getElementById(`deskStatus_${sid}`);
-      if (status) {
-        status.textContent = '⚠ Deskripsi dikoreksi sesuai predikat ' + pred;
-        status.style.color = '#d97706';
-        setTimeout(() => { status.textContent = ''; }, 4000);
-      }
-    }
-  }
 }
 
 /**
@@ -840,25 +877,27 @@ function toggleDeskSiswa(sid) {
  * tombol ini hanya memberi feedback visual bahwa teks sudah terkunci.
  */
 function simpanDeskripsi(sid) {
-  const ta     = document.getElementById(`deskArea_${sid}`);
-  const status = document.getElementById(`deskStatus_${sid}`);
-  if (!ta) return;
+    const ta = document.getElementById(`deskArea_${sid}`);
+    const status = document.getElementById(`deskStatus_${sid}`);
+    if (!ta) return;
 
-  const val = ta.value.trim();
-  // Tandai textarea sebagai "tersimpan" secara visual
-  ta.style.borderColor = '#16a34a';
-  ta.style.background  = '#f0fdf4';
-  if (status) {
-    status.textContent   = '✓ Deskripsi siap disimpan';
-    status.style.color   = '#16a34a';
-  }
+    const val = ta.value.trim();
+    // Tandai textarea sebagai "tersimpan" secara visual
+    ta.style.borderColor = '#16a34a';
+    ta.style.background = '#f0fdf4';
+    if (status) {
+        status.textContent = '✓ Deskripsi siap disimpan';
+        status.style.color = '#16a34a';
+    }
 
-  // Reset visual setelah 3 detik
-  setTimeout(() => {
-    ta.style.borderColor = '';
-    ta.style.background  = '';
-    if (status) { status.textContent = ''; }
-  }, 3000);
+    // Reset visual setelah 3 detik
+    setTimeout(() => {
+        ta.style.borderColor = '';
+        ta.style.background = '';
+        if (status) {
+            status.textContent = '';
+        }
+    }, 3000);
 }
 
 /**
@@ -867,21 +906,21 @@ function simpanDeskripsi(sid) {
  * Highlight kuning sementara agar user sadar ada perubahan.
  */
 function updateDeskPreview(kr, val) {
-  document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
-    if (predEl.textContent.trim() !== kr) return;
-    const sid = predEl.id.replace('pred_', '');
-    const ta = document.getElementById(`deskArea_${sid}`);
-    if (!ta) return;
-    ta.value = val;
-    // Highlight kuning sementara sebagai indikator updated
-    ta.style.borderColor = '#f59e0b';
-    ta.style.background  = '#fffbeb';
-    clearTimeout(ta._hlTimer);
-    ta._hlTimer = setTimeout(() => {
-      ta.style.borderColor = '';
-      ta.style.background  = '';
-    }, 2000);
-  });
+    document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
+        if (predEl.textContent.trim() !== kr) return;
+        const sid = predEl.id.replace('pred_', '');
+        const ta = document.getElementById(`deskArea_${sid}`);
+        if (!ta) return;
+        ta.value = val;
+        // Highlight kuning sementara sebagai indikator updated
+        ta.style.borderColor = '#f59e0b';
+        ta.style.background = '#fffbeb';
+        clearTimeout(ta._hlTimer);
+        ta._hlTimer = setTimeout(() => {
+            ta.style.borderColor = '';
+            ta.style.background = '';
+        }, 2000);
+    });
 }
 
 /**
@@ -889,18 +928,24 @@ function updateDeskPreview(kr, val) {
  * Membuka baris deskripsi yang masih tersembunyi.
  */
 function applyDeskToAll(kr, val) {
-  if (!val.trim()) { alert('Isi deskripsi terlebih dahulu.'); return; }
-  let count = 0;
-  document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
-    if (predEl.textContent.trim() !== kr) return;
-    const sid = predEl.id.replace('pred_', '');
-    const ta = document.getElementById(`deskArea_${sid}`);
-    if (ta) { ta.value = val; count++; }
-    // Otomatis tampilkan baris deskripsi
-    const deskRow = document.getElementById(`deskRow_${sid}`);
-    if (deskRow) deskRow.style.display = 'table-row';
-  });
-  if (count > 0) showToast(`Deskripsi diterapkan ke ${count} siswa predikat ${kr}`, 'success');
+    if (!val.trim()) {
+        alert('Isi deskripsi terlebih dahulu.');
+        return;
+    }
+    let count = 0;
+    document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
+        if (predEl.textContent.trim() !== kr) return;
+        const sid = predEl.id.replace('pred_', '');
+        const ta = document.getElementById(`deskArea_${sid}`);
+        if (ta) {
+            ta.value = val;
+            count++;
+        }
+        // Otomatis tampilkan baris deskripsi
+        const deskRow = document.getElementById(`deskRow_${sid}`);
+        if (deskRow) deskRow.style.display = 'table-row';
+    });
+    if (count > 0) showToast(`Deskripsi diterapkan ke ${count} siswa predikat ${kr}`, 'success');
 }
 
 /**
@@ -908,39 +953,39 @@ function applyDeskToAll(kr, val) {
  * Berguna jika deskripsi kriteria diubah dan siswa sudah punya deskripsi lama di DB.
  */
 function sinkronSemuaDeskripsi() {
-  // Baca nilai terkini dari textarea kanan (bukan DESK_KRIT yang dari server)
-  const deskNow = {
-    A: (document.getElementById('deskKrit_A')?.value ?? '').trim(),
-    B: (document.getElementById('deskKrit_B')?.value ?? '').trim(),
-    C: (document.getElementById('deskKrit_C')?.value ?? '').trim(),
-    D: (document.getElementById('deskKrit_D')?.value ?? '').trim(),
-  };
+    // Baca nilai terkini dari textarea kanan (bukan DESK_KRIT yang dari server)
+    const deskNow = {
+        A: (document.getElementById('deskKrit_A')?.value ?? '').trim(),
+        B: (document.getElementById('deskKrit_B')?.value ?? '').trim(),
+        C: (document.getElementById('deskKrit_C')?.value ?? '').trim(),
+        D: (document.getElementById('deskKrit_D')?.value ?? '').trim(),
+    };
 
-  let count = 0;
-  document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
-    const pred = predEl.textContent.trim();
-    if (!['A','B','C','D'].includes(pred)) return;
-    const sid  = predEl.id.replace('pred_', '');
-    const ta   = document.getElementById(`deskArea_${sid}`);
-    if (!ta) return;
-    if (deskNow[pred] === '') return; // skip jika deskripsi kanan masih kosong
-    ta.value = deskNow[pred];
-    count++;
-    // Highlight hijau sebentar
-    ta.style.borderColor = '#16a34a';
-    ta.style.background  = '#f0fdf4';
-    clearTimeout(ta._hlTimer);
-    ta._hlTimer = setTimeout(() => {
-      ta.style.borderColor = '';
-      ta.style.background  = '';
-    }, 2500);
-  });
+    let count = 0;
+    document.querySelectorAll('[id^="pred_"]').forEach(predEl => {
+        const pred = predEl.textContent.trim();
+        if (!['A', 'B', 'C', 'D'].includes(pred)) return;
+        const sid = predEl.id.replace('pred_', '');
+        const ta = document.getElementById(`deskArea_${sid}`);
+        if (!ta) return;
+        if (deskNow[pred] === '') return; // skip jika deskripsi kanan masih kosong
+        ta.value = deskNow[pred];
+        count++;
+        // Highlight hijau sebentar
+        ta.style.borderColor = '#16a34a';
+        ta.style.background = '#f0fdf4';
+        clearTimeout(ta._hlTimer);
+        ta._hlTimer = setTimeout(() => {
+            ta.style.borderColor = '';
+            ta.style.background = '';
+        }, 2500);
+    });
 
-  if (count > 0) {
-    showToast(`✓ ${count} deskripsi siswa berhasil disinkronkan`, 'success');
-  } else {
-    alert('Tidak ada deskripsi yang bisa disinkronkan.\nPastikan kolom kanan sudah diisi.');
-  }
+    if (count > 0) {
+        showToast(`✓ ${count} deskripsi siswa berhasil disinkronkan`, 'success');
+    } else {
+        alert('Tidak ada deskripsi yang bisa disinkronkan.\nPastikan kolom kanan sudah diisi.');
+    }
 }
 
 /**
@@ -948,34 +993,37 @@ function sinkronSemuaDeskripsi() {
  * Digunakan tombol "Isi Rata-rata" untuk testing
  */
 function isiSemuaRata() {
-  const val = prompt('Isi nilai default untuk semua siswa (0-100):', '85');
-  if (val === null) return;
-  const num = parseFloat(val);
-  if (isNaN(num) || num < 0 || num > 100) { alert('Nilai tidak valid!'); return; }
-
-  document.querySelectorAll('[id^="row_"]').forEach(row => {
-    const sid = row.id.replace('row_', '');
-    if (JENIS === 'bulanan') {
-      ['h1','h2','h3','tugas'].forEach(f => {
-        const el = document.querySelector(`[name="${f}_${sid}"]`);
-        if (el) el.value = num;
-      });
-    } else if (JENIS === 'sts') {
-      const el = document.querySelector(`[name="sts_${sid}"]`);
-      if (el) el.value = num;
-    } else {
-      const el = document.querySelector(`[name="sas_${sid}"]`);
-      if (el) el.value = num;
+    const val = prompt('Isi nilai default untuk semua siswa (0-100):', '85');
+    if (val === null) return;
+    const num = parseFloat(val);
+    if (isNaN(num) || num < 0 || num > 100) {
+        alert('Nilai tidak valid!');
+        return;
     }
-    hitungBaris(parseInt(sid));
-  });
+
+    document.querySelectorAll('[id^="row_"]').forEach(row => {
+        const sid = row.id.replace('row_', '');
+        if (JENIS === 'bulanan') {
+            ['h1', 'h2', 'h3', 'tugas'].forEach(f => {
+                const el = document.querySelector(`[name="${f}_${sid}"]`);
+                if (el) el.value = num;
+            });
+        } else if (JENIS === 'sts') {
+            const el = document.querySelector(`[name="sts_${sid}"]`);
+            if (el) el.value = num;
+        } else {
+            const el = document.querySelector(`[name="sas_${sid}"]`);
+            if (el) el.value = num;
+        }
+        hitungBaris(parseInt(sid));
+    });
 }
 
 // Init: hitung semua baris yang sudah ada nilai
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('[id^="row_"]').forEach(row => {
-    const sid = row.id.replace('row_', '');
-    hitungBaris(parseInt(sid));
-  });
+    document.querySelectorAll('[id^="row_"]').forEach(row => {
+        const sid = row.id.replace('row_', '');
+        hitungBaris(parseInt(sid));
+    });
 });
 </script>
