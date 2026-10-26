@@ -78,7 +78,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             <p class="page-subtitle">Kelola data guru dan wali kelas</p>
         </div>
         <div class="flex gap-2">
-            <a href="index.php?page=guru&export=1" class="btn btn-secondary">
+            <a href="index.php?page=guru&export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -86,7 +86,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=guru.import" class="btn btn-secondary">
+            <a href="index.php?page=guru.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
