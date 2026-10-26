@@ -169,10 +169,15 @@ function xlsx_template(string $filename, array $config): void {
             $val    = $rowData[$colIdx] ?? '';
 
             // Set tipe data sel agar NIS/NISN yang panjang tidak dijadikan float
+            // PhpSpreadsheet v2.x: TYPE_NUMERIC tidak boleh diisi string kosong
             if (($col['type'] ?? '') === 'number') {
-                $sheet->setCellValueExplicit("{$colLtr}{$excelRow}", $val, DataType::TYPE_NUMERIC);
+                if ($val !== '' && $val !== null) {
+                    $sheet->setCellValueExplicit("{$colLtr}{$excelRow}", $val, DataType::TYPE_NUMERIC);
+                } else {
+                    $sheet->setCellValue("{$colLtr}{$excelRow}", '');
+                }
             } elseif (($col['type'] ?? '') === 'text' || ($col['format'] ?? '') === '@') {
-                $sheet->setCellValueExplicit("{$colLtr}{$excelRow}", $val, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("{$colLtr}{$excelRow}", (string)$val, DataType::TYPE_STRING);
             } else {
                 $sheet->setCellValue("{$colLtr}{$excelRow}", $val);
             }
