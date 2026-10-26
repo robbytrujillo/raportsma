@@ -40,11 +40,14 @@ $krit_b = (float)($sekolah['kriteria_b_min'] ?? 83);
 $krit_c = (float)($sekolah['kriteria_c_min'] ?? 76);
 
 // Hitung predikat berdasarkan kriteria sekolah
-function predikat_lokal(float $n, float $a, float $b, float $c): string {
-    if ($n >= $a) return 'A';
-    if ($n >= $b) return 'B';
-    if ($n >= $c) return 'C';
-    return 'D';
+// Guard: template bisa di-include berkali-kali (cetak kelas = 1 include per siswa)
+if (!function_exists('predikat_lokal')) {
+    function predikat_lokal(float $n, float $a, float $b, float $c): string {
+        if ($n >= $a) return 'A';
+        if ($n >= $b) return 'B';
+        if ($n >= $c) return 'C';
+        return 'D';
+    }
 }
 
 /*
