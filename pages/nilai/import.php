@@ -221,70 +221,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
 }
 ?>
 <div class="page-content" style="max-width:960px;margin:0 auto">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Import Data Nilai</h1>
-      <p class="page-subtitle">Upload file Excel (.xlsx) untuk memasukkan nilai banyak siswa sekaligus</p>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Import Data Nilai</h1>
+            <p class="page-subtitle">Upload file Excel (.xlsx) untuk memasukkan nilai banyak siswa sekaligus</p>
+        </div>
+        <a href="index.php?page=nilai" class="btn btn-secondary" style="border-radius: 30px">← Kembali</a>
     </div>
-    <a href="index.php?page=nilai" class="btn btn-secondary">← Kembali</a>
-  </div>
 
-  <?php foreach ($errors as $err): ?>
-  <div class="alert alert-danger"><?= htmlspecialchars($err) ?></div>
-  <?php endforeach; ?>
+    <?php foreach ($errors as $err): ?>
+    <div class="alert alert-danger"><?= htmlspecialchars($err) ?></div>
+    <?php endforeach; ?>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <!-- Petunjuk & Download Template -->
-    <div class="card">
-      <div class="card-header">
-        <span>Langkah Import</span>
-        <a href="index.php?page=nilai.import&download_template=1" class="btn btn-sm btn-primary">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Download Template Excel
-        </a>
-      </div>
-      <div class="card-body text-sm" style="line-height:1.8">
-        <ol style="padding-left:18px;color:#374151">
-          <li>Klik <strong>Download Template Excel</strong></li>
-          <li>Isi data mulai baris ke-<strong>4</strong></li>
-          <li>Kolom <strong>Jenis Raport</strong> sudah ada dropdown</li>
-          <li>Lihat sheet <strong>"Referensi"</strong> untuk nama mapel/kelas yang valid</li>
-          <li>Tooltip muncul saat hover di header kolom (Excel)</li>
-          <li>Upload file .xlsx</li>
-        </ol>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Petunjuk & Download Template -->
+        <div class="card">
+            <div class="card-header">
+                <span>Langkah Import</span>
+                <a href="index.php?page=nilai.import&download_template=1" class="btn btn-sm btn-primary"
+                    style="border-radius: 30px">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download Template Excel
+                </a>
+            </div>
+            <div class="card-body text-sm" style="line-height:1.8">
+                <ol style="padding-left:18px;color:#374151">
+                    <li>Klik <strong>Download Template Excel</strong></li>
+                    <li>Isi data mulai baris ke-<strong>4</strong></li>
+                    <li>Kolom <strong>Jenis Raport</strong> sudah ada dropdown</li>
+                    <li>Lihat sheet <strong>"Referensi"</strong> untuk nama mapel/kelas yang valid</li>
+                    <li>Tooltip muncul saat hover di header kolom (Excel)</li>
+                    <li>Upload file .xlsx</li>
+                </ol>
 
-        <div class="p-3 mt-3 rounded-lg text-xs" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">
-          <strong>✓ Didukung:</strong> .xlsx, .xls, .csv
-          <br><strong>✓ Dropdown Jenis:</strong> bulanan / sts / semester
-          <br><strong>✓ Sheet "Referensi":</strong> Tahun Ajaran, Mapel, Kelas dalam 1 file
-          <br><strong>✓ Data yang sudah ada:</strong> akan di-update (overwrite)
-        </div>
+                <div class="p-3 mt-3 rounded-lg text-xs"
+                    style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">
+                    <strong>✓ Didukung:</strong> .xlsx, .xls, .csv
+                    <br><strong>✓ Dropdown Jenis:</strong> bulanan / sts / semester
+                    <br><strong>✓ Sheet "Referensi":</strong> Tahun Ajaran, Mapel, Kelas dalam 1 file
+                    <br><strong>✓ Data yang sudah ada:</strong> akan di-update (overwrite)
+                    <br><strong>✓ Nilai Akhir &amp; Predikat:</strong> <em>dihitung otomatis oleh sistem</em> — tidak
+                    perlu diisi di template
+                </div>
 
-        <div class="divider"></div>
-        <p class="font-semibold text-xs text-gray-700 mb-1">Formula nilai akhir:</p>
-        <div class="p-2 rounded text-xs" style="background:#f3f4f6;font-family:monospace;line-height:2">
-          <strong>Bulanan (fleksibel):</strong><br>
-          &nbsp;→ Isi 1 komponen: NA = nilai itu sendiri<br>
-          &nbsp;→ Isi 2 komponen: NA = jumlah / 2<br>
-          &nbsp;→ Isi 3 komponen: NA = jumlah / 3<br>
-          &nbsp;→ Isi 4 komponen: NA = (NH1+NH2+NH3+Tugas) / 4<br>
-          &nbsp;→ Nilai 0 = dianggap kosong / tidak terisi<br>
-          <strong>STS:</strong> nilai STS langsung<br>
-          <strong>Semester:</strong> nilai SAS langsung
-        </div>
+                <div class="p-3 mt-2 rounded-lg text-xs"
+                    style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e">
+                    <strong>💡 Cara mengisi nilai bulanan:</strong>
+                    <ul style="padding-left:14px;margin:4px 0;line-height:1.9">
+                        <li>Isi <strong>minimal 1 kolom</strong> dari NH1, NH2, NH3, Tugas</li>
+                        <li>Kolom yang <strong>tidak diisi / diisi 0</strong> = dianggap kosong, tidak ikut dihitung
+                        </li>
+                        <li>Nilai akhir = <strong>rata-rata</strong> dari komponen yang terisi</li>
+                        <li>Contoh: NH1=<strong>90</strong>, NH2=<strong>80</strong>, NH3=0, Tugas=0 → NA =
+                            <strong>85</strong>
+                        </li>
+                    </ul>
+                </div>
 
-        <div class="divider"></div>
-        <p class="font-semibold text-xs text-gray-700 mb-1">Penjelasan kolom:</p>
-        <table style="width:100%;font-size:.75rem;border-collapse:collapse">
-          <tr style="background:#f3f4f6">
-            <th style="padding:3px 6px;text-align:left">Kolom</th>
-            <th style="padding:3px 6px;text-align:left">Keterangan</th>
-          </tr>
-          <?php foreach ([
+                <div class="divider"></div>
+                <p class="font-semibold text-xs text-gray-700 mb-1">Formula nilai akhir:</p>
+                <div class="p-2 rounded text-xs" style="background:#f3f4f6;font-family:monospace;line-height:2">
+                    <strong>Bulanan (fleksibel):</strong><br>
+                    &nbsp;→ Isi 1 komponen: NA = nilai itu sendiri<br>
+                    &nbsp;→ Isi 2 komponen: NA = jumlah / 2<br>
+                    &nbsp;→ Isi 3 komponen: NA = jumlah / 3<br>
+                    &nbsp;→ Isi 4 komponen: NA = (NH1+NH2+NH3+Tugas) / 4<br>
+                    &nbsp;→ Nilai 0 = dianggap kosong / tidak terisi<br>
+                    <strong>STS:</strong> nilai STS langsung<br>
+                    <strong>Semester:</strong> nilai SAS langsung
+                </div>
+
+                <div class="divider"></div>
+                <p class="font-semibold text-xs text-gray-700 mb-1">Penjelasan kolom:</p>
+                <table style="width:100%;font-size:.75rem;border-collapse:collapse">
+                    <tr style="background:#f3f4f6">
+                        <th style="padding:3px 6px;text-align:left">Kolom</th>
+                        <th style="padding:3px 6px;text-align:left">Keterangan</th>
+                    </tr>
+                    <?php foreach ([
             ['siswa_nis',       'NIS siswa — wajib'],
             ['mapel_nama',      'Nama mapel PERSIS (case-insensitive)'],
             ['kelas_nama',      'Nama kelas PERSIS (case-insensitive)'],
@@ -296,74 +314,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             ['sts',             'Nilai STS (untuk jenis=sts)'],
             ['sas',             'Nilai SAS (untuk jenis=semester)'],
           ] as $c): ?>
-          <tr style="border-bottom:1px solid #f3f4f6">
-            <td style="padding:2px 6px;color:#f97316;font-family:monospace;font-weight:600;white-space:nowrap"><?= $c[0] ?></td>
-            <td style="padding:2px 6px"><?= $c[1] ?></td>
-          </tr>
-          <?php endforeach; ?>
-        </table>
-      </div>
+                    <tr style="border-bottom:1px solid #f3f4f6">
+                        <td
+                            style="padding:2px 6px;color:#f97316;font-family:monospace;font-weight:600;white-space:nowrap">
+                            <?= $c[0] ?></td>
+                        <td style="padding:2px 6px"><?= $c[1] ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+        </div>
+
+        <!-- Form Upload -->
+        <div class="card">
+            <div class="card-header">Upload File</div>
+            <div class="card-body">
+                <form method="POST" action="index.php?page=nilai.import" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
+                    <div class="form-group">
+                        <label class="form-label">Pilih File Excel / CSV <span class="text-red-500">*</span></label>
+                        <input type="file" name="excel_file" accept=".xlsx,.xls,.csv,.txt" class="form-control"
+                            style="padding:6px;font-size:.875rem" required>
+                        <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv | Maks 10MB</p>
+                    </div>
+                    <div class="p-3 rounded-lg text-xs"
+                        style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e;margin-bottom:16px">
+                        <strong>⚠ Perhatian:</strong>
+                        <ul style="padding-left:16px;margin-top:4px;line-height:1.8">
+                            <li>Jika data sudah ada akan di-<strong>update</strong> (overwrite)</li>
+                            <li>Nama mapel &amp; kelas harus <strong>persis sama</strong> dengan database</li>
+                            <li>Lookup menggunakan <strong>NIS</strong>, bukan nama siswa</li>
+                        </ul>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full justify-center" style="border-radius: 30px">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        Proses Import
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <!-- Form Upload -->
-    <div class="card">
-      <div class="card-header">Upload File</div>
-      <div class="card-body">
-        <form method="POST" action="index.php?page=nilai.import" enctype="multipart/form-data">
-          <?= csrf_field() ?>
-          <div class="form-group">
-            <label class="form-label">Pilih File Excel / CSV <span class="text-red-500">*</span></label>
-            <input type="file" name="excel_file" accept=".xlsx,.xls,.csv,.txt"
-              class="form-control" style="padding:6px;font-size:.875rem" required>
-            <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv | Maks 10MB</p>
-          </div>
-          <div class="p-3 rounded-lg text-xs" style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e;margin-bottom:16px">
-            <strong>⚠ Perhatian:</strong>
-            <ul style="padding-left:16px;margin-top:4px;line-height:1.8">
-              <li>Jika data sudah ada akan di-<strong>update</strong> (overwrite)</li>
-              <li>Nama mapel &amp; kelas harus <strong>persis sama</strong> dengan database</li>
-              <li>Lookup menggunakan <strong>NIS</strong>, bukan nama siswa</li>
-            </ul>
-          </div>
-          <button type="submit" class="btn btn-primary w-full justify-center">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Proses Import
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <?php if (!empty($results)): ?>
-  <div class="card mt-5">
-    <div class="card-header">
-      <span>Hasil Import</span>
-      <span class="badge <?= $successes > 0 ? 'badge-green' : 'badge-red' ?>">
-        <?= $successes ?> berhasil / <?= count($results) - $successes ?> dilewati
-      </span>
-    </div>
-    <div class="table-container" style="max-height:340px;overflow-y:auto">
-      <table class="data-table">
-        <thead><tr><th>Baris</th><th>Status</th><th>Keterangan</th></tr></thead>
-        <tbody>
-          <?php foreach ($results as $r): ?>
-          <tr>
-            <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
-            <td><?php
+    <?php if (!empty($results)): ?>
+    <div class="card mt-5">
+        <div class="card-header">
+            <span>Hasil Import</span>
+            <span class="badge <?= $successes > 0 ? 'badge-green' : 'badge-red' ?>">
+                <?= $successes ?> berhasil / <?= count($results) - $successes ?> dilewati
+            </span>
+        </div>
+        <div class="table-container" style="max-height:340px;overflow-y:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Baris</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($results as $r): ?>
+                    <tr>
+                        <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
+                        <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">✓ OK</span>';
               elseif ($r['status']==='skip') echo '<span class="badge badge-gray">— Skip</span>';
               else echo '<span class="badge badge-red">✗ Error</span>';
             ?></td>
-            <td class="text-sm"><?= e($r['msg']) ?></td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+                        <td class="text-sm"><?= e($r['msg']) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
-  <?php endif; ?>
+    <?php endif; ?>
 </div>
