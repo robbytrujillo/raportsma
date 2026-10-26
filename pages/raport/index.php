@@ -277,7 +277,7 @@ if ($kelas_id) {
                 </div>
                 <?php endif; ?>
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary w-full" style="border-radius: 30px">Tampilkan</button>
+                    <button type="submit" class="btn btn-primary w-100" style="border-radius: 30px">Tampilkan</button>
                 </div>
             </div>
         </div>

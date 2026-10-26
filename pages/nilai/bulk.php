@@ -367,7 +367,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <?php endif; ?>
                     <!-- Tombol -->
                     <div class="form-group mb-0 flex items-end">
-                        <button type="submit" class="btn btn-primary w-full"
+                        <button type="submit" class="btn btn-primary w-100"
                             style="border-radius: 30px">Tampilkan</button>
                     </div>
                 </div>

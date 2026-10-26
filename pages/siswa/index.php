@@ -95,130 +95,149 @@ $siswa_list = db_query(
 $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$search,'per'=>$per]);
 ?>
 <div class="page-content">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Data Siswa</h1>
-      <p class="page-subtitle">Kelola data siswa sekolah</p>
-    </div>
-    <div class="flex gap-2">
-      <a href="index.php?page=siswa&export=1" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </a>
-      <a href="index.php?page=siswa.import" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Import CSV
-      </a>
-      <a href="index.php?page=siswa.create" class="btn btn-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Tambah Siswa
-      </a>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-body">
-      <form method="GET" action="index.php" class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <input type="hidden" name="page" value="siswa">
+    <div class="page-header">
         <div>
-          <label class="form-label">Tahun Ajaran</label>
-          <select name="ta" class="form-control" onchange="this.form.submit()">
-            <?php foreach ($ta_list as $ta): ?>
-            <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
-              <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-            </option>
-            <?php endforeach; ?>
-          </select>
+            <h1 class="page-title">Data Siswa</h1>
+            <p class="page-subtitle">Kelola data siswa sekolah</p>
         </div>
-        <div>
-          <label class="form-label">Kelas</label>
-          <select name="kelas" class="form-control">
-            <option value="">Semua Kelas</option>
-            <?php foreach ($kelas_list as $k): ?>
-            <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>><?= e($k['nama_kelas']) ?></option>
-            <?php endforeach; ?>
-          </select>
+        <div class="flex gap-2">
+            <a href="index.php?page=siswa&export=1" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+            </a>
+            <a href="index.php?page=siswa.import" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import CSV
+            </a>
+            <a href="index.php?page=siswa.create" class="btn btn-primary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Tambah Siswa
+            </a>
         </div>
-        <div>
-          <label class="form-label">Cari</label>
-          <input type="text" name="q" class="form-control" placeholder="Nama / NIS..." value="<?= e($search) ?>">
-        </div>
-        <div>
-          <label class="form-label">Tampil</label>
-          <select name="per" class="form-control" onchange="this.form.submit()">
-            <?php foreach ([10,25,50,100] as $opt): ?>
-            <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="flex items-end">
-          <button type="submit" class="btn btn-primary w-full">Filter</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <span>Daftar Siswa</span>
-      <span class="text-sm text-gray-500"><?= $total ?> siswa</span>
-    </div>
-    <div class="table-container">
-      <table class="data-table" id="dataTable">
-        <thead>
-          <tr><th>#</th><th>Nama Siswa</th><th>NIS</th><th>NISN</th><th>Kelas</th><th>Tempat, Tgl Lahir</th><th>Username</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-          <?php if (empty($siswa_list)): ?>
-          <tr><td colspan="8" class="text-center py-8 text-gray-400">Belum ada data siswa.</td></tr>
-          <?php else: ?>
-          <?php foreach ($siswa_list as $i => $s): ?>
-          <tr>
-            <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
-            <td class="font-semibold"><?= e($s['nama_lengkap']) ?></td>
-            <td><?= e($s['nis'] ?: '-') ?></td>
-            <td class="text-gray-400"><?= e($s['nisn'] ?: '-') ?></td>
-            <td><span class="badge badge-blue"><?= e($s['nama_kelas']) ?></span></td>
-            <td class="text-sm text-gray-500">
-              <?= e($s['tempat_lahir'] ?: '-') ?>, <?= $s['tanggal_lahir'] ? date('d/m/Y', strtotime($s['tanggal_lahir'])) : '-' ?>
-            </td>
-            <td class="text-gray-500"><?= e($s['username']) ?></td>
-            <td>
-              <div class="flex gap-1">
-                <a href="index.php?page=siswa.edit&id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary">Edit</a>
-                <form method="POST" action="index.php?page=siswa" style="display:inline"
-                  onsubmit="return confirm('Hapus siswa <?= e($s['nama_lengkap']) ?>?')">
-                  <?= csrf_field() ?>
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                  <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-          <?php endif; ?>
-        </tbody>
-      </table>
     </div>
 
-    <!-- Paginasi -->
-    <?php if ($pages > 1): ?>
-    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-      <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> siswa)</span>
-      <div class="pagination">
-        <a href="?<?= $qstr ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹ Prev</a>
-        <?php
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="index.php" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <input type="hidden" name="page" value="siswa">
+                <div>
+                    <label class="form-label">Tahun Ajaran</label>
+                    <select name="ta" class="form-control" onchange="this.form.submit()">
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Kelas</label>
+                    <select name="kelas" class="form-control">
+                        <option value="">Semua Kelas</option>
+                        <?php foreach ($kelas_list as $k): ?>
+                        <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
+                            <?= e($k['nama_kelas']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Cari</label>
+                    <input type="text" name="q" class="form-control" placeholder="Nama / NIS..."
+                        value="<?= e($search) ?>">
+                </div>
+                <div>
+                    <label class="form-label">Tampil</label>
+                    <select name="per" class="form-control" onchange="this.form.submit()">
+                        <?php foreach ([10,25,50,100] as $opt): ?>
+                        <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-primary w-full" style="border-radius: 30px">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span>Daftar Siswa</span>
+            <span class="text-sm text-gray-500"><?= $total ?> siswa</span>
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nama Siswa</th>
+                        <th>NIS</th>
+                        <th>NISN</th>
+                        <th>Kelas</th>
+                        <th>Tempat, Tgl Lahir</th>
+                        <th>Username</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($siswa_list)): ?>
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-gray-400">Belum ada data siswa.</td>
+                    </tr>
+                    <?php else: ?>
+                    <?php foreach ($siswa_list as $i => $s): ?>
+                    <tr>
+                        <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
+                        <td class="font-semibold"><?= e($s['nama_lengkap']) ?></td>
+                        <td><?= e($s['nis'] ?: '-') ?></td>
+                        <td class="text-gray-400"><?= e($s['nisn'] ?: '-') ?></td>
+                        <td><span class="badge badge-blue"><?= e($s['nama_kelas']) ?></span></td>
+                        <td class="text-sm text-gray-500">
+                            <?= e($s['tempat_lahir'] ?: '-') ?>,
+                            <?= $s['tanggal_lahir'] ? date('d/m/Y', strtotime($s['tanggal_lahir'])) : '-' ?>
+                        </td>
+                        <td class="text-gray-500"><?= e($s['username']) ?></td>
+                        <td>
+                            <div class="flex gap-1">
+                                <a href="index.php?page=siswa.edit&id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
+                                    style="border-radius: 30px">Edit</a>
+                                <form method="POST" action="index.php?page=siswa" style="display:inline"
+                                    onsubmit="return confirm('Hapus siswa <?= e($s['nama_lengkap']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        style="border-radius: 30px">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginasi -->
+        <?php if ($pages > 1): ?>
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> siswa)</span>
+            <div class="pagination">
+                <a href="?<?= $qstr ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
+                    style="border-radius: 30px">‹
+                    Prev</a>
+                <?php
           // Tampilkan max 7 nomor halaman di tengah
           $start = max(1, $page_n - 3);
           $end   = min($pages, $page_n + 3);
@@ -227,16 +246,17 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?>
-        <a href="?<?= $qstr ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
-        <?php endfor;
+                <a href="?<?= $qstr ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
+                <?php endfor;
           if ($end < $pages):
             if ($end < $pages - 1): ?><span class="page-link disabled">…</span><?php endif;
             ?><a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-        <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
-      </div>
+                <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
+                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius: 30px">Next ›</a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
-  </div>
 </div>
