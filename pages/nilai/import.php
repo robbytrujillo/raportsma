@@ -64,23 +64,27 @@ if (isset($_GET['download_template'])) {
             ['header'=>'Bulan',           'field'=>'bulan',           'width'=>8, 'required'=>false, 'type'=>'number',
              'example'=>7, 'note'=>'1-12. Wajib jika jenis=bulanan/sts. Kosongkan jika semester.'],
             ['header'=>'Nilai Harian 1',  'field'=>'nh1',             'width'=>13,'required'=>false, 'type'=>'number',
-             'example'=>85, 'note'=>'Diisi jika jenis=bulanan'],
+             'example'=>85, 'note'=>'Bulanan: isi 1 s/d 4 komponen (NH1,NH2,NH3,Tugas). Nilai akhir = rata-rata komponen yang terisi (>0). Boleh hanya mengisi 1 kolom.'],
             ['header'=>'Nilai Harian 2',  'field'=>'nh2',             'width'=>13,'required'=>false, 'type'=>'number',
-             'example'=>88, 'note'=>'Diisi jika jenis=bulanan'],
+             'example'=>88, 'note'=>'Kosongkan (isi 0) jika tidak dipakai. Nilai akhir otomatis dihitung dari komponen yang terisi.'],
             ['header'=>'Nilai Harian 3',  'field'=>'nh3',             'width'=>13,'required'=>false, 'type'=>'number',
-             'example'=>90, 'note'=>'Diisi jika jenis=bulanan'],
+             'example'=>90, 'note'=>'Kosongkan (isi 0) jika tidak dipakai.'],
             ['header'=>'Nilai Tugas',     'field'=>'tugas',           'width'=>12,'required'=>false, 'type'=>'number',
-             'example'=>80, 'note'=>'Diisi jika jenis=bulanan. Formula: (avg(NH1,2,3)×70%)+(Tugas×30%)'],
+             'example'=>80, 'note'=>'Kosongkan (isi 0) jika tidak dipakai. Contoh: NH1=90 saja → NA=90 | NH1=90,NH2=80 → NA=85'],
             ['header'=>'Nilai STS',       'field'=>'sts',             'width'=>12,'required'=>false, 'type'=>'number',
-             'example'=>0, 'note'=>'Diisi jika jenis=sts'],
+             'example'=>0, 'note'=>'Diisi jika jenis=sts. Nilai akhir = nilai STS langsung.'],
             ['header'=>'Nilai SAS',       'field'=>'sas',             'width'=>12,'required'=>false, 'type'=>'number',
-             'example'=>0, 'note'=>'Diisi jika jenis=semester'],
+             'example'=>0, 'note'=>'Diisi jika jenis=semester. Nilai akhir = nilai SAS langsung.'],
             ['header'=>'Catatan',         'field'=>'catatan',         'width'=>28,'required'=>false, 'type'=>'text','format'=>'@',
              'example'=>'', 'note'=>'Catatan guru (opsional)'],
         ],
         'examples' => [
-            // Contoh semester
-            [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'semester', '', 0, 0, 0, 0, 0, 88, 'Siswa aktif dan berprestasi'],
+            // Contoh 1: bulanan — isi NH1+NH2 saja → NA = (90+88)/2 = 89
+            [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'bulanan', 10, 90, 88, 0, 0, 0, 0, 'Contoh: 2 nilai harian'],
+            // Contoh 2: bulanan — isi semua 4 komponen → NA = (85+88+90+80)/4 = 85.75
+            [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'bulanan', 10, 85, 88, 90, 80, 0, 0, 'Contoh: 4 komponen'],
+            // Contoh 3: semester
+            [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'semester', '', 0, 0, 0, 0, 0, 88, 'Contoh: semester'],
         ],
         'notes_sheet' => [
             'title'   => 'Referensi: Tahun Ajaran | Nama Mapel | Nama Kelas',
@@ -262,10 +266,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
 
         <div class="divider"></div>
         <p class="font-semibold text-xs text-gray-700 mb-1">Formula nilai akhir:</p>
-        <div class="p-2 rounded text-xs" style="background:#f3f4f6;font-family:monospace;line-height:1.8">
-          Bulanan: (avg(NH1,2,3)×70%)+(Tugas×30%)<br>
-          STS: nilai STS langsung<br>
-          Semester: nilai SAS langsung
+        <div class="p-2 rounded text-xs" style="background:#f3f4f6;font-family:monospace;line-height:2">
+          <strong>Bulanan (fleksibel):</strong><br>
+          &nbsp;→ Isi 1 komponen: NA = nilai itu sendiri<br>
+          &nbsp;→ Isi 2 komponen: NA = jumlah / 2<br>
+          &nbsp;→ Isi 3 komponen: NA = jumlah / 3<br>
+          &nbsp;→ Isi 4 komponen: NA = (NH1+NH2+NH3+Tugas) / 4<br>
+          &nbsp;→ Nilai 0 = dianggap kosong / tidak terisi<br>
+          <strong>STS:</strong> nilai STS langsung<br>
+          <strong>Semester:</strong> nilai SAS langsung
         </div>
 
         <div class="divider"></div>
@@ -282,8 +291,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             ['tahun_ajaran_id', 'ID tahun ajaran (lihat Referensi)'],
             ['jenis_raport',    'bulanan / sts / semester (dropdown)'],
             ['bulan',           '1-12 (wajib untuk bulanan/sts)'],
-            ['nh1,nh2,nh3',     'Nilai harian 1,2,3 (bulanan)'],
-            ['tugas',           'Nilai tugas (bulanan)'],
+            ['nh1,nh2,nh3',     'Nilai harian 1,2,3 (bulanan). Boleh isi 1-3 saja, nilai 0 = tidak terisi'],
+            ['tugas',           'Nilai tugas (bulanan). Boleh dikosongkan (isi 0)'],
             ['sts',             'Nilai STS (untuk jenis=sts)'],
             ['sas',             'Nilai SAS (untuk jenis=semester)'],
           ] as $c): ?>
