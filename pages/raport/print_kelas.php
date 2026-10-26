@@ -57,8 +57,9 @@ if (!$kelas || !$ta) {
 }
 
 // Daftar siswa di kelas, diurutkan peringkat (rata-rata DESC)
+// :kid dipakai 2x (JOIN + WHERE) — PDO named param tidak boleh duplikat, pakai :kid2
 $bulan_cond_rank  = '';
-$rank_params      = [':kid' => $kelas_id, ':ta' => $ta_id, ':jenis' => $jenis];
+$rank_params      = [':kid' => $kelas_id, ':kid2' => $kelas_id, ':ta' => $ta_id, ':jenis' => $jenis];
 if (in_array($jenis, ['bulanan','sts']) && $bulan) {
     $bulan_cond_rank = 'AND n.bulan = :bulan';
     $rank_params[':bulan'] = $bulan;
@@ -74,7 +75,7 @@ $siswa_list = db_query(
                        AND n.tahun_ajaran_id = :ta
                        AND n.jenis_raport = :jenis
                        $bulan_cond_rank
-     WHERE s.kelas_id = :kid
+     WHERE s.kelas_id = :kid2
      GROUP BY u.id, u.nama_lengkap, s.nis
      ORDER BY avg_nilai DESC",
     $rank_params
