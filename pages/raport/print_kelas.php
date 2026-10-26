@@ -95,126 +95,199 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> — <?= htmlspecialchars($ta['nama']) ?></title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
-  <style>
-    body { background: #f3f4f6; margin: 0; padding-top: 60px; font-family: 'Poppins', sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> — <?= htmlspecialchars($ta['nama']) ?>
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+    <style>
+    body {
+        background: #f3f4f6;
+        margin: 0;
+        padding-top: 60px;
+        font-family: 'Poppins', sans-serif;
+    }
 
     /* ── Toolbar ── */
     .print-toolbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: #f97316; color: #fff; padding: 8px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      gap: 12px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: #f97316;
+        color: #fff;
+        padding: 8px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        gap: 12px;
     }
-    .print-toolbar .tb-title { font-weight: 700; font-size: .95rem; white-space: nowrap; }
-    .print-toolbar .tb-meta  { font-size: .78rem; opacity: .85; }
-    .print-toolbar .tb-btns  { display: flex; gap: 8px; flex-shrink: 0; }
-    .print-toolbar a, .print-toolbar button {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.5);
-      color: #fff; padding: 6px 14px; border-radius: 8px;
-      cursor: pointer; font-size: .82rem; font-weight: 600;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-      white-space: nowrap;
+
+    .print-toolbar .tb-title {
+        font-weight: 700;
+        font-size: .95rem;
+        white-space: nowrap;
     }
-    .print-toolbar a:hover, .print-toolbar button:hover { background: rgba(255,255,255,0.35); }
+
+    .print-toolbar .tb-meta {
+        font-size: .78rem;
+        opacity: .85;
+    }
+
+    .print-toolbar .tb-btns {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .print-toolbar a,
+    .print-toolbar button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: .82rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .print-toolbar a:hover,
+    .print-toolbar button:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
     .print-toolbar button.btn-print {
-      background: rgba(255,255,255,0.9); color: #f97316;
+        background: rgba(255, 255, 255, 0.9);
+        color: #f97316;
     }
-    .print-toolbar button.btn-print:hover { background: #fff; }
+
+    .print-toolbar button.btn-print:hover {
+        background: #fff;
+    }
 
     /* ── Progress indicator ── */
     .print-progress {
-      position: fixed; bottom: 16px; right: 16px; z-index: 998;
-      background: #1f2937; color: #fff;
-      padding: 10px 18px; border-radius: 12px; font-size: .82rem;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      display: flex; align-items: center; gap: 8px;
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 998;
+        background: #1f2937;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: .82rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     /* ── Wrapper tiap raport siswa ── */
     .student-raport-wrap {
-      /* Tiap siswa mulai di halaman baru saat print */
-      page-break-after: always;
-      break-after: page;
+        /* Tiap siswa mulai di halaman baru saat print */
+        page-break-after: always;
+        break-after: page;
     }
+
     .student-raport-wrap:last-child {
-      page-break-after: avoid;
-      break-after: avoid;
+        page-break-after: avoid;
+        break-after: avoid;
     }
 
     /* Override margin raport untuk cetak kelas */
     .raport-page {
-      margin: 24px auto !important;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
+        margin: 24px auto !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12) !important;
     }
 
     /* ── @media print ── */
     @media print {
-      body { background: #fff !important; padding-top: 0 !important; }
-      .print-toolbar, .print-progress { display: none !important; }
-      .raport-page { margin: 0 !important; box-shadow: none !important; }
-      .student-raport-wrap {
-        page-break-after: always;
-        break-after: page;
-      }
-      .student-raport-wrap:last-child {
-        page-break-after: avoid;
-        break-after: avoid;
-      }
+        body {
+            background: #fff !important;
+            padding-top: 0 !important;
+        }
+
+        .print-toolbar,
+        .print-progress {
+            display: none !important;
+        }
+
+        .raport-page {
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .student-raport-wrap {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .student-raport-wrap:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
     }
-  </style>
+    </style>
 </head>
+
 <body>
 
-<!-- ── Toolbar ──────────────────────────────────────────── -->
-<div class="print-toolbar">
-  <div>
-    <div class="tb-title">
-      Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>
+    <!-- ── Toolbar ──────────────────────────────────────────── -->
+    <div class="print-toolbar">
+        <div>
+            <div class="tb-title">
+                Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>
+            </div>
+            <div class="tb-meta">
+                <?= htmlspecialchars($ta['nama']) ?> · Sem. <?= $semester_lbl ?>
+                · <?= $jenis_label ?><?= $bulan_nama ? " — $bulan_nama" : '' ?>
+                · <strong><?= $total_siswa ?> siswa</strong>
+            </div>
+        </div>
+        <div class="tb-btns">
+            <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+               onclick="if(window.opener||history.length<=1){window.close();return false;}"
+               style="border-radius:30px">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Kembali
+            </a>
+            <button class="btn-print" onclick="cetakSemua()" style="border-radius: 30px">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                Cetak Semua (<?= $total_siswa ?> Siswa)
+            </button>
+        </div>
     </div>
-    <div class="tb-meta">
-      <?= htmlspecialchars($ta['nama']) ?> · Sem. <?= $semester_lbl ?>
-      · <?= $jenis_label ?><?= $bulan_nama ? " — $bulan_nama" : '' ?>
-      · <strong><?= $total_siswa ?> siswa</strong>
+
+    <!-- ── Progress indicator (saat halaman dimuat) ── -->
+    <div class="print-progress" id="loadProgress">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
+        </svg>
+        Memuat raport <?= $total_siswa ?> siswa...
     </div>
-  </div>
-  <div class="tb-btns">
-    <a href="javascript:history.back()">
-      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-      Kembali
-    </a>
-    <button class="btn-print" onclick="cetakSemua()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <polyline points="6 9 6 2 18 2 18 9"/>
-        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-        <rect x="6" y="14" width="12" height="8"/>
-      </svg>
-      Cetak Semua (<?= $total_siswa ?> Siswa)
-    </button>
-  </div>
-</div>
 
-<!-- ── Progress indicator (saat halaman dimuat) ── -->
-<div class="print-progress" id="loadProgress">
-  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
-  </svg>
-  Memuat raport <?= $total_siswa ?> siswa...
-</div>
-
-<!-- ── Raport setiap siswa ──────────────────────────────── -->
-<?php
+    <!-- ── Raport setiap siswa ──────────────────────────────── -->
+    <?php
 // Kepala sekolah (shared, sama untuk semua)
 $kepsek_shared = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');
 // Wali kelas (shared)
@@ -276,54 +349,61 @@ foreach ($siswa_list as $rank_idx => $sw):
         ? round(array_sum(array_column($nilai_list, 'nilai_akhir')) / count($nilai_list), 2)
         : 0;
 ?>
-<div class="student-raport-wrap" data-siswa="<?= $rank_idx + 1 ?>">
-  <?php include __DIR__ . '/raport_template.php'; ?>
-</div>
-<?php endforeach; ?>
+    <div class="student-raport-wrap" data-siswa="<?= $rank_idx + 1 ?>">
+        <?php include __DIR__ . '/raport_template.php'; ?>
+    </div>
+    <?php endforeach; ?>
 
-<script>
-/**
- * Tunggu semua gambar (logo, tanda tangan) selesai dimuat sebelum hapus indikator.
- */
-document.addEventListener('DOMContentLoaded', function () {
-  const imgs = document.querySelectorAll('img');
-  const progress = document.getElementById('loadProgress');
-  let loaded = 0;
-  const total = imgs.length;
+    <script>
+    /**
+     * Tunggu semua gambar (logo, tanda tangan) selesai dimuat sebelum hapus indikator.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        const imgs = document.querySelectorAll('img');
+        const progress = document.getElementById('loadProgress');
+        let loaded = 0;
+        const total = imgs.length;
 
-  function checkDone() {
-    loaded++;
-    if (loaded >= total && progress) {
-      progress.innerHTML = '✓ Semua raport siap dicetak';
-      setTimeout(() => { if (progress) progress.style.display = 'none'; }, 2000);
-    }
-  }
+        function checkDone() {
+            loaded++;
+            if (loaded >= total && progress) {
+                progress.innerHTML = '✓ Semua raport siap dicetak';
+                setTimeout(() => {
+                    if (progress) progress.style.display = 'none';
+                }, 2000);
+            }
+        }
 
-  if (total === 0) {
-    if (progress) progress.style.display = 'none';
-  } else {
-    imgs.forEach(img => {
-      if (img.complete) { checkDone(); }
-      else { img.addEventListener('load', checkDone); img.addEventListener('error', checkDone); }
+        if (total === 0) {
+            if (progress) progress.style.display = 'none';
+        } else {
+            imgs.forEach(img => {
+                if (img.complete) {
+                    checkDone();
+                } else {
+                    img.addEventListener('load', checkDone);
+                    img.addEventListener('error', checkDone);
+                }
+            });
+        }
     });
-  }
-});
 
-/**
- * Cetak semua siswa — jeda kecil agar browser render sempurna.
- */
-function cetakSemua() {
-  const progress = document.getElementById('loadProgress');
-  if (progress) {
-    progress.style.display = 'flex';
-    progress.innerHTML = '🖨 Menyiapkan cetak...';
-  }
-  setTimeout(() => {
-    window.print();
-    if (progress) progress.style.display = 'none';
-  }, 400);
-}
-</script>
+    /**
+     * Cetak semua siswa — jeda kecil agar browser render sempurna.
+     */
+    function cetakSemua() {
+        const progress = document.getElementById('loadProgress');
+        if (progress) {
+            progress.style.display = 'flex';
+            progress.innerHTML = '🖨 Menyiapkan cetak...';
+        }
+        setTimeout(() => {
+            window.print();
+            if (progress) progress.style.display = 'none';
+        }, 400);
+    }
+    </script>
 
 </body>
+
 </html>
