@@ -195,13 +195,14 @@ function get_predikat(float $nilai, float $krit_a = null, float $krit_b = null, 
 }
 
 /**
- * Hitung nilai akhir BULANAN
- * Komponen: Nilai Harian (NH1+NH2+NH3) dan Nilai Tugas
- * Bobot: rata-rata harian = 70%, tugas = 30%
+ * Hitung nilai akhir BULANAN — fleksibel.
+ * Rata-rata dihitung hanya dari komponen yang terisi (nilai > 0).
+ * Contoh: NH1=90 saja → NA=90 | NH1=90,NH2=80 → NA=85 | semua 4 → NA=(sum/4)
  */
 function hitung_nilai_bulanan(float $h1, float $h2, float $h3, float $tugas): float {
-    $rata_harian = ($h1 + $h2 + $h3) / 3;
-    return round(($rata_harian * 0.7) + ($tugas * 0.3), 2);
+    $komponen = array_filter([$h1, $h2, $h3, $tugas], fn($v) => $v > 0);
+    if (count($komponen) === 0) return 0;
+    return round(array_sum($komponen) / count($komponen), 2);
 }
 
 /**

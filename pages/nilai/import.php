@@ -173,10 +173,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: kelas '$kelas_nama' (TA ID:$ta_id) tidak ditemukan — dilewati"]; continue;
                 }
 
-                // Hitung nilai akhir
+                // Hitung nilai akhir — bulanan fleksibel (rata-rata komponen yang terisi)
                 if ($jenis === 'semester')     $na = round($sas, 2);
                 elseif ($jenis === 'sts')      $na = round($sts_val, 2);
-                else                           $na = round((($h1+$h2+$h3)/3 * 0.7) + ($tugas * 0.3), 2);
+                else {
+                    $komp = array_filter([$h1, $h2, $h3, $tugas], fn($v) => $v > 0);
+                    $na   = count($komp) > 0 ? round(array_sum($komp) / count($komp), 2) : 0;
+                }
 
                 $pred = ($na >= $krit_a) ? 'A' : (($na >= $krit_b) ? 'B' : (($na >= $krit_c) ? 'C' : 'D'));
 

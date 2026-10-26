@@ -90,8 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         } elseif ($p_jenis === 'sts') {
             $na = round($sts, 2);
         } else {
-            $rata = ($h1 + $h2 + $h3) / 3;
-            $na   = round(($rata * 0.7) + ($tug * 0.3), 2);
+            // Fleksibel: hitung rata-rata hanya dari field yang terisi (> 0)
+            $komponen = array_filter([$h1, $h2, $h3, $tug], fn($v) => $v > 0);
+            $na = count($komponen) > 0
+                ? round(array_sum($komponen) / count($komponen), 2)
+                : 0;
         }
 
         // Predikat berdasarkan kriteria sekolah
@@ -767,12 +770,15 @@ const DESK_KRIT = {
 function hitungBaris(sid) {
     let na = 0;
     if (JENIS === 'bulanan') {
-        const h1 = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value) || 0;
-        const h2 = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value) || 0;
-        const h3 = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value) || 0;
+        const h1  = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value)    || 0;
+        const h2  = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value)    || 0;
+        const h3  = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value)    || 0;
         const tug = parseFloat(document.querySelector(`[name="tugas_${sid}"]`)?.value) || 0;
-        const rata = (h1 + h2 + h3) / 3;
-        na = (rata * 0.7) + (tug * 0.3);
+        // Fleksibel: rata-rata hanya dari komponen yang terisi (> 0)
+        const komponen = [h1, h2, h3, tug].filter(v => v > 0);
+        na = komponen.length > 0
+            ? komponen.reduce((a, b) => a + b, 0) / komponen.length
+            : 0;
     } else if (JENIS === 'sts') {
         na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
     } else {
