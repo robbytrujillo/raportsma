@@ -24,6 +24,11 @@ $bulan    = (int)($_GET['bulan']  ?? 0);
 $tgl_raw      = $_GET['tgl'] ?? '';
 $tgl_override = ($tgl_raw && preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_raw))
     ? $tgl_raw : date('Y-m-d');
+// Ukuran kertas: a4 (default) atau f4
+$ukuran = in_array($_GET['ukuran'] ?? '', ['a4','f4']) ? $_GET['ukuran'] : 'a4';
+$paper  = $ukuran === 'f4'
+    ? ['w'=>'215mm','h'=>'330mm','pad_v'=>'12mm','pad_h'=>'18mm','size_css'=>'215mm 330mm']
+    : ['w'=>'210mm','h'=>'297mm','pad_v'=>'10mm','pad_h'=>'15mm','size_css'=>'A4'];
 
 if (!$ta_id || !$kelas_id) {
     http_response_code(400); echo 'Parameter ta dan kelas wajib diisi.'; exit;
@@ -178,9 +183,12 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         background: rgba(255, 255, 255, 0.9);
         color: #f97316;
     }
+    .print-toolbar button.btn-print:hover { background: #fff; }
 
-    .print-toolbar button.btn-print:hover {
-        background: #fff;
+    /* Tombol ukuran aktif */
+    .btn-paper-active {
+        background: rgba(255,255,255,.9) !important;
+        color: #f97316 !important; font-weight: 700 !important;
     }
 
     /* ── Progress indicator ── */
@@ -212,38 +220,35 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         break-after: avoid;
     }
 
-    /* Override margin raport untuk cetak kelas */
+    /* Override raport page — ikuti ukuran kertas */
+    :root {
+      --paper-w:     <?= $paper['w'] ?>;
+      --paper-h:     <?= $paper['h'] ?>;
+      --paper-pad-v: <?= $paper['pad_v'] ?>;
+      --paper-pad-h: <?= $paper['pad_h'] ?>;
+    }
     .raport-page {
-        margin: 24px auto !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12) !important;
+        width: var(--paper-w) !important;
+        min-height: var(--paper-h) !important;
+        padding: var(--paper-pad-v) var(--paper-pad-h) !important;
+        margin: 20px auto !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
+        box-sizing: border-box !important;
     }
 
     /* ── @media print ── */
     @media print {
-        body {
-            background: #fff !important;
-            padding-top: 0 !important;
-        }
-
-        .print-toolbar,
-        .print-progress {
-            display: none !important;
-        }
-
+        body { background: #fff !important; padding-top: 0 !important; }
+        .print-toolbar, .print-progress { display: none !important; }
         .raport-page {
-            margin: 0 !important;
-            box-shadow: none !important;
+            width: var(--paper-w) !important;
+            min-height: var(--paper-h) !important;
+            padding: var(--paper-pad-v) var(--paper-pad-h) !important;
+            margin: 0 !important; box-shadow: none !important;
         }
-
-        .student-raport-wrap {
-            page-break-after: always;
-            break-after: page;
-        }
-
-        .student-raport-wrap:last-child {
-            page-break-after: avoid;
-            break-after: avoid;
-        }
+        .student-raport-wrap { page-break-after: always; break-after: page; }
+        .student-raport-wrap:last-child { page-break-after: avoid; break-after: avoid; }
+        @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
     </style>
 </head>
@@ -263,6 +268,18 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             </div>
         </div>
         <div class="tb-btns">
+            <!-- Pilih ukuran kertas -->
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
+                        border-radius:8px;padding:3px">
+                <button onclick="setUkuran('a4')"
+                    class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
+                    style="border:none;border-radius:6px;padding:3px 10px"
+                    title="Kertas A4 — 210 × 297 mm">A4</button>
+                <button onclick="setUkuran('f4')"
+                    class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
+                    style="border:none;border-radius:6px;padding:3px 10px"
+                    title="Kertas F4 — 215 × 330 mm">F4</button>
+            </div>
             <!-- Date picker tanggal cetak -->
             <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;white-space:nowrap">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -411,6 +428,15 @@ foreach ($siswa_list as $rank_idx => $sw):
     function applyTglCetak(val) {
         const url = new URL(window.location.href);
         url.searchParams.set('tgl', val);
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Ganti ukuran kertas: reload dengan ?ukuran= baru.
+     */
+    function setUkuran(u) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('ukuran', u);
         window.location.href = url.toString();
     }
 

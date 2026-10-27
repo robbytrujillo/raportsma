@@ -17,6 +17,11 @@ $bulan       = (int)($_GET['bulan'] ?? 0);
 $tgl_raw     = $_GET['tgl'] ?? '';
 $tgl_override = ($tgl_raw && preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_raw))
     ? $tgl_raw : date('Y-m-d');
+// Ukuran kertas: a4 (default) atau f4
+$ukuran = in_array($_GET['ukuran'] ?? '', ['a4','f4']) ? $_GET['ukuran'] : 'a4';
+$paper  = $ukuran === 'f4'
+    ? ['w'=>'215mm','h'=>'330mm','pad_v'=>'12mm','pad_h'=>'18mm','size_css'=>'215mm 330mm']
+    : ['w'=>'210mm','h'=>'297mm','pad_v'=>'10mm','pad_h'=>'15mm','size_css'=>'A4'];
 
 // Siswa hanya bisa cetak raport sendiri
 if ($role === 'siswa' && $siswa_uid !== (int)$user_ses['id']) {
@@ -31,83 +36,153 @@ if (!$siswa) {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
-  <style>
-    body { background: #fff; margin: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
+    <!-- Favicon -->
+    <?php if (!empty($sekolah_l['logo'])): ?>
+    <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
+    <link rel="shortcut icon" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
+    <?php else: ?>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%23f97316'/><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' fill='none' stroke='white' stroke-width='2'/></svg>">
+    <?php endif; ?>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+    <style>
+    /* ── Variabel ukuran kertas dari PHP ── */
+    :root {
+      --paper-w:     <?= $paper['w'] ?>;
+      --paper-h:     <?= $paper['h'] ?>;
+      --paper-pad-v: <?= $paper['pad_v'] ?>;
+      --paper-pad-h: <?= $paper['pad_h'] ?>;
+    }
+
+    body { background: #f3f4f6; margin: 0; padding-top: 60px; }
+
     .print-toolbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: #f97316; color: #fff; padding: 10px 24px;
+      background: #f97316; color: #fff; padding: 8px 20px;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,.2); gap: 10px;
       font-family: 'Poppins', sans-serif;
     }
     .print-toolbar button, .print-toolbar a {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.5);
-      color: #fff; padding: 7px 16px; border-radius: 8px;
-      cursor: pointer; font-size: .875rem; font-weight: 600;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5);
+      color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+      font-size: .82rem; font-weight: 600; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
     }
-    .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,0.35); }
-    body { padding-top: 52px; }
-    .raport-page { margin: 24px auto; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+    .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,.35); }
+
+    /* Tombol ukuran aktif */
+    .btn-paper-active {
+      background: rgba(255,255,255,.9) !important;
+      color: #f97316 !important; font-weight: 700 !important;
+    }
+
+    /* ── Raport page — mengikuti variabel ukuran ── */
+    .raport-page {
+      width: var(--paper-w);
+      min-height: var(--paper-h);
+      padding: var(--paper-pad-v) var(--paper-pad-h);
+      background: #fff;
+      margin: 20px auto;
+      box-shadow: 0 4px 24px rgba(0,0,0,.12);
+      box-sizing: border-box;
+    }
+
+    /* ── Print media — override sesuai ukuran ── */
     @media print {
+      body { background: #fff !important; padding-top: 0 !important; }
       .print-toolbar { display: none !important; }
-      body { padding-top: 0; }
-      .raport-page { margin: 0; box-shadow: none; }
+      .raport-page {
+        width: var(--paper-w) !important;
+        min-height: var(--paper-h) !important;
+        padding: var(--paper-pad-v) var(--paper-pad-h) !important;
+        margin: 0 !important; box-shadow: none !important;
+      }
+      @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
-  </style>
+    </style>
 </head>
+
 <body>
 
-<!-- Toolbar (hilang saat print) -->
-<div class="print-toolbar no-print">
-  <div style="font-weight:700;font-size:1rem">
-    Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <!-- Date picker tanggal cetak -->
-    <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600">
-      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      Tgl Cetak:
-      <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
-        style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);
-               color:#fff;padding:4px 8px;border-radius:6px;font-size:.82rem;cursor:pointer"
-        onchange="applyTglCetak(this.value)">
-    </label>
-    <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
-       onclick="if(window.opener||history.length<=1){window.close();return false;}">← Kembali</a>
-    <button onclick="window.print()">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <polyline points="6 9 6 2 18 2 18 9"/>
-        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-        <rect x="6" y="14" width="12" height="8"/>
-      </svg>
-      Cetak / Simpan PDF
-    </button>
-  </div>
-</div>
-<script>
-/* Saat tanggal diganti, reload halaman dengan ?tgl= baru */
-function applyTglCetak(val) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('tgl', val);
-  window.location.href = url.toString();
-}
-</script>
+    <!-- Toolbar (hilang saat print) -->
+    <div class="print-toolbar no-print">
+      <div style="font-weight:700;font-size:.95rem;white-space:nowrap">
+        Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
 
-<!-- Konten Raport -->
-<?php include __DIR__ . '/raport_template.php'; ?>
+        <!-- Pilih ukuran kertas -->
+        <div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.15);
+                    border-radius:8px;padding:3px">
+          <button onclick="setUkuran('a4')"
+            class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
+            style="border-radius:6px;padding:4px 12px;border:none"
+            title="Kertas A4 — 210 × 297 mm">
+            A4
+          </button>
+          <button onclick="setUkuran('f4')"
+            class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
+            style="border-radius:6px;padding:4px 12px;border:none"
+            title="Kertas F4 — 215 × 330 mm">
+            F4
+          </button>
+        </div>
+
+        <!-- Date picker tanggal cetak -->
+        <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Tgl:
+          <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
+            style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
+                   color:#fff;padding:3px 7px;border-radius:6px;font-size:.8rem;cursor:pointer"
+            onchange="applyTglCetak(this.value)">
+        </label>
+
+        <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+           onclick="if(window.opener||history.length<=1){window.close();return false;}"
+           style="border-radius:30px">← Kembali</a>
+
+        <button onclick="window.print()" style="border-radius:30px;background:rgba(255,255,255,.9);color:#f97316;font-weight:700">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Cetak / PDF
+        </button>
+      </div>
+    </div>
+    <script>
+    function applyTglCetak(val) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tgl', val);
+      window.location.href = url.toString();
+    }
+    function setUkuran(u) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('ukuran', u);
+      window.location.href = url.toString();
+    }
+    </script>
+
+    <!-- Konten Raport -->
+    <?php include __DIR__ . '/raport_template.php'; ?>
 
 </body>
+
 </html>
