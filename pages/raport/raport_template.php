@@ -503,8 +503,13 @@ $row_no = 0;
     </tbody>
   </table>
 
+  <!-- ══════════════════════════════════════════════════════════
+       BLOK BAWAH: Kriteria + Absensi + Catatan + TTD
+       Dibungkus agar tidak terpotong page break
+       ══════════════════════════════════════════════════════════ -->
+  <div class="raport-footer-block">
+
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
-  <!-- Selalu tampilkan tabel kotak (berlaku untuk semua jenis termasuk Global) -->
   <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
     <table style="border-collapse:collapse;border:1px solid #000">
       <tr>
@@ -660,5 +665,7 @@ $row_no = 0;
       </td>
     </tr>
   </table>
+
+  </div><!-- /.raport-footer-block -->
 
 </div><!-- /.raport-page -->

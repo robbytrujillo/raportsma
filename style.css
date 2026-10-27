@@ -905,12 +905,36 @@ table.data-table {
 .nilai-c { color: #b45309; font-weight: 700; }
 .nilai-d { color: #b91c1c; font-weight: 700; }
 
+/* ── Raport footer block — jangan terpotong page break ── */
+.raport-footer-block {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
 /* ── Print media ────────────────────────────────────────────── */
 @media print {
   body { background: #fff; }
   .no-print { display: none !important; }
   .raport-page { margin: 0; padding: 10mm 15mm; box-shadow: none; }
   @page { margin: 0; size: A4; }
+
+  /* Blok bawah (kriteria + absensi + catatan + TTD) tidak boleh terpotong */
+  .raport-footer-block {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Baris tabel nilai — hindari potong di tengah baris */
+  .raport-nilai-table tbody tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Baris header kelompok — selalu di halaman yang sama dengan baris pertama di bawahnya */
+  .raport-nilai-table tbody tr:has(td[colspan="5"]) {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
 }
 
 /* ── Bulk Nilai Table ────────────────────────────────────────── */
