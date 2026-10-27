@@ -192,14 +192,15 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                         <td class="text-center text-gray-400"><?= $m['urutan'] ?: '-' ?></td>
                         <td>
                             <div class="flex gap-1">
-                                <button onclick='editMapel(<?= json_encode($m) ?>)'
-                                    class="btn btn-sm btn-secondary">Edit</button>
+                                <button onclick='editMapel(<?= json_encode($m) ?>)' class="btn btn-sm btn-secondary"
+                                    style="border-radius: 30px">Edit</button>
                                 <form method="POST" action="index.php?page=mapel" style="display:inline"
                                     onsubmit="return confirm('Hapus mata pelajaran ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $m['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        style="border-radius: 30px">Hapus</button>
                                 </form>
                             </div>
                         </td>
