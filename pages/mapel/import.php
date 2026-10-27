@@ -24,9 +24,9 @@ if (isset($_GET['download_template'])) {
              'example'=>'Bahasa Indonesia', 'note'=>'Nama lengkap mata pelajaran'],
             ['header'=>'Kode Mapel',  'field'=>'kode_mapel',  'width'=>12, 'required'=>false, 'type'=>'text','format'=>'@',
              'example'=>'BIND', 'note'=>'Kode singkat, misal: MTK, BIND, PAI'],
-            ['header'=>'Kelompok',    'field'=>'kelompok',    'width'=>14, 'required'=>true,  'type'=>'dropdown',
-             'dropdown'=>['A','B','C','Muatan Lokal'],
-             'example'=>'A', 'note'=>'Pilih: A / B / C / Muatan Lokal'],
+            ['header'=>'Kelompok',    'field'=>'kelompok',    'width'=>18, 'required'=>true,  'type'=>'dropdown',
+             'dropdown'=>['A','B','C','C Pilihan','D','Muatan Lokal'],
+             'example'=>'A', 'note'=>'Pilih: A / B / C / C Pilihan / D / Muatan Lokal'],
             ['header'=>'Parent ID',   'field'=>'parent_id',   'width'=>12, 'required'=>false, 'type'=>'number',
              'example'=>'', 'note'=>'ID mapel induk jika ini sub-mapel. Lihat sheet Referensi. Kosongkan jika mapel mandiri.'],
             ['header'=>'Sub Label',   'field'=>'sub_label',   'width'=>10, 'required'=>false, 'type'=>'text','format'=>'@',
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         if (!$parsed['ok']) {
             $errors[] = $parsed['error'];
         } else {
-            $valid_kelompok = ['A', 'B', 'C', 'Muatan Lokal'];
+            $valid_kelompok = ['A', 'B', 'C', 'C Pilihan', 'D', 'Muatan Lokal'];
 
             foreach ($parsed['rows'] as $i => $row) {
                 $line     = $i + 4;
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
 
                 if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama mapel kosong — dilewati']; continue; }
                 if (!in_array($kelompok, $valid_kelompok)) {
-                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelompok '$kelompok' tidak valid (A/B/C/Muatan Lokal)"]; continue;
+                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelompok '$kelompok' tidak valid (A/B/C/C Pilihan/D/Muatan Lokal)"]; continue;
                 }
 
                 $parent_id = null;
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         <ol style="padding-left:18px;color:#374151">
           <li>Klik <strong>Download Template Excel</strong></li>
           <li>Isi data mulai baris ke-<strong>4</strong></li>
-          <li>Kolom <strong>Kelompok</strong> sudah ada dropdown: A / B / C / Muatan Lokal</li>
+          <li>Kolom <strong>Kelompok</strong> sudah ada dropdown: A / B / C / C Pilihan / D / Muatan Lokal</li>
           <li>Import mapel <strong>induk dulu</strong>, lalu sub-mapelnya</li>
           <li>Lihat sheet <strong>"Referensi"</strong> untuk Parent ID sub-mapel</li>
         </ol>
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
           <?php foreach ([
             ['nama_mapel','Nama lengkap mata pelajaran — wajib'],
             ['kode_mapel','Kode singkat misal MTK, BIND — opsional'],
-            ['kelompok','A / B / C / Muatan Lokal (dropdown)'],
+            ['kelompok','A / B / C / C Pilihan / D / Muatan Lokal (dropdown)'],
             ['parent_id','ID mapel induk (kosongkan jika mapel mandiri)'],
             ['sub_label','Label huruf: a, b, c (untuk sub-mapel)'],
             ['urutan','Angka urutan di raport'],

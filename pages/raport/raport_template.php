@@ -34,6 +34,82 @@ $is_bulanan   = ($jenis === 'bulanan');
 $is_sts       = ($jenis === 'sts');
 $bulan_label  = (($is_bulanan || $is_sts) && $bulan) ? strtoupper($bulan_names[$bulan] ?? '') : '';
 
+// ── Deteksi kelas Global (raport bahasa Inggris) ─────────────
+// Kelas Global ditandai dengan nama kelas mengandung kata "Global" (case-insensitive)
+$nama_kelas_raw = $siswa['nama_kelas'] ?? '';
+$is_global      = stripos($nama_kelas_raw, 'global') !== false;
+
+// ── Label bilingual ───────────────────────────────────────────
+// Digunakan di seluruh template: jika $is_global pakai EN, jika tidak pakai ID
+$lbl = $is_global ? [
+    'judul_bulanan'   => 'MONTHLY REPORT (PERIOD: %s)',
+    'judul_sts'       => 'MID-SEMESTER REPORT%s',
+    'judul_semester'  => 'SEMESTER %s ACADEMIC REPORT',
+    'tahun_pelajaran' => 'ACADEMIC YEAR %s',
+    'nama_siswa'      => 'Name of Student',
+    'nis_nisn'        => 'NIS / NISN',
+    'kelas'           => 'Grade',
+    'kelas_peminatan' => 'Grade/Program',
+    'semester'        => 'Semester',
+    'semester_ganjil' => 'Odd',
+    'semester_genap'  => 'Even',
+    'peringkat'       => 'Class Rank',
+    'dari'            => 'of',
+    'siswa'           => 'students',
+    'mata_pelajaran'  => 'Lesson Subject',
+    'angka'           => 'Number',
+    'deskripsi'       => 'Description',
+    'kelompok'        => 'Group',          // "Group A", "Group B", dll
+    'kelompok_c_pil'  => 'Group C (Elective)',
+    'kelompok_d'      => 'Group D',
+    'rata_rata'       => 'Average',
+    'kriteria'        => 'Criteria',
+    'ketidakhadiran'  => 'ABSENCES',
+    'sakit'           => 'Sick',
+    'izin'            => 'Permission',
+    'tanpa_ket'       => 'Unexcused',
+    'hari'            => 'Days',
+    'catatan_walas'   => 'HOMEROOM TEACHER\'S NOTES',
+    'mengetahui'      => 'Acknowledged by,',
+    'kepala_sekolah'  => 'Principal of SMA IHBS',
+    'wali_kelas'      => 'Homeroom Teacher',
+    'tgl_format'      => 'en',             // format tanggal bahasa Inggris
+] : [
+    'judul_bulanan'   => 'LAPORAN BULANAN (PERIODE : %s)',
+    'judul_sts'       => 'LAPORAN SUMATIF TENGAH SEMESTER%s',
+    'judul_semester'  => 'LAPORAN HASIL BELAJAR SEMESTER %s',
+    'tahun_pelajaran' => 'TAHUN PELAJARAN %s',
+    'nama_siswa'      => 'Nama Siswa',
+    'nis_nisn'        => 'NIS / NISN',
+    'kelas'           => 'Kelas',
+    'kelas_peminatan' => 'Kelas/Perminatan',
+    'semester'        => 'Semester',
+    'semester_ganjil' => 'Ganjil',
+    'semester_genap'  => 'Genap',
+    'peringkat'       => 'Peringkat Kelas',
+    'dari'            => 'dari',
+    'siswa'           => 'siswa',
+    'mata_pelajaran'  => 'MATA PELAJARAN',
+    'angka'           => 'Angka',
+    'deskripsi'       => 'Deskripsi',
+    'kelompok'        => 'Kelompok',
+    'kelompok_c_pil'  => 'Kelompok C (Mapel Pilihan)',
+    'kelompok_d'      => 'Kelompok D',
+    'rata_rata'       => 'Rata-rata',
+    'kriteria'        => 'Kriteria',
+    'ketidakhadiran'  => 'KETIDAKHADIRAN',
+    'sakit'           => 'Sakit',
+    'izin'            => 'Izin',
+    'tanpa_ket'       => 'Tanpa Keterangan',
+    'hari'            => 'Hari',
+    'catatan_walas'   => 'CATATAN WALI KELAS',
+    'mengetahui'      => 'Mengetahui,',
+    'kepala_sekolah'  => 'Kepala SMA IHBS',
+    'wali_kelas'      => 'Wali Kelas',
+    'tgl_format'      => 'id',
+];
+$semester_lbl_loc = ($ta['semester'] ?? 1) == 1 ? $lbl['semester_ganjil'] : $lbl['semester_genap'];
+
 // Kriteria nilai dari setting sekolah
 $krit_a = (float)($sekolah['kriteria_a_min'] ?? 92);
 $krit_b = (float)($sekolah['kriteria_b_min'] ?? 83);
@@ -235,15 +311,15 @@ $row_no = 0;
   <div style="text-align:center;margin:10px 0 4px;font-family:'Times New Roman',serif">
     <div style="font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px">
       <?php if ($is_bulanan): ?>
-        LAPORAN BULANAN (PERIODE : <?= $bulan_label ?>)
+        <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
       <?php elseif ($is_sts): ?>
-        LAPORAN SUMATIF TENGAH SEMESTER<?= $bulan_label ? ' — ' . $bulan_label : '' ?>
+        <?= sprintf($lbl['judul_sts'], $bulan_label ? ' — ' . $bulan_label : '') ?>
       <?php else: ?>
-        LAPORAN HASIL BELAJAR SEMESTER <?= strtoupper($semester_lbl) ?>
+        <?= sprintf($lbl['judul_semester'], strtoupper($semester_lbl_loc)) ?>
       <?php endif; ?>
     </div>
     <div style="font-size:12pt;font-weight:700;text-transform:uppercase">
-      TAHUN PELAJARAN <?= htmlspecialchars($ta['nama'] ?? '') ?>
+      <?= sprintf($lbl['tahun_pelajaran'], htmlspecialchars($ta['nama'] ?? '')) ?>
     </div>
   </div>
 
@@ -251,32 +327,45 @@ $row_no = 0;
   <table style="width:60%;font-size:10.5pt;margin:10px 0 12px;
                 font-family:'Times New Roman',serif;border-collapse:collapse">
     <tr>
-      <td style="width:130px;padding:1px 0;font-weight:600">Nama Siswa</td>
+      <td style="width:160px;padding:1px 0;font-weight:600"><?= $lbl['nama_siswa'] ?></td>
       <td style="width:12px">:</td>
       <td style="font-weight:600"><?= htmlspecialchars($siswa['nama_lengkap'] ?? '') ?></td>
     </tr>
-    <?php if (!$is_bulanan): ?>
+    <?php if (!$is_bulanan && ($siswa['nis'] || $siswa['nisn'])): ?>
     <tr>
-      <td style="padding:1px 0;font-weight:600">NIS / NISN</td>
+      <td style="padding:1px 0;font-weight:600"><?= $lbl['nis_nisn'] ?></td>
       <td>:</td>
       <td><?= htmlspecialchars(($siswa['nis'] ?? '') . ($siswa['nisn'] ? ' / ' . $siswa['nisn'] : '')) ?></td>
     </tr>
+    <?php elseif ($is_global && $siswa['nisn']): ?>
+    <tr>
+      <td style="padding:1px 0;font-weight:600">NISN</td>
+      <td>:</td>
+      <td><?= htmlspecialchars($siswa['nisn'] ?? '') ?></td>
+    </tr>
     <?php endif; ?>
     <tr>
-      <td style="padding:1px 0;font-weight:600">Kelas<?= $is_bulanan ? '/Perminatan' : '' ?></td>
+      <td style="padding:1px 0;font-weight:600"><?= $is_bulanan ? $lbl['kelas_peminatan'] : $lbl['kelas'] ?></td>
       <td>:</td>
       <td><?= htmlspecialchars($siswa['nama_kelas'] ?? '') ?></td>
     </tr>
     <tr>
-      <td style="padding:1px 0;font-weight:600">Semester</td>
+      <td style="padding:1px 0;font-weight:600"><?= $lbl['semester'] ?></td>
       <td>:</td>
-      <td><?= $semester_lbl ?></td>
+      <td><?= $semester_lbl_loc ?></td>
     </tr>
+    <?php if ($is_global && $is_bulanan): ?>
+    <tr>
+      <td style="padding:1px 0;font-weight:600">Performance Indicators</td>
+      <td>:</td>
+      <td><?= (int)$krit_c ?></td>
+    </tr>
+    <?php endif; ?>
     <?php if ($peringkat !== '-' && !$is_bulanan): ?>
     <tr>
-      <td style="padding:1px 0;font-weight:600">Peringkat Kelas</td>
+      <td style="padding:1px 0;font-weight:600"><?= $lbl['peringkat'] ?></td>
       <td>:</td>
-      <td><?= htmlspecialchars($peringkat) ?> dari <?= $total_siswa_kelas ?> siswa</td>
+      <td><?= htmlspecialchars($peringkat) ?> <?= $lbl['dari'] ?> <?= $total_siswa_kelas ?> <?= $lbl['siswa'] ?></td>
     </tr>
     <?php endif; ?>
   </table>
@@ -287,19 +376,18 @@ $row_no = 0;
       <tr style="background:#fff">
         <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama — 5 kolom total (Pred dihapus) -->
         <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
-          MATA PELAJARAN
-        </th>
-        <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
-          NILAI PENGETAHUAN
-        </th>
-      </tr>
-      <tr style="background:#fff">
-        <!-- No: header kosong, angka tetap tampil di tbody -->
-        <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
-        <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
-        <th style="border:1px solid #000;padding:4px 6px;text-align:left">Nama Mata Pelajaran</th>
-        <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px">Angka</th>
-        <th style="border:1px solid #000;padding:4px 8px;text-align:center">Deskripsi</th>
+            <?= $lbl['mata_pelajaran'] ?>
+          </th>
+          <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
+            <?= $is_global ? 'Cognitive Score' : 'NILAI PENGETAHUAN' ?>
+          </th>
+        </tr>
+        <tr style="background:#fff">
+          <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
+          <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
+          <th style="border:1px solid #000;padding:4px 6px;text-align:left"><?= $is_global ? 'Subject' : 'Nama Mata Pelajaran' ?></th>
+          <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['angka'] ?></th>
+          <th style="border:1px solid #000;padding:4px 8px;text-align:center"><?= $lbl['deskripsi'] ?></th>
       </tr>
     </thead>
     <tbody>
@@ -307,10 +395,22 @@ $row_no = 0;
     <?php foreach ($ordered_rows as $row): ?>
 
       <?php if ($row['type'] === 'group'): ?>
-        <!-- ── Baris Header Kelompok (Kelompok A / B / C) ── -->
+        <!-- ── Baris Header Kelompok — bilingual, label khusus untuk C Pilihan & D ── -->
+        <?php
+          $kg = $row['kelompok'] ?? '';
+          if ($kg === 'C Pilihan') {
+              $kg_label = $lbl['kelompok_c_pil'];
+          } elseif ($kg === 'D') {
+              $kg_label = $lbl['kelompok_d'];
+          } elseif ($kg === 'Muatan Lokal') {
+              $kg_label = $is_global ? 'Local Content' : 'Muatan Lokal';
+          } else {
+              $kg_label = $lbl['kelompok'] . ' ' . $kg;
+          }
+        ?>
         <tr style="background:#f0f0f0">
           <td colspan="5" style="border:1px solid #000;padding:4px 8px;font-weight:700">
-            Kelompok <?= htmlspecialchars($row['kelompok']) ?>
+            <?= htmlspecialchars($kg_label) ?>
           </td>
         </tr>
 
@@ -392,7 +492,7 @@ $row_no = 0;
     <!-- ── Baris Rata-rata — colspan disesuaikan 5 kolom ── -->
     <tr style="font-weight:700;background:#f9f9f9">
       <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
-        Rata-rata
+        <?= $lbl['rata_rata'] ?>
       </td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center">
         <?= $avg_nilai > 0 ? number_format($avg_nilai, 2) : '' ?>
@@ -404,15 +504,13 @@ $row_no = 0;
   </table>
 
   <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
-  <?php if ($is_bulanan): ?>
-  <!-- Raport BULANAN: kriteria tabel kotak tanpa border internal -->
+  <!-- Selalu tampilkan tabel kotak (berlaku untuk semua jenis termasuk Global) -->
   <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
     <table style="border-collapse:collapse;border:1px solid #000">
       <tr>
-        <!-- border-right dihilangkan agar tidak ada garis tengah -->
         <td style="padding:4px 10px;font-style:italic;vertical-align:top;
                    font-weight:600;white-space:nowrap">
-          Kriteria :
+          <?= $lbl['kriteria'] ?> :
         </td>
         <td style="padding:4px 14px;font-style:italic;line-height:1.7">
           A : <?= (int)$krit_a ?> - 100<br>
@@ -423,32 +521,24 @@ $row_no = 0;
       </tr>
     </table>
   </div>
-  <?php else: ?>
-  <!-- Raport STS/Semester: kriteria teks inline -->
-  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
-    <em>Keterangan Nilai :</em>&nbsp;&nbsp;
-    A (<?= (int)$krit_a ?>–100) &nbsp;|&nbsp;
-    B (<?= (int)$krit_b ?>–<?= (int)$krit_a - 1 ?>) &nbsp;|&nbsp;
-    C (<?= (int)$krit_c ?>–<?= (int)$krit_b - 1 ?>) &nbsp;|&nbsp;
-    D (&lt;<?= (int)$krit_c ?>)
-  </div>
 
-  <!-- ── KETIDAKHADIRAN (ABSENSI) — hanya untuk STS & Semester ── -->
+  <?php if (!$is_bulanan): ?>
+  <!-- ── KETIDAKHADIRAN — hanya untuk STS & Semester ── -->
   <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
     <table style="border:1px solid #000;border-collapse:collapse;width:auto">
       <thead>
         <tr style="background:#f0f0f0">
           <th colspan="6" style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
-            KETIDAKHADIRAN
+            <?= $lbl['ketidakhadiran'] ?>
           </th>
         </tr>
         <tr>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">Sakit</th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt">Hari</th>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">Izin</th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt">Hari</th>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">Tanpa Keterangan</th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt">Hari</th>
+          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['sakit'] ?></th>
+          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
+          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['izin'] ?></th>
+          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
+          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['tanpa_ket'] ?></th>
+          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
         </tr>
       </thead>
       <tbody>
@@ -475,7 +565,7 @@ $row_no = 0;
     <table style="width:100%;border:1px solid #000;border-collapse:collapse">
       <tr style="background:#f0f0f0">
         <th style="border:1px solid #000;padding:4px 10px;text-align:left;font-weight:700;font-size:9.5pt">
-          CATATAN WALI KELAS
+          <?= $lbl['catatan_walas'] ?>
         </th>
       </tr>
       <tr>
@@ -499,8 +589,8 @@ $row_no = 0;
     <tr>
       <!-- Kepala Sekolah — KIRI -->
       <td style="width:45%;vertical-align:top;text-align:center">
-        <div>Mengetahui,</div>
-        <div>Kepala SMA IHBS</div>
+        <div><?= $lbl['mengetahui'] ?></div>
+        <div><?= $lbl['kepala_sekolah'] ?></div>
         <!-- Tanda tangan kepala sekolah -->
         <div style="height:<?= ($kepsek && $kepsek['tanda_tangan']) ? 'auto' : '70px' ?>;
                     margin:6px 0;display:flex;align-items:center;justify-content:center">
@@ -533,13 +623,28 @@ $row_no = 0;
               1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',
               7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'
           ];
-          $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
-              . date('j', $tgl_ts) . ' '
-              . ($bulan_id_map[(int)date('n', $tgl_ts)] ?? date('F', $tgl_ts))
-              . ' ' . date('Y', $tgl_ts);
+          $bulan_en_map = [
+              1=>'January',2=>'February',3=>'March',4=>'April',5=>'May',6=>'June',
+              7=>'July',8=>'August',9=>'September',10=>'October',11=>'November',12=>'December'
+          ];
+          $day_n = (int)date('j', $tgl_ts);
+          $mon_n = (int)date('n', $tgl_ts);
+          $yr_n  = date('Y', $tgl_ts);
+          if ($is_global) {
+              // English date: "Depok, 19th February on 2026"
+              $ord = ($day_n % 10 === 1 && $day_n !== 11) ? 'st'
+                   : (($day_n % 10 === 2 && $day_n !== 12) ? 'nd'
+                   : (($day_n % 10 === 3 && $day_n !== 13) ? 'rd' : 'th'));
+              $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', ' . $day_n . $ord . ' ' . ($bulan_en_map[$mon_n] ?? '') . ' on ' . $yr_n;
+          } else {
+              $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
+                  . $day_n . ' '
+                  . ($bulan_id_map[$mon_n] ?? date('F', $tgl_ts))
+                  . ' ' . $yr_n;
+          }
         ?>
         <div><?= htmlspecialchars($tgl_cetak) ?></div>
-        <div>Wali Kelas</div>
+        <div><?= $lbl['wali_kelas'] ?></div>
         <!-- Tanda tangan wali kelas -->
         <div style="height:<?= ($wali_kelas && $wali_kelas['tanda_tangan']) ? 'auto' : '70px' ?>;
                     margin:6px 0;display:flex;align-items:center;justify-content:center">

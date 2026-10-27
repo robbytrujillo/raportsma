@@ -75,7 +75,7 @@ $mapel_list  = db_query(
     $params_m
 );
 $mapel_induk   = db_query("SELECT * FROM mapel WHERE parent_id IS NULL ORDER BY kelompok, urutan, nama_mapel");
-$kelompok_opts = ['A','B','C','Muatan Lokal'];
+$kelompok_opts = ['A','B','C','C Pilihan','D','Muatan Lokal'];
 $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
 ?>
 <div class="page-content">
@@ -171,7 +171,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
             <td class="text-center"><?= e($m['sub_label'] ?: '-') ?></td>
             <td class="text-xs text-gray-500"><?= e($nama_induk) ?></td>
             <td>
-              <?php $kls=['A'=>'badge-blue','B'=>'badge-orange','C'=>'badge-green','Muatan Lokal'=>'badge-purple'];?>
+              <?php $kls=['A'=>'badge-blue','B'=>'badge-orange','C'=>'badge-green','C Pilihan'=>'badge-teal','D'=>'badge-red','Muatan Lokal'=>'badge-purple'];?>
               <span class="badge <?= $kls[$m['kelompok']] ?? 'badge-gray' ?>">Kel. <?= e($m['kelompok']) ?></span>
             </td>
             <td class="text-center text-gray-400"><?= $m['urutan'] ?: '-' ?></td>
