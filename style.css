@@ -970,6 +970,90 @@ table.data-table {
   /* @page diatur oleh print.php / print_kelas.php sesuai pilihan A4/F4 */
 }
 
+/* ── Kompresi ekstra khusus A4 agar muat 1 halaman ─────────────
+   A4 = 297mm, F4 = 330mm. Template didesain untuk F4,
+   sehingga perlu penghematan ~10-12% ruang tambahan di A4.
+   ─────────────────────────────────────────────────────────────── */
+@media print {
+  body[data-paper="a4"] .raport-page {
+    font-size: 8.5pt !important;
+    padding: 7mm 12mm !important;
+  }
+
+  /* Header sekolah — lebih kompak */
+  body[data-paper="a4"] .raport-page > table:first-child {
+    padding-bottom: 3px !important;
+    margin-bottom: 2px !important;
+  }
+  body[data-paper="a4"] .raport-page > table:first-child img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  body[data-paper="a4"] .raport-page > table:first-child td[style*="vertical-align:middle"] div:nth-child(1) {
+    font-size: 9pt !important;
+  }
+  body[data-paper="a4"] .raport-page > table:first-child td[style*="vertical-align:middle"] div:nth-child(2) {
+    font-size: 14pt !important;
+  }
+  body[data-paper="a4"] .raport-page > table:first-child td[style*="vertical-align:middle"] div:nth-child(3),
+  body[data-paper="a4"] .raport-page > table:first-child td[style*="vertical-align:middle"] div:nth-child(4) {
+    font-size: 7.5pt !important;
+  }
+
+  /* Judul raport */
+  body[data-paper="a4"] .raport-page > div[style*="text-align:center"] {
+    margin: 2px 0 1px !important;
+  }
+  body[data-paper="a4"] .raport-page > div[style*="text-align:center"] div:first-child {
+    font-size: 11pt !important;
+  }
+  body[data-paper="a4"] .raport-page > div[style*="text-align:center"] div:last-child {
+    font-size: 10pt !important;
+  }
+
+  /* Identitas siswa */
+  body[data-paper="a4"] .raport-page > table:nth-child(3) {
+    font-size: 9pt !important;
+    margin: 3px 0 5px !important;
+  }
+  body[data-paper="a4"] .raport-page > table:nth-child(3) tr td {
+    padding: 0 !important;
+  }
+
+  /* Tabel nilai — padding dan font lebih kecil */
+  body[data-paper="a4"] .raport-nilai-table td,
+  body[data-paper="a4"] .raport-nilai-table th {
+    padding: 2px 4px !important;
+    font-size: 8pt !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Footer block — margin lebih kecil */
+  body[data-paper="a4"] .raport-footer-block {
+    margin-top: 2px !important;
+  }
+  body[data-paper="a4"] .raport-footer-block > div {
+    margin-top: 4px !important;
+  }
+  body[data-paper="a4"] .raport-footer-block table td,
+  body[data-paper="a4"] .raport-footer-block table th {
+    padding: 2px 6px !important;
+    font-size: 8pt !important;
+  }
+
+  /* Tanda tangan — tinggi image lebih kecil */
+  body[data-paper="a4"] .raport-ttd-block {
+    margin-top: 6px !important;
+    font-size: 9pt !important;
+  }
+  body[data-paper="a4"] .raport-ttd-block img {
+    max-height: 52px !important;
+  }
+  body[data-paper="a4"] .raport-ttd-block td > div[style*="height"] {
+    height: auto !important;
+  }
+}
+
 /* ── Bulk Nilai Table ────────────────────────────────────────── */
 #tblNilai tbody tr td { padding: 5px 6px; }
 #tblNilai .nilai-input {

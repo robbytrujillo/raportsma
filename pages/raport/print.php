@@ -54,10 +54,18 @@ if (!$siswa) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../../style.css') ?>">
     <style>
-    /* ── Variabel ukuran kertas dari PHP ── */
+    /* ── Dimensi kertas (px pada 96dpi) ── */
+    <?php
+      // Konversi mm ke px (96dpi: 1mm = 3.7795px)
+      $mm2px = 3.7795;
+      $pw_px = round((float)$paper['w'] * $mm2px);   // lebar kertas px
+      $ph_px = round((float)$paper['h'] * $mm2px);   // tinggi kertas px
+    ?>
     :root {
+      --paper-w-px:  <?= $pw_px ?>px;
+      --paper-h-px:  <?= $ph_px ?>px;
       --paper-w:     <?= $paper['w'] ?>;
       --paper-h:     <?= $paper['h'] ?>;
       --paper-pad-v: <?= $paper['pad_v'] ?>;
@@ -81,13 +89,12 @@ if (!$siswa) {
     }
     .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,.35); }
 
-    /* Tombol ukuran aktif */
     .btn-paper-active {
       background: rgba(255,255,255,.9) !important;
       color: #f97316 !important; font-weight: 700 !important;
     }
 
-    /* ── Raport page — mengikuti variabel ukuran ── */
+    /* ── Preview: raport ditampilkan sesuai lebar kertas ── */
     .raport-page {
       width: var(--paper-w);
       min-height: var(--paper-h);
@@ -98,22 +105,34 @@ if (!$siswa) {
       box-sizing: border-box;
     }
 
-    /* ── Print media — override sesuai ukuran ── */
+    /* ── Print: paksa 1 halaman dengan zoom otomatis ── */
     @media print {
-      body { background: #fff !important; padding-top: 0 !important; }
+      body { background: #fff !important; padding-top: 0 !important; margin: 0 !important; }
       .print-toolbar { display: none !important; }
+
+      /* Wrapper scale — JS akan set --print-scale sebelum print */
+      #printScaleWrap {
+        width: var(--paper-w);
+        transform-origin: top left;
+        transform: scale(var(--print-scale, 1));
+      }
+
       .raport-page {
         width: var(--paper-w) !important;
-        min-height: var(--paper-h) !important;
+        min-height: 0 !important;           /* biarkan natural height */
         padding: var(--paper-pad-v) var(--paper-pad-h) !important;
-        margin: 0 !important; box-shadow: none !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        page-break-after: always;
+        break-after: page;
       }
+
       @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
     </style>
 </head>
 
-<body>
+<body data-paper="<?= $ukuran ?>">
 
     <!-- Toolbar (hilang saat print) -->
     <div class="print-toolbar no-print">
@@ -124,16 +143,16 @@ if (!$siswa) {
 
         <!-- Pilih ukuran kertas -->
         <div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.15);
-                    border-radius:8px;padding:3px">
+                    border-radius:30px;padding:3px">
           <button onclick="setUkuran('a4')"
             class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:6px;padding:4px 12px;border:none"
+            style="border-radius:30px;padding:4px 12px;border:none"
             title="Kertas A4 — 210 × 297 mm">
             A4
           </button>
           <button onclick="setUkuran('f4')"
             class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:6px;padding:4px 12px;border:none"
+            style="border-radius:30px;padding:4px 12px;border:none"
             title="Kertas F4 — 215 × 330 mm">
             F4
           </button>
@@ -149,7 +168,7 @@ if (!$siswa) {
           Tgl:
           <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
             style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
-                   color:#fff;padding:3px 7px;border-radius:6px;font-size:.8rem;cursor:pointer"
+                   color:#fff;padding:3px 7px;border-radius:30px;font-size:.8rem;cursor:pointer"
             onchange="applyTglCetak(this.value)">
         </label>
 

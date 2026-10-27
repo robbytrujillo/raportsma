@@ -114,7 +114,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../../style.css') ?>">
     <style>
     body {
         background: #f3f4f6;
@@ -235,25 +235,32 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
         box-sizing: border-box !important;
     }
-
     /* ── @media print ── */
     @media print {
         body { background: #fff !important; padding-top: 0 !important; }
         .print-toolbar, .print-progress { display: none !important; }
+
+        .student-raport-wrap {
+            page-break-after: always;
+            break-after: page;
+        }
+        .student-raport-wrap:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
         .raport-page {
             width: var(--paper-w) !important;
-            min-height: var(--paper-h) !important;
+            min-height: 0 !important;           /* no forced blank space */
             padding: var(--paper-pad-v) var(--paper-pad-h) !important;
             margin: 0 !important; box-shadow: none !important;
         }
-        .student-raport-wrap { page-break-after: always; break-after: page; }
-        .student-raport-wrap:last-child { page-break-after: avoid; break-after: avoid; }
         @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
     </style>
 </head>
 
-<body>
+<body data-paper="<?= $ukuran ?>">
 
     <!-- ── Toolbar ──────────────────────────────────────────── -->
     <div class="print-toolbar">
@@ -270,14 +277,14 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         <div class="tb-btns">
             <!-- Pilih ukuran kertas -->
             <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
-                        border-radius:8px;padding:3px">
+                        border-radius:30px;padding:3px">
                 <button onclick="setUkuran('a4')"
                     class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
-                    style="border:none;border-radius:6px;padding:3px 10px"
+                    style="border:none;border-radius:30px;padding:3px 10px"
                     title="Kertas A4 — 210 × 297 mm">A4</button>
                 <button onclick="setUkuran('f4')"
                     class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
-                    style="border:none;border-radius:6px;padding:3px 10px"
+                    style="border:none;border-radius:30px;padding:3px 10px"
                     title="Kertas F4 — 215 × 330 mm">F4</button>
             </div>
             <!-- Date picker tanggal cetak -->
@@ -290,7 +297,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
                 Tgl Cetak:
                 <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
                     style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);
-                           color:#fff;padding:4px 8px;border-radius:6px;font-size:.82rem;cursor:pointer"
+                           color:#fff;padding:4px 8px;border-radius:30px;font-size:.82rem;cursor:pointer"
                     onchange="applyTglCetak(this.value)">
             </label>
             <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
