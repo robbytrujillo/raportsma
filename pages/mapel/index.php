@@ -130,7 +130,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                     </select>
                 </div>
                 <div class="flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+                    <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Cari</button>
                     <?php if ($search_m || $per !== 10): ?>
                     <a href="index.php?page=mapel" class="btn btn-secondary btn-sm">Reset</a>
                     <?php endif; ?>
