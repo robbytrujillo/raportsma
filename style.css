@@ -915,11 +915,43 @@ table.data-table {
 @media print {
   body { background: #fff; }
   .no-print { display: none !important; }
-  .raport-page { margin: 0; padding: 10mm 15mm; box-shadow: none; }
-  @page { margin: 0; size: A4; }
 
-  /* Blok bawah (kriteria + absensi + catatan + TTD) tidak boleh terpotong */
+  /* Ukuran font lebih kecil saat print agar muat 1 halaman */
+  .raport-page {
+    margin: 0 !important;
+    box-shadow: none !important;
+    font-size: 9.5pt !important;
+  }
+
+  /* Kompres header sekolah */
+  .raport-page > table:first-child {
+    padding-bottom: 4px !important;
+    margin-bottom: 2px !important;
+  }
+  /* Kompres judul raport */
+  .raport-page > div[style*="text-align:center"] {
+    margin: 4px 0 2px !important;
+  }
+  /* Kompres identitas siswa */
+  .raport-page > table:nth-child(3) {
+    margin: 4px 0 6px !important;
+  }
+
+  /* Kurangi padding sel tabel nilai saat print */
+  .raport-nilai-table td,
+  .raport-nilai-table th {
+    padding: 3px 5px !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Kurangi margin antar section */
   .raport-footer-block {
+    margin-top: 4px !important;
+  }
+
+  /* Blok TTD — jangan terpotong */
+  .raport-ttd-block {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
@@ -930,11 +962,12 @@ table.data-table {
     break-inside: avoid;
   }
 
-  /* Baris header kelompok — selalu di halaman yang sama dengan baris pertama di bawahnya */
+  /* Baris header kelompok — selalu di halaman yang sama dengan baris pertama */
   .raport-nilai-table tbody tr:has(td[colspan="5"]) {
     page-break-after: avoid;
     break-after: avoid;
   }
+  /* @page diatur oleh print.php / print_kelas.php sesuai pilihan A4/F4 */
 }
 
 /* ── Bulk Nilai Table ────────────────────────────────────────── */

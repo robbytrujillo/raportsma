@@ -590,7 +590,7 @@ $row_no = 0;
   <?php endif; ?>
 
   <!-- ── TANDA TANGAN ──────────────────────────────────────── -->
-  <table style="width:100%;margin-top:20px;font-family:'Times New Roman',serif;font-size:10.5pt">
+  <table class="raport-ttd-block" style="width:100%;margin-top:16px;font-family:'Times New Roman',serif;font-size:10.5pt">
     <tr>
       <!-- Kepala Sekolah — KIRI -->
       <td style="width:45%;vertical-align:top;text-align:center">
