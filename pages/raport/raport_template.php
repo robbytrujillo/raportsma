@@ -262,141 +262,142 @@ $row_no = 0;
      ══════════════════════════════════════════════════════════ -->
 <div class="raport-page" id="raportContent">
 
-  <!-- ── HEADER SEKOLAH ────────────────────────────────────── -->
-  <table style="width:100%;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:6px">
-    <tr>
-      <!-- Logo -->
-      <td style="width:80px;vertical-align:middle;text-align:center">
-        <?php if ($logo_url): ?>
-          <img src="<?= $logo_url ?>"
-               alt="Logo" style="width:70px;height:70px;object-fit:contain">
-        <?php else: ?>
-          <!-- Placeholder logo jika file tidak ada -->
-          <div style="width:70px;height:70px;border:2px solid #333;border-radius:50%;
+    <!-- ── HEADER SEKOLAH ────────────────────────────────────── -->
+    <table style="width:100%;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:6px">
+        <tr>
+            <!-- Logo -->
+            <td style="width:80px;vertical-align:middle;text-align:center">
+                <?php if ($logo_url): ?>
+                <img src="<?= $logo_url ?>" alt="Logo" style="width:70px;height:70px;object-fit:contain">
+                <?php else: ?>
+                <!-- Placeholder logo jika file tidak ada -->
+                <div style="width:70px;height:70px;border:2px solid #333;border-radius:50%;
                       display:flex;align-items:center;justify-content:center;
                       margin:0 auto;font-size:9pt;font-weight:700;color:#333;text-align:center;
                       line-height:1.2">
-            LOGO
-          </div>
-        <?php endif; ?>
-      </td>
-      <!-- Info sekolah -->
-      <td style="vertical-align:middle;text-align:center;padding:0 10px">
-        <?php if ($sekolah['nama_yayasan']): ?>
-          <div style="font-size:11pt;font-weight:600;font-family:'Times New Roman',serif">
-            <?= htmlspecialchars($sekolah['nama_yayasan']) ?>
-          </div>
-        <?php endif; ?>
-        <div style="font-size:18pt;font-weight:900;font-family:'Times New Roman',serif;
+                    LOGO
+                </div>
+                <?php endif; ?>
+            </td>
+            <!-- Info sekolah -->
+            <td style="vertical-align:middle;text-align:center;padding:0 10px">
+                <?php if ($sekolah['nama_yayasan']): ?>
+                <div style="font-size:11pt;font-weight:600;font-family:'Times New Roman',serif">
+                    <?= htmlspecialchars($sekolah['nama_yayasan']) ?>
+                </div>
+                <?php endif; ?>
+                <div style="font-size:18pt;font-weight:900;font-family:'Times New Roman',serif;
                     text-transform:uppercase;line-height:1.1;margin:2px 0">
-          <?= htmlspecialchars($sekolah['nama_sekolah']) ?>
-        </div>
-        <div style="font-size:9pt;font-family:'Times New Roman',serif">
-          <?= htmlspecialchars($sekolah['alamat']) ?>
-        </div>
-        <div style="font-size:9pt;font-family:'Times New Roman',serif">
-          Telp./Fax: <?= htmlspecialchars($sekolah['telp']) ?>
-          <?php if ($sekolah['website']): ?>
-            | Website: <span style="color:#1a56db"><?= htmlspecialchars($sekolah['website']) ?></span>
-          <?php endif; ?>
-          <?php if ($sekolah['email']): ?>
-            | E-mail: <span style="color:#1a56db"><?= htmlspecialchars($sekolah['email']) ?></span>
-          <?php endif; ?>
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  <!-- ── JUDUL RAPORT ──────────────────────────────────────── -->
-  <div style="text-align:center;margin:10px 0 4px;font-family:'Times New Roman',serif">
-    <div style="font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px">
-      <?php if ($is_bulanan): ?>
-        <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
-      <?php elseif ($is_sts): ?>
-        <?= sprintf($lbl['judul_sts'], $bulan_label ? ' — ' . $bulan_label : '') ?>
-      <?php else: ?>
-        <?= sprintf($lbl['judul_semester'], strtoupper($semester_lbl_loc)) ?>
-      <?php endif; ?>
-    </div>
-    <div style="font-size:12pt;font-weight:700;text-transform:uppercase">
-      <?= sprintf($lbl['tahun_pelajaran'], htmlspecialchars($ta['nama'] ?? '')) ?>
-    </div>
-  </div>
-
-  <!-- ── IDENTITAS SISWA ───────────────────────────────────── -->
-  <table style="width:60%;font-size:10.5pt;margin:10px 0 12px;
-                font-family:'Times New Roman',serif;border-collapse:collapse">
-    <tr>
-      <td style="width:160px;padding:1px 0;font-weight:600"><?= $lbl['nama_siswa'] ?></td>
-      <td style="width:12px">:</td>
-      <td style="font-weight:600"><?= htmlspecialchars($siswa['nama_lengkap'] ?? '') ?></td>
-    </tr>
-    <?php if (!$is_bulanan && ($siswa['nis'] || $siswa['nisn'])): ?>
-    <tr>
-      <td style="padding:1px 0;font-weight:600"><?= $lbl['nis_nisn'] ?></td>
-      <td>:</td>
-      <td><?= htmlspecialchars(($siswa['nis'] ?? '') . ($siswa['nisn'] ? ' / ' . $siswa['nisn'] : '')) ?></td>
-    </tr>
-    <?php elseif ($is_global && $siswa['nisn']): ?>
-    <tr>
-      <td style="padding:1px 0;font-weight:600">NISN</td>
-      <td>:</td>
-      <td><?= htmlspecialchars($siswa['nisn'] ?? '') ?></td>
-    </tr>
-    <?php endif; ?>
-    <tr>
-      <td style="padding:1px 0;font-weight:600"><?= $is_bulanan ? $lbl['kelas_peminatan'] : $lbl['kelas'] ?></td>
-      <td>:</td>
-      <td><?= htmlspecialchars($siswa['nama_kelas'] ?? '') ?></td>
-    </tr>
-    <tr>
-      <td style="padding:1px 0;font-weight:600"><?= $lbl['semester'] ?></td>
-      <td>:</td>
-      <td><?= $semester_lbl_loc ?></td>
-    </tr>
-    <?php if ($is_global && $is_bulanan): ?>
-    <tr>
-      <td style="padding:1px 0;font-weight:600">Performance Indicators</td>
-      <td>:</td>
-      <td><?= (int)$krit_c ?></td>
-    </tr>
-    <?php endif; ?>
-    <?php if ($peringkat !== '-' && !$is_bulanan): ?>
-    <tr>
-      <td style="padding:1px 0;font-weight:600"><?= $lbl['peringkat'] ?></td>
-      <td>:</td>
-      <td><?= htmlspecialchars($peringkat) ?> <?= $lbl['dari'] ?> <?= $total_siswa_kelas ?> <?= $lbl['siswa'] ?></td>
-    </tr>
-    <?php endif; ?>
-  </table>
-
-  <!-- ── TABEL NILAI ───────────────────────────────────────── -->
-  <table class="raport-nilai-table" style="font-family:'Times New Roman',serif;font-size:10pt">
-    <thead>
-      <tr style="background:#fff">
-        <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama — 5 kolom total (Pred dihapus) -->
-        <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
-            <?= $lbl['mata_pelajaran'] ?>
-          </th>
-          <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
-            <?= $is_global ? 'Cognitive Score' : 'NILAI PENGETAHUAN' ?>
-          </th>
+                    <?= htmlspecialchars($sekolah['nama_sekolah']) ?>
+                </div>
+                <div style="font-size:9pt;font-family:'Times New Roman',serif">
+                    <?= htmlspecialchars($sekolah['alamat']) ?>
+                </div>
+                <div style="font-size:9pt;font-family:'Times New Roman',serif">
+                    Telp./Fax: <?= htmlspecialchars($sekolah['telp']) ?>
+                    <?php if ($sekolah['website']): ?>
+                    | Website: <span style="color:#1a56db"><?= htmlspecialchars($sekolah['website']) ?></span>
+                    <?php endif; ?>
+                    <?php if ($sekolah['email']): ?>
+                    | E-mail: <span style="color:#1a56db"><?= htmlspecialchars($sekolah['email']) ?></span>
+                    <?php endif; ?>
+                </div>
+            </td>
         </tr>
-        <tr style="background:#fff">
-          <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
-          <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
-          <th style="border:1px solid #000;padding:4px 6px;text-align:left"><?= $is_global ? 'Subject' : 'Nama Mata Pelajaran' ?></th>
-          <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['angka'] ?></th>
-          <th style="border:1px solid #000;padding:4px 8px;text-align:center"><?= $lbl['deskripsi'] ?></th>
-      </tr>
-    </thead>
-    <tbody>
+    </table>
 
-    <?php foreach ($ordered_rows as $row): ?>
+    <!-- ── JUDUL RAPORT ──────────────────────────────────────── -->
+    <div style="text-align:center;margin:10px 0 4px;font-family:'Times New Roman',serif">
+        <div style="font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+            <?php if ($is_bulanan): ?>
+            <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
+            <?php elseif ($is_sts): ?>
+            <?= sprintf($lbl['judul_sts'], $bulan_label ? ' — ' . $bulan_label : '') ?>
+            <?php else: ?>
+            <?= sprintf($lbl['judul_semester'], strtoupper($semester_lbl_loc)) ?>
+            <?php endif; ?>
+        </div>
+        <div style="font-size:12pt;font-weight:700;text-transform:uppercase">
+            <?= sprintf($lbl['tahun_pelajaran'], htmlspecialchars($ta['nama'] ?? '')) ?>
+        </div>
+    </div>
 
-      <?php if ($row['type'] === 'group'): ?>
-        <!-- ── Baris Header Kelompok — bilingual, label khusus untuk C Pilihan & D ── -->
-        <?php
+    <!-- ── IDENTITAS SISWA ───────────────────────────────────── -->
+    <table style="width:60%;font-size:10.5pt;margin:10px 0 12px;
+                font-family:'Times New Roman',serif;border-collapse:collapse">
+        <tr>
+            <td style="width:160px;padding:1px 0;font-weight:600"><?= $lbl['nama_siswa'] ?></td>
+            <td style="width:12px">:</td>
+            <td style="font-weight:600"><?= htmlspecialchars($siswa['nama_lengkap'] ?? '') ?></td>
+        </tr>
+        <?php if (!$is_bulanan && ($siswa['nis'] || $siswa['nisn'])): ?>
+        <tr>
+            <td style="padding:1px 0;font-weight:600"><?= $lbl['nis_nisn'] ?></td>
+            <td>:</td>
+            <td><?= htmlspecialchars(($siswa['nis'] ?? '') . ($siswa['nisn'] ? ' / ' . $siswa['nisn'] : '')) ?></td>
+        </tr>
+        <?php elseif ($is_global && $siswa['nisn']): ?>
+        <tr>
+            <td style="padding:1px 0;font-weight:600">NISN</td>
+            <td>:</td>
+            <td><?= htmlspecialchars($siswa['nisn'] ?? '') ?></td>
+        </tr>
+        <?php endif; ?>
+        <tr>
+            <td style="padding:1px 0;font-weight:600"><?= $is_bulanan ? $lbl['kelas_peminatan'] : $lbl['kelas'] ?></td>
+            <td>:</td>
+            <td><?= htmlspecialchars($siswa['nama_kelas'] ?? '') ?></td>
+        </tr>
+        <tr>
+            <td style="padding:1px 0;font-weight:600"><?= $lbl['semester'] ?></td>
+            <td>:</td>
+            <td><?= $semester_lbl_loc ?></td>
+        </tr>
+        <?php if ($is_global && $is_bulanan): ?>
+        <tr>
+            <td style="padding:1px 0;font-weight:600">Performance Indicators</td>
+            <td>:</td>
+            <td><?= (int)$krit_c ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if ($peringkat !== '-' && !$is_bulanan): ?>
+        <tr>
+            <td style="padding:1px 0;font-weight:600"><?= $lbl['peringkat'] ?></td>
+            <td>:</td>
+            <td><?= htmlspecialchars($peringkat) ?> <?= $lbl['dari'] ?> <?= $total_siswa_kelas ?> <?= $lbl['siswa'] ?>
+            </td>
+        </tr>
+        <?php endif; ?>
+    </table>
+
+    <!-- ── TABEL NILAI ───────────────────────────────────────── -->
+    <table class="raport-nilai-table" style="font-family:'Times New Roman',serif;font-size:10pt">
+        <thead>
+            <tr style="background:#fff">
+                <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama — 5 kolom total (Pred dihapus) -->
+                <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
+                    <?= $lbl['mata_pelajaran'] ?>
+                </th>
+                <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $is_global ? 'Cognitive Score' : 'NILAI PENGETAHUAN' ?>
+                </th>
+            </tr>
+            <tr style="background:#fff">
+                <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
+                <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
+                <th style="border:1px solid #000;padding:4px 6px;text-align:left">
+                    <?= $is_global ? 'Subject' : 'Nama Mata Pelajaran' ?></th>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['angka'] ?></th>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center"><?= $lbl['deskripsi'] ?></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <?php foreach ($ordered_rows as $row): ?>
+
+            <?php if ($row['type'] === 'group'): ?>
+            <!-- ── Baris Header Kelompok — bilingual, label khusus untuk C Pilihan & D ── -->
+            <?php
           $kg = $row['kelompok'] ?? '';
           if ($kg === 'C Pilihan') {
               $kg_label = $lbl['kelompok_c_pil'];
@@ -408,215 +409,220 @@ $row_no = 0;
               $kg_label = $lbl['kelompok'] . ' ' . $kg;
           }
         ?>
-        <tr style="background:#f0f0f0">
-          <td colspan="5" style="border:1px solid #000;padding:4px 8px;font-weight:700">
-            <?= htmlspecialchars($kg_label) ?>
-          </td>
-        </tr>
+            <tr style="background:#f0f0f0">
+                <td colspan="5" style="border:1px solid #000;padding:4px 8px;font-weight:700">
+                    <?= htmlspecialchars($kg_label) ?>
+                </td>
+            </tr>
 
-      <?php elseif ($row['type'] === 'parent_header'): ?>
-        <!-- ── Baris Induk Mapel — nomor tampil, Pred dihapus ── -->
-        <?php $row_no++; ?>
-        <tr>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;
+            <?php elseif ($row['type'] === 'parent_header'): ?>
+            <!-- ── Baris Induk Mapel — nomor tampil, Pred dihapus ── -->
+            <?php $row_no++; ?>
+            <tr>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;
                      vertical-align:top;font-weight:700"><?= $row_no ?></td>
-          <td style="border:1px solid #000;padding:4px 6px"></td>
-          <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
-            <?= htmlspecialchars($row['nama_mapel']) ?>:
-          </td>
-          <td style="border:1px solid #000;padding:4px 6px"></td>
-          <td style="border:1px solid #000;padding:4px 8px"></td>
-        </tr>
+                <td style="border:1px solid #000;padding:4px 6px"></td>
+                <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
+                    <?= htmlspecialchars($row['nama_mapel']) ?>:
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px"></td>
+                <td style="border:1px solid #000;padding:4px 8px"></td>
+            </tr>
 
-      <?php elseif ($row['type'] === 'child'): ?>
-        <!-- ── Baris Sub-Mapel — kolom Pred dihapus ── -->
-        <?php
+            <?php elseif ($row['type'] === 'child'): ?>
+            <!-- ── Baris Sub-Mapel — kolom Pred dihapus ── -->
+            <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
           // ?? hanya cek null — pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
         ?>
-        <tr>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center"></td>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:600">
-            <?= htmlspecialchars($row['sub_label'] ?? '') ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 8px">
-            <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-            <?= $na > 0 ? number_format($na, 0) : '' ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
-            <?= htmlspecialchars($desk) ?>
-          </td>
-        </tr>
+            <tr>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center"></td>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:600">
+                    <?= htmlspecialchars($row['sub_label'] ?? '') ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 8px">
+                    <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $na > 0 ? number_format($na, 0) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
+                    <?= htmlspecialchars($desk) ?>
+                </td>
+            </tr>
 
-      <?php elseif ($row['type'] === 'single'): ?>
-        <!-- ── Baris Mapel Mandiri — kolom Pred dihapus ── -->
-        <?php
+            <?php elseif ($row['type'] === 'single'): ?>
+            <!-- ── Baris Mapel Mandiri — kolom Pred dihapus ── -->
+            <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
           // ?? hanya cek null — pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
           $row_no++;
         ?>
-        <tr>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-            <?= $row_no ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 6px"></td>
-          <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
-            <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-            <?= $na > 0 ? number_format($na, 0) : '' ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
-            <?= htmlspecialchars($desk) ?>
-          </td>
-        </tr>
+            <tr>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $row_no ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px"></td>
+                <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
+                    <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $na > 0 ? number_format($na, 0) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
+                    <?= htmlspecialchars($desk) ?>
+                </td>
+            </tr>
 
-      <?php endif; ?>
-    <?php endforeach; ?>
+            <?php endif; ?>
+            <?php endforeach; ?>
 
-    <?php if (empty($ordered_rows)): ?>
-      <tr>
-        <td colspan="5" style="border:1px solid #000;padding:14px;text-align:center;
+            <?php if (empty($ordered_rows)): ?>
+            <tr>
+                <td colspan="5" style="border:1px solid #000;padding:14px;text-align:center;
                                 color:#666;font-style:italic">
-          Belum ada data nilai untuk periode ini.
-        </td>
-      </tr>
-    <?php endif; ?>
+                    Belum ada data nilai untuk periode ini.
+                </td>
+            </tr>
+            <?php endif; ?>
 
-    <!-- ── Baris Rata-rata — colspan disesuaikan 5 kolom ── -->
-    <tr style="font-weight:700;background:#f9f9f9">
-      <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
-        <?= $lbl['rata_rata'] ?>
-      </td>
-      <td style="border:1px solid #000;padding:5px 8px;text-align:center">
-        <?= $avg_nilai > 0 ? number_format($avg_nilai, 2) : '' ?>
-      </td>
-      <td style="border:1px solid #000;padding:5px 8px"></td>
-    </tr>
+            <!-- ── Baris Rata-rata — colspan disesuaikan 5 kolom ── -->
+            <tr style="font-weight:700;background:#f9f9f9">
+                <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $lbl['rata_rata'] ?>
+                </td>
+                <td style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $avg_nilai > 0 ? number_format($avg_nilai, 2) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:5px 8px"></td>
+            </tr>
 
-    </tbody>
-  </table>
+        </tbody>
+    </table>
 
-  <!-- ══════════════════════════════════════════════════════════
+    <!-- ══════════════════════════════════════════════════════════
        BLOK BAWAH: Kriteria + Absensi + Catatan + TTD
        Dibungkus agar tidak terpotong page break
        ══════════════════════════════════════════════════════════ -->
-  <div class="raport-footer-block">
+    <div class="raport-footer-block">
 
-  <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
-  <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
-    <table style="border-collapse:collapse;border:1px solid #000">
-      <tr>
-        <td style="padding:4px 10px;font-style:italic;vertical-align:top;
+        <!-- ── KRITERIA PENILAIAN ────────────────────────────────── -->
+        <div style="margin-top:8px;font-family:'Times New Roman',serif;font-size:9.5pt">
+            <table style="border-collapse:collapse;border:1px solid #000">
+                <tr>
+                    <td style="padding:4px 10px;font-style:italic;vertical-align:top;
                    font-weight:600;white-space:nowrap">
-          <?= $lbl['kriteria'] ?> :
-        </td>
-        <td style="padding:4px 14px;font-style:italic;line-height:1.7">
-          A : <?= (int)$krit_a ?> - 100<br>
-          B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?><br>
-          C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?><br>
-          D : &lt; <?= (int)$krit_c ?>
-        </td>
-      </tr>
-    </table>
-  </div>
+                        <?= $lbl['kriteria'] ?> :
+                    </td>
+                    <td style="padding:4px 14px;font-style:italic;line-height:1.7">
+                        A : <?= (int)$krit_a ?> - 100<br>
+                        B : <?= (int)$krit_b ?> - <?= (int)$krit_a - 1 ?><br>
+                        C : <?= (int)$krit_c ?> - <?= (int)$krit_b - 1 ?><br>
+                        D : &lt; <?= (int)$krit_c ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-  <?php if (!$is_bulanan): ?>
-  <!-- ── KETIDAKHADIRAN — hanya untuk STS & Semester ── -->
-  <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
-    <table style="border:1px solid #000;border-collapse:collapse;width:auto">
-      <thead>
-        <tr style="background:#f0f0f0">
-          <th colspan="6" style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
-            <?= $lbl['ketidakhadiran'] ?>
-          </th>
-        </tr>
-        <tr>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['sakit'] ?></th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['izin'] ?></th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
-          <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt"><?= $lbl['tanpa_ket'] ?></th>
-          <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
-            <?= (int)($absensi['sakit'] ?? 0) ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
-            <?= (int)($absensi['izin'] ?? 0) ?>
-          </td>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
-          <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
-            <?= (int)($absensi['alpa'] ?? 0) ?>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        <?php if (!$is_bulanan): ?>
+        <!-- ── KETIDAKHADIRAN — hanya untuk STS & Semester ── -->
+        <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
+            <table style="border:1px solid #000;border-collapse:collapse;width:auto">
+                <thead>
+                    <tr style="background:#f0f0f0">
+                        <th colspan="6"
+                            style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
+                            <?= $lbl['ketidakhadiran'] ?>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">
+                            <?= $lbl['sakit'] ?></th>
+                        <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
+                        <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">
+                            <?= $lbl['izin'] ?></th>
+                        <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
+                        <th style="border:1px solid #000;padding:3px 10px;text-align:center;font-size:9pt">
+                            <?= $lbl['tanpa_ket'] ?></th>
+                        <th style="border:1px solid #000;padding:3px 6px;font-size:9pt"><?= $lbl['hari'] ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
+                            <?= (int)($absensi['sakit'] ?? 0) ?>
+                        </td>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
+                            <?= (int)($absensi['izin'] ?? 0) ?>
+                        </td>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center"></td>
+                        <td style="border:1px solid #000;padding:4px 10px;text-align:center;font-weight:700">
+                            <?= (int)($absensi['alpa'] ?? 0) ?>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-  <!-- ── CATATAN WALI KELAS — hanya untuk STS & Semester ─── -->
-  <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
-    <table style="width:100%;border:1px solid #000;border-collapse:collapse">
-      <tr style="background:#f0f0f0">
-        <th style="border:1px solid #000;padding:4px 10px;text-align:left;font-weight:700;font-size:9.5pt">
-          <?= $lbl['catatan_walas'] ?>
-        </th>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000;padding:8px 10px;min-height:40px;height:50px;
+        <!-- ── CATATAN WALI KELAS — hanya untuk STS & Semester ─── -->
+        <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
+            <table style="width:100%;border:1px solid #000;border-collapse:collapse">
+                <tr style="background:#f0f0f0">
+                    <th style="border:1px solid #000;padding:4px 10px;text-align:left;font-weight:700;font-size:9.5pt">
+                        <?= $lbl['catatan_walas'] ?>
+                    </th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #000;padding:8px 10px;min-height:40px;height:50px;
                    font-size:9.5pt;vertical-align:top">
-          <?php
+                        <?php
             $catatan_walas = '';
             foreach ($nilai_list as $nv) {
                 if (!empty($nv['catatan'])) { $catatan_walas = $nv['catatan']; break; }
             }
             echo $catatan_walas ? htmlspecialchars($catatan_walas) : '&nbsp;';
           ?>
-        </td>
-      </tr>
-    </table>
-  </div>
-  <?php endif; ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <?php endif; ?>
 
-  <!-- ── TANDA TANGAN ──────────────────────────────────────── -->
-  <table class="raport-ttd-block" style="width:100%;margin-top:16px;font-family:'Times New Roman',serif;font-size:10.5pt">
-    <tr>
-      <!-- Kepala Sekolah — KIRI -->
-      <td style="width:45%;vertical-align:top;text-align:center">
-        <div><?= $lbl['mengetahui'] ?></div>
-        <div><?= $lbl['kepala_sekolah'] ?></div>
-        <!-- Tanda tangan kepala sekolah -->
-        <div style="height:<?= ($kepsek && $kepsek['tanda_tangan']) ? 'auto' : '70px' ?>;
+        <!-- ── TANDA TANGAN ──────────────────────────────────────── -->
+        <table class="raport-ttd-block"
+            style="width:100%;margin-top:16px;font-family:'Times New Roman',serif;font-size:10.5pt">
+            <tr>
+                <!-- Kepala Sekolah — KIRI -->
+                <td style="width:45%;vertical-align:top;text-align:center">
+                    <div><?= $lbl['mengetahui'] ?></div>
+                    <div><?= $lbl['kepala_sekolah'] ?></div>
+                    <!-- Tanda tangan kepala sekolah -->
+                    <div style="height:<?= ($kepsek && $kepsek['tanda_tangan']) ? 'auto' : '70px' ?>;
                     margin:6px 0;display:flex;align-items:center;justify-content:center">
-          <?php if ($kepsek && $kepsek['tanda_tangan']): ?>
-            <img src="<?= UPLOAD_URL . htmlspecialchars($kepsek['tanda_tangan']) ?>"
-                 alt="TTD Kepala Sekolah"
-                 style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
-          <?php endif; ?>
-        </div>
-        <div style="font-weight:700">
-          <?= htmlspecialchars($kepsek['nama_lengkap'] ?? '__________________________') ?>
-        </div>
-      </td>
+                        <?php if ($kepsek && $kepsek['tanda_tangan']): ?>
+                        <img src="<?= UPLOAD_URL . htmlspecialchars($kepsek['tanda_tangan']) ?>"
+                            alt="TTD Kepala Sekolah"
+                            style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
+                        <?php endif; ?>
+                    </div>
+                    <div style="font-weight:700">
+                        <?= htmlspecialchars($kepsek['nama_lengkap'] ?? '__________________________') ?>
+                    </div>
+                </td>
 
-      <!-- Spacer tengah -->
-      <td style="width:10%"></td>
+                <!-- Spacer tengah -->
+                <td style="width:10%"></td>
 
-      <!-- Wali Kelas — KANAN -->
-      <td style="width:45%;vertical-align:top;text-align:center">
-        <!-- Tanggal + Kota -->
-        <?php
+                <!-- Wali Kelas — KANAN -->
+                <td style="width:45%;vertical-align:top;text-align:center">
+                    <!-- Tanggal + Kota -->
+                    <?php
           // Tentukan tanggal cetak:
           // Prioritas: $tgl_override (dari ?tgl= di URL) → fallback ke hari ini
           // $tgl_override diset oleh print.php / print_kelas.php (format Y-m-d)
@@ -648,24 +654,24 @@ $row_no = 0;
                   . ' ' . $yr_n;
           }
         ?>
-        <div><?= htmlspecialchars($tgl_cetak) ?></div>
-        <div><?= $lbl['wali_kelas'] ?></div>
-        <!-- Tanda tangan wali kelas -->
-        <div style="height:<?= ($wali_kelas && $wali_kelas['tanda_tangan']) ? 'auto' : '70px' ?>;
+                    <div><?= htmlspecialchars($tgl_cetak) ?></div>
+                    <div><?= $lbl['wali_kelas'] ?></div>
+                    <!-- Tanda tangan wali kelas -->
+                    <div style="height:<?= ($wali_kelas && $wali_kelas['tanda_tangan']) ? 'auto' : '70px' ?>;
                     margin:6px 0;display:flex;align-items:center;justify-content:center">
-          <?php if ($wali_kelas && $wali_kelas['tanda_tangan']): ?>
-            <img src="<?= UPLOAD_URL . htmlspecialchars($wali_kelas['tanda_tangan']) ?>"
-                 alt="TTD Wali Kelas"
-                 style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
-          <?php endif; ?>
-        </div>
-        <div style="font-weight:700">
-          <?= htmlspecialchars($wali_kelas['nama_lengkap'] ?? '__________________________') ?>
-        </div>
-      </td>
-    </tr>
-  </table>
+                        <?php if ($wali_kelas && $wali_kelas['tanda_tangan']): ?>
+                        <img src="<?= UPLOAD_URL . htmlspecialchars($wali_kelas['tanda_tangan']) ?>"
+                            alt="TTD Wali Kelas"
+                            style="max-height:70px;max-width:160px;object-fit:contain;display:block;margin:0 auto">
+                        <?php endif; ?>
+                    </div>
+                    <div style="font-weight:700">
+                        <?= htmlspecialchars($wali_kelas['nama_lengkap'] ?? '__________________________') ?>
+                    </div>
+                </td>
+            </tr>
+        </table>
 
-  </div><!-- /.raport-footer-block -->
+    </div><!-- /.raport-footer-block -->
 
 </div><!-- /.raport-page -->
