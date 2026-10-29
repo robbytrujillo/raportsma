@@ -272,7 +272,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
                             <!-- Tombol Edit Bulan -->
                             <?php if (in_array($p['jenis_raport'], ['bulanan','sts'])): ?>
                             <button type="button"
-                                onclick="openEditBulan(<?= (int)$p['kelas_id'] ?>, <?= (int)$p['tahun_ajaran_id'] ?>, '<?= e($p['jenis_raport']) ?>', <?= $p['bulan'] ? (int)$p['bulan'] : 0 ?>, '<?= e($p['nama_kelas']) ?>', '<?= e($bulan_nama) ?>')"
+                                onclick="mgr_editBulan(<?= (int)$p['kelas_id'] ?>, <?= (int)$p['tahun_ajaran_id'] ?>, <?= json_encode($p['jenis_raport']) ?>, <?= $p['bulan'] ? (int)$p['bulan'] : 0 ?>, <?= json_encode($p['nama_kelas']) ?>, <?= json_encode($bulan_nama) ?>)"
                                 class="btn btn-sm btn-secondary tooltip-wrap" style="border-radius:30px">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -283,7 +283,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
                             <?php endif; ?>
                             <!-- Tombol Hapus Periode -->
                             <button type="button"
-                                onclick="confirmDelete(<?= (int)$p['kelas_id'] ?>, <?= (int)$p['tahun_ajaran_id'] ?>, '<?= e($p['jenis_raport']) ?>', <?= $p['bulan'] ? (int)$p['bulan'] : 0 ?>, '<?= e($p['nama_kelas']) ?>', '<?= e($jl) ?>', '<?= e($bulan_nama) ?>', <?= (int)$p['jml_nilai'] ?>, <?= $pub ?>)"
+                                onclick="mgr_hapusPeriode(<?= (int)$p['kelas_id'] ?>, <?= (int)$p['tahun_ajaran_id'] ?>, <?= json_encode($p['jenis_raport']) ?>, <?= $p['bulan'] ? (int)$p['bulan'] : 0 ?>, <?= json_encode($p['nama_kelas']) ?>, <?= json_encode($jl) ?>, <?= json_encode($bulan_nama) ?>, <?= (int)$p['jml_nilai'] ?>, <?= $pub ?>)"
                                 class="btn btn-sm btn-danger tooltip-wrap" style="border-radius:30px">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
@@ -333,7 +333,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
         <div id="deleteWarning" style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;
              padding:10px 14px;font-size:.82rem;color:#92400e;margin-bottom:16px"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end">
-            <button onclick="closeModals()" class="btn btn-secondary" style="border-radius:30px">Batal</button>
+            <button onclick="mgr_closeModals()" class="btn btn-secondary" style="border-radius:30px">Batal</button>
             <form id="formDelete" method="POST" action="index.php?page=raport.manage&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>" style="margin:0">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete_periode">
@@ -371,7 +371,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
                 <small class="text-gray-400">Semua data nilai di periode ini akan dipindah ke bulan yang dipilih.</small>
             </div>
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
-                <button type="button" onclick="closeModals()" class="btn btn-secondary" style="border-radius:30px">Batal</button>
+                <button type="button" onclick="mgr_closeModals()" class="btn btn-secondary" style="border-radius:30px">Batal</button>
                 <button type="submit" class="btn btn-primary" style="border-radius:30px">Simpan Perubahan</button>
             </div>
         </form>
@@ -379,12 +379,12 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
 </div>
 
 <script>
-function closeModals() {
+function mgr_closeModals() {
     document.getElementById('modalDelete').style.display    = 'none';
     document.getElementById('modalEditBulan').style.display = 'none';
 }
 
-function confirmDelete(kelasId, taId, jenis, bulan, namaKelas, jenisLabel, bulanNama, jmlNilai, isPub) {
+function mgr_hapusPeriode(kelasId, taId, jenis, bulan, namaKelas, jenisLabel, bulanNama, jmlNilai, isPub) {
     document.getElementById('del_kelas_id').value = kelasId;
     document.getElementById('del_ta_id').value    = taId;
     document.getElementById('del_jenis').value    = jenis;
@@ -394,31 +394,29 @@ function confirmDelete(kelasId, taId, jenis, bulan, namaKelas, jenisLabel, bulan
         namaKelas + ' \u2014 ' + jenisLabel + (bulan ? ' ' + bulanNama : '');
 
     let warn = 'Tindakan ini akan menghapus <strong>' + jmlNilai + ' data nilai</strong> secara permanen.';
-    if (isPub) warn += ' <strong>Raport ini sudah diterbitkan ke siswa — mereka tidak akan bisa melihatnya lagi setelah dihapus.</strong>';
+    if (isPub) warn += ' <strong>Raport ini sudah diterbitkan ke siswa \u2014 mereka tidak akan bisa melihatnya lagi setelah dihapus.</strong>';
     document.getElementById('deleteWarning').innerHTML = warn;
 
-    const m = document.getElementById('modalDelete');
-    m.style.display = 'flex';
+    document.getElementById('modalDelete').style.display = 'flex';
 }
 
-function openEditBulan(kelasId, taId, jenis, bulan, namaKelas, bulanLamaNama) {
-    document.getElementById('eb_kelas_id').value  = kelasId;
-    document.getElementById('eb_ta_id').value     = taId;
-    document.getElementById('eb_jenis').value     = jenis;
+function mgr_editBulan(kelasId, taId, jenis, bulan, namaKelas, bulanLamaNama) {
+    document.getElementById('eb_kelas_id').value   = kelasId;
+    document.getElementById('eb_ta_id').value      = taId;
+    document.getElementById('eb_jenis').value      = jenis;
     document.getElementById('eb_bulan_lama').value = bulan || '';
     document.getElementById('eb_bulan_baru').value = '';
 
     document.getElementById('editBulanDesc').textContent =
         'Pindahkan nilai ' + namaKelas + ' dari bulan ' + bulanLamaNama;
 
-    const m = document.getElementById('modalEditBulan');
-    m.style.display = 'flex';
+    document.getElementById('modalEditBulan').style.display = 'flex';
 }
 
 // Tutup modal jika klik backdrop
 ['modalDelete','modalEditBulan'].forEach(function(id) {
     document.getElementById(id).addEventListener('click', function(e) {
-        if (e.target === this) closeModals();
+        if (e.target === this) mgr_closeModals();
     });
 });
 </script>
