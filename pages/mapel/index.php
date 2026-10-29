@@ -180,7 +180,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                         <td><span class="badge badge-gray"><?= e($m['kode_mapel'] ?: '-') ?></span></td>
                         <td class="<?= $m['parent_id'] ? 'pl-6' : 'font-semibold' ?>"
                             style="<?= $m['parent_id'] ? 'padding-left:24px' : '' ?>">
-                            <?= $m['parent_id'] ? 'â†³ ' : '' ?><?= e($m['nama_mapel']) ?>
+                            <?= $m['parent_id'] ? '|' : '' ?><?= e($m['nama_mapel']) ?>
                         </td>
                         <td class="text-center"><?= e($m['sub_label'] ?: '-') ?></td>
                         <td class="text-xs text-gray-500"><?= e($nama_induk) ?></td>
@@ -218,22 +218,24 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                 mapel)</span>
             <div class="pagination">
                 <a href="?<?= $qstr_m ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
-                    style="border-radius: 30px">â€¹ Prev</a>
-                <?php
+                    style="border-radius: 30px">
+                    < Prev</a>
+                        <?php
           $start = max(1, $page_n - 3); $end = min($pages_m, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_m ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">..</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_m ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages_m):
-            if ($end < $pages_m - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($end < $pages_m - 1): ?><span class="page-link disabled">..</span><?php endif;
             ?><a href="?<?= $qstr_m ?>&p=<?= $pages_m ?>" class="page-link"><?= $pages_m ?></a><?php
           endif;
         ?>
-                <a href="?<?= $qstr_m ?>&p=<?= min($pages_m,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages_m?'disabled':'' ?>" style="border-radius: 30px">Next â€º</a>
+                        <a href="?<?= $qstr_m ?>&p=<?= min($pages_m,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages_m?'disabled':'' ?>" style="border-radius: 30px">Next
+                            ></a>
             </div>
         </div>
         <?php endif; ?>
@@ -277,7 +279,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                     <label class="form-label">Mapel Induk <span class="text-xs text-gray-400">(isi jika sub-mapel, mis.
                             sub dari Pendidikan Agama Islam)</span></label>
                     <select name="parent_id" id="mapelParent" class="form-control">
-                        <option value="">â€" Mapel Mandiri (tidak ada induk) â€"</option>
+                        <option value="">-- Mapel Mandiri (tidak ada induk) --</option>
                         <?php foreach ($mapel_induk as $mi): ?>
                         <option value="<?= $mi['id'] ?>">[Kel.<?= e($mi['kelompok']) ?>] <?= e($mi['nama_mapel']) ?>
                         </option>

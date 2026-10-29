@@ -158,7 +158,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                             <div class="text-xs text-gray-400"><?= e($g['email'] ?: '-') ?></div>
                         </td>
                         <td class="text-gray-500 text-xs"><?= e($g['nip'] ?: '-') ?></td>
-                        <td class="text-xs"><?= e($g['bidang_studi'] ?: 'â€"') ?></td>
+                        <td class="text-xs"><?= e($g['bidang_studi'] ?: '-') ?></td>
                         <td class="text-gray-500"><?= e($g['username']) ?></td>
                         <td>
                             <?php [$lbl,$cls] = $status_map[$g['status'] ?? 'guru'] ?? ['Guru','badge-blue']; ?>
@@ -199,9 +199,9 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> guru)</span>
             <div class="pagination">
                 <a href="?<?= $qstr ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
-                    style="border-radius: 30px;">â€¹
-                    Prev</a>
-                <?php
+                    style="border-radius: 30px;">
+                    < Prev</a>
+                        <?php
           $start = max(1, $page_n - 3);
           $end   = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr ?>&p=1" class="page-link">1</a><?php
@@ -209,15 +209,17 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?>
-                <a href="?<?= $qstr ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
-                <?php endfor;
+                        <a href="?<?= $qstr ?>&p=<?= $pi ?>"
+                            class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
+                        <?php endfor;
           if ($end < $pages):
             if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
             ?><a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-                <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius: 30px;">Next â€º</a>
+                        <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius: 30px;">Next
+                            ></a>
             </div>
         </div>
         <?php endif; ?>

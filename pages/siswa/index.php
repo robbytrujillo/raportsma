@@ -235,26 +235,28 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> siswa)</span>
             <div class="pagination">
                 <a href="?<?= $qstr ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
-                    style="border-radius: 30px">â€¹
-                    Prev</a>
-                <?php
+                    style="border-radius: 30px">
+                    < Prev</a>
+                        <?php
           // Tampilkan max 7 nomor halaman di tengah
           $start = max(1, $page_n - 3);
           $end   = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">..</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?>
-                <a href="?<?= $qstr ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
-                <?php endfor;
+                        <a href="?<?= $qstr ?>&p=<?= $pi ?>"
+                            class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
+                        <?php endfor;
           if ($end < $pages):
-            if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($end < $pages - 1): ?><span class="page-link disabled">..</span><?php endif;
             ?><a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-                <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius: 30px">Next â€º</a>
+                        <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius: 30px">Next
+                            ></a>
             </div>
         </div>
         <?php endif; ?>

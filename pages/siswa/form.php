@@ -98,92 +98,99 @@ $u = $user_data ?? [];
 $s = $siswa_data ?? [];
 ?>
 <div class="page-content" style="max-width:760px;margin:0 auto">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
-    </div>
-    <a href="index.php?page=siswa" class="btn btn-secondary">â† Kembali</a>
-  </div>
-
-  <?php foreach ($errors as $err): ?>
-  <div class="alert alert-danger"><?= e($err) ?></div>
-  <?php endforeach; ?>
-
-  <div class="card">
-    <div class="card-header">Data Siswa</div>
-    <div class="card-body">
-      <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit?'&id='.$id:'' ?>">
-        <?= csrf_field() ?>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="form-group md:col-span-2">
-            <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
-            <input type="text" name="nama_lengkap" class="form-control" required value="<?= e($u['nama_lengkap']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Username <span class="text-red-500">*</span></label>
-            <input type="text" name="username" class="form-control" required value="<?= e($u['username']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="<?= e($u['email']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password <?= $is_edit ? '(kosongkan jika tidak diubah)' : '<span class="text-red-500">*</span>' ?></label>
-            <input type="password" name="password" class="form-control">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Kelas <span class="text-red-500">*</span></label>
-            <select name="kelas_id" class="form-control" required>
-              <option value="">â€" Pilih Kelas â€"</option>
-              <?php foreach ($kelas_list as $k): ?>
-              <option value="<?= $k['id'] ?>" <?= ($s['kelas_id']??0)==$k['id']?'selected':'' ?>>
-                <?= e($k['nama_kelas']) ?> (<?= e($k['ta_nama']) ?>)
-              </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">NIS <span class="text-red-500">*</span></label>
-            <input type="text" name="nis" class="form-control" required value="<?= e($s['nis']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">NISN</label>
-            <input type="text" name="nisn" class="form-control" value="<?= e($s['nisn']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tempat Lahir</label>
-            <input type="text" name="tempat_lahir" class="form-control" value="<?= e($s['tempat_lahir']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tanggal Lahir</label>
-            <input type="date" name="tanggal_lahir" class="form-control" value="<?= e($s['tanggal_lahir']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nama Ayah</label>
-            <input type="text" name="nama_ayah" class="form-control" value="<?= e($s['nama_ayah']??'') ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nama Ibu</label>
-            <input type="text" name="nama_ibu" class="form-control" value="<?= e($s['nama_ibu']??'') ?>">
-          </div>
-          <div class="form-group md:col-span-2">
-            <label class="form-label">Alamat</label>
-            <textarea name="alamat" class="form-control" rows="2"><?= e($s['alamat']??'') ?></textarea>
-          </div>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
         </div>
-
-        <div class="flex gap-3 mt-4">
-          <button type="submit" class="btn btn-primary">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-            </svg>
-            <?= $is_edit ? 'Simpan' : 'Tambah Siswa' ?>
-          </button>
-          <a href="index.php?page=siswa" class="btn btn-secondary">Batal</a>
-        </div>
-      </form>
+        <a href="index.php?page=siswa" class="btn btn-secondary">
+            <- Kembali</a>
     </div>
-  </div>
+
+    <?php foreach ($errors as $err): ?>
+    <div class="alert alert-danger"><?= e($err) ?></div>
+    <?php endforeach; ?>
+
+    <div class="card">
+        <div class="card-header">Data Siswa</div>
+        <div class="card-body">
+            <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit?'&id='.$id:'' ?>">
+                <?= csrf_field() ?>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_lengkap" class="form-control" required
+                            value="<?= e($u['nama_lengkap']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Username <span class="text-red-500">*</span></label>
+                        <input type="text" name="username" class="form-control" required
+                            value="<?= e($u['username']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="<?= e($u['email']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password
+                            <?= $is_edit ? '(kosongkan jika tidak diubah)' : '<span class="text-red-500">*</span>' ?></label>
+                        <input type="password" name="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kelas <span class="text-red-500">*</span></label>
+                        <select name="kelas_id" class="form-control" required>
+                            <option value="">-- Pilih Kelas --</option>
+                            <?php foreach ($kelas_list as $k): ?>
+                            <option value="<?= $k['id'] ?>" <?= ($s['kelas_id']??0)==$k['id']?'selected':'' ?>>
+                                <?= e($k['nama_kelas']) ?> (<?= e($k['ta_nama']) ?>)
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NIS <span class="text-red-500">*</span></label>
+                        <input type="text" name="nis" class="form-control" required value="<?= e($s['nis']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NISN</label>
+                        <input type="text" name="nisn" class="form-control" value="<?= e($s['nisn']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tempat Lahir</label>
+                        <input type="text" name="tempat_lahir" class="form-control"
+                            value="<?= e($s['tempat_lahir']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Lahir</label>
+                        <input type="date" name="tanggal_lahir" class="form-control"
+                            value="<?= e($s['tanggal_lahir']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nama Ayah</label>
+                        <input type="text" name="nama_ayah" class="form-control" value="<?= e($s['nama_ayah']??'') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nama Ibu</label>
+                        <input type="text" name="nama_ibu" class="form-control" value="<?= e($s['nama_ibu']??'') ?>">
+                    </div>
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label">Alamat</label>
+                        <textarea name="alamat" class="form-control" rows="2"><?= e($s['alamat']??'') ?></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                        </svg>
+                        <?= $is_edit ? 'Simpan' : 'Tambah Siswa' ?>
+                    </button>
+                    <a href="index.php?page=siswa" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

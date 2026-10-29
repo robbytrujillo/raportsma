@@ -93,108 +93,121 @@ $kelas_list = db_query(
 $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
 ?>
 <div class="page-content">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Data Kelas</h1>
-      <p class="page-subtitle">Kelola kelas per tahun ajaran</p>
-    </div>
-    <div class="flex gap-2">
-      <a href="index.php?page=kelas&export=1" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </a>
-      <a href="index.php?page=kelas.import" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Import CSV
-      </a>
-      <button onclick="Modal.open('modalKelas')" class="btn btn-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Tambah Kelas
-      </button>
-    </div>
-  </div>
-
-  <!-- Filter Tahun Ajaran + Per-page -->
-  <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-    <div class="flex gap-2 flex-wrap">
-      <?php foreach ($ta_list as $ta): ?>
-      <a href="index.php?page=kelas&ta=<?= $ta['id'] ?>&per=<?= $per ?>"
-        class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
-        style="text-decoration:none;cursor:pointer">
-        <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-        <?= $ta['is_aktif'] ? ' â˜...' : '' ?>
-      </a>
-      <?php endforeach; ?>
-    </div>
-    <form method="GET" action="index.php" class="flex items-center gap-2">
-      <input type="hidden" name="page" value="kelas">
-      <input type="hidden" name="ta" value="<?= $ta_filter ?>">
-      <label class="text-sm text-gray-500">Tampil:</label>
-      <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
-        <?php foreach ([10,25,50,100] as $opt): ?>
-        <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
-        <?php endforeach; ?>
-      </select>
-    </form>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <span>Daftar Kelas</span>
-      <span class="text-sm text-gray-500"><?= $total ?> kelas</span>
-    </div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr><th>#</th><th>Nama Kelas</th><th>Tingkat</th><th>Wali Kelas</th><th>Tahun Ajaran</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-          <?php if (empty($kelas_list)): ?>
-          <tr><td colspan="6" class="text-center py-8 text-gray-400">Belum ada kelas untuk tahun ajaran ini.</td></tr>
-          <?php else: ?>
-          <?php foreach ($kelas_list as $i => $k): ?>
-          <tr>
-            <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
-            <td class="font-semibold"><?= e($k['nama_kelas']) ?></td>
-            <td><span class="badge badge-blue"><?= e($k['tingkat']) ?></span></td>
-            <td><?= e($k['nama_wali'] ?: 'â€"') ?></td>
-            <td class="text-gray-500 text-sm"><?= e($k['ta_nama']) ?> Sem.<?= $k['semester'] ?></td>
-            <td>
-              <div class="flex gap-1">
-                <button onclick='editKelas(<?= json_encode($k) ?>)' class="btn btn-sm btn-secondary">Edit</button>
-                <form method="POST" action="index.php?page=kelas" style="display:inline"
-                  onsubmit="return confirm('Hapus kelas <?= e($k['nama_kelas']) ?>?')">
-                  <?= csrf_field() ?>
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="id" value="<?= $k['id'] ?>">
-                  <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-          <?php endif; ?>
-        </tbody>
-      </table>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Data Kelas</h1>
+            <p class="page-subtitle">Kelola kelas per tahun ajaran</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="index.php?page=kelas&export=1" class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+            </a>
+            <a href="index.php?page=kelas.import" class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import CSV
+            </a>
+            <button onclick="Modal.open('modalKelas')" class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Tambah Kelas
+            </button>
+        </div>
     </div>
 
-    <!-- Paginasi -->
-    <?php if ($pages > 1): ?>
-    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-      <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> kelas)</span>
-      <div class="pagination">
-        <a href="?<?= $qstr_k ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">â€¹ Prev</a>
-        <?php
+    <!-- Filter Tahun Ajaran + Per-page -->
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div class="flex gap-2 flex-wrap">
+            <?php foreach ($ta_list as $ta): ?>
+            <a href="index.php?page=kelas&ta=<?= $ta['id'] ?>&per=<?= $per ?>"
+                class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
+                style="text-decoration:none;cursor:pointer">
+                <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                <?= $ta['is_aktif'] ? ' ....' : '' ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <form method="GET" action="index.php" class="flex items-center gap-2">
+            <input type="hidden" name="page" value="kelas">
+            <input type="hidden" name="ta" value="<?= $ta_filter ?>">
+            <label class="text-sm text-gray-500">Tampil:</label>
+            <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+                <?php foreach ([10,25,50,100] as $opt): ?>
+                <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
+                <?php endforeach; ?>
+            </select>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span>Daftar Kelas</span>
+            <span class="text-sm text-gray-500"><?= $total ?> kelas</span>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nama Kelas</th>
+                        <th>Tingkat</th>
+                        <th>Wali Kelas</th>
+                        <th>Tahun Ajaran</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($kelas_list)): ?>
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-400">Belum ada kelas untuk tahun ajaran ini.
+                        </td>
+                    </tr>
+                    <?php else: ?>
+                    <?php foreach ($kelas_list as $i => $k): ?>
+                    <tr>
+                        <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
+                        <td class="font-semibold"><?= e($k['nama_kelas']) ?></td>
+                        <td><span class="badge badge-blue"><?= e($k['tingkat']) ?></span></td>
+                        <td><?= e($k['nama_wali'] ?: '-') ?></td>
+                        <td class="text-gray-500 text-sm"><?= e($k['ta_nama']) ?> Sem.<?= $k['semester'] ?></td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button onclick='editKelas(<?= json_encode($k) ?>)'
+                                    class="btn btn-sm btn-secondary">Edit</button>
+                                <form method="POST" action="index.php?page=kelas" style="display:inline"
+                                    onsubmit="return confirm('Hapus kelas <?= e($k['nama_kelas']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $k['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginasi -->
+        <?php if ($pages > 1): ?>
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> kelas)</span>
+            <div class="pagination">
+                <a href="?<?= $qstr_k ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">
+                    < Prev</a>
+                        <?php
           $start = max(1, $page_n - 3); $end = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_k ?>&p=1" class="page-link">1</a><?php
             if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
@@ -207,76 +220,79 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
             ?><a href="?<?= $qstr_k ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-        <a href="?<?= $qstr_k ?>&p=<?= min($pages,$page_n+1) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next â€º</a>
-      </div>
+                        <a href="?<?= $qstr_k ?>&p=<?= min($pages,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ></a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
-  </div>
 </div>
 
 <!-- Modal Tambah/Edit Kelas -->
 <div class="modal-overlay" id="modalKelas">
-  <div class="modal">
-    <div class="modal-header">
-      <span id="modalKelasTitle">Tambah Kelas</span>
-      <button onclick="Modal.close('modalKelas')" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modalKelasTitle">Tambah Kelas</span>
+            <button onclick="Modal.close('modalKelas')"
+                class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <form method="POST" action="index.php?page=kelas&ta=<?= $ta_filter ?>" id="formKelas">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="save">
+            <input type="hidden" name="id" id="kelasId" value="">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nama Kelas <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama_kelas" id="kelasNama" class="form-control" required
+                        placeholder="contoh: X IPA 1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tingkat <span class="text-red-500">*</span></label>
+                    <select name="tingkat" id="kelasTingkat" class="form-control" required>
+                        <option value="X">X</option>
+                        <option value="XI">XI</option>
+                        <option value="XII">XII</option>
+                        <option value="VII">VII</option>
+                        <option value="VIII">VIII</option>
+                        <option value="IX">IX</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Wali Kelas</label>
+                    <select name="wali_kelas_id" id="kelasWali" class="form-control">
+                        <option value="">-- Pilih Wali Kelas --</option>
+                        <?php foreach ($wali_list as $w): ?>
+                        <option value="<?= $w['id'] ?>"><?= e($w['nama_lengkap']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tahun Ajaran <span class="text-red-500">*</span></label>
+                    <select name="tahun_ajaran_id" id="kelasTa" class="form-control" required>
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_filter?'selected':'' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="Modal.close('modalKelas')" class="btn btn-secondary">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
     </div>
-    <form method="POST" action="index.php?page=kelas&ta=<?= $ta_filter ?>" id="formKelas">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="save">
-      <input type="hidden" name="id" id="kelasId" value="">
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Nama Kelas <span class="text-red-500">*</span></label>
-          <input type="text" name="nama_kelas" id="kelasNama" class="form-control" required placeholder="contoh: X IPA 1">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tingkat <span class="text-red-500">*</span></label>
-          <select name="tingkat" id="kelasTingkat" class="form-control" required>
-            <option value="X">X</option>
-            <option value="XI">XI</option>
-            <option value="XII">XII</option>
-            <option value="VII">VII</option>
-            <option value="VIII">VIII</option>
-            <option value="IX">IX</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Wali Kelas</label>
-          <select name="wali_kelas_id" id="kelasWali" class="form-control">
-            <option value="">â€" Pilih Wali Kelas â€"</option>
-            <?php foreach ($wali_list as $w): ?>
-            <option value="<?= $w['id'] ?>"><?= e($w['nama_lengkap']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tahun Ajaran <span class="text-red-500">*</span></label>
-          <select name="tahun_ajaran_id" id="kelasTa" class="form-control" required>
-            <?php foreach ($ta_list as $ta): ?>
-            <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_filter?'selected':'' ?>>
-              <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-            </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" onclick="Modal.close('modalKelas')" class="btn btn-secondary">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <script>
 function editKelas(data) {
-  document.getElementById('modalKelasTitle').textContent = 'Edit Kelas';
-  document.getElementById('kelasId').value = data.id;
-  document.getElementById('kelasNama').value = data.nama_kelas;
-  document.getElementById('kelasTingkat').value = data.tingkat;
-  document.getElementById('kelasWali').value = data.wali_kelas_id || '';
-  document.getElementById('kelasTa').value = data.tahun_ajaran_id;
-  Modal.open('modalKelas');
+    document.getElementById('modalKelasTitle').textContent = 'Edit Kelas';
+    document.getElementById('kelasId').value = data.id;
+    document.getElementById('kelasNama').value = data.nama_kelas;
+    document.getElementById('kelasTingkat').value = data.tingkat;
+    document.getElementById('kelasWali').value = data.wali_kelas_id || '';
+    document.getElementById('kelasTa').value = data.tahun_ajaran_id;
+    Modal.open('modalKelas');
 }
 </script>
