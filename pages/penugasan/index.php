@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 /**
  * pages/penugasan/index.php
- * Penugasan Guru ke Mata Pelajaran & Kelas — admin
+ * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 
-// ── Handle POST ────────────────────────────────────────────────
+// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=penugasan'); exit; }
 
@@ -45,7 +45,7 @@ $mapel_list = db_query('SELECT * FROM mapel ORDER BY nama_mapel');
 $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
-// ── Build where untuk filter ─────────────────────────────────────
+// â"€â"€ Build where untuk filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $where_p  = 'gmk.tahun_ajaran_id = :ta';
 $params_p = [':ta' => $ta_id];
 if ($search_p) {
@@ -53,7 +53,7 @@ if ($search_p) {
     $params_p[':q']     = "%$search_p%";
 }
 
-// ── Paginasi ────────────────────────────────────────────────────
+// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -193,23 +193,23 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages_p ?> (<?= $total_p ?>
                 penugasan)</span>
             <div class="pagination">
-                <a href="?<?= $qstr_p ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹
-                    Prev</a>
-                <?php
+                <a href="?<?= $qstr_p ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">
+                    < Prev</a>
+                        <?php
           $start = max(1, $page_n - 3); $end = min($pages_p, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_p ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">…</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_p ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages_p):
-            if ($end < $pages_p - 1): ?><span class="page-link disabled">…</span><?php endif;
+            if ($end < $pages_p - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
             ?><a href="?<?= $qstr_p ?>&p=<?= $pages_p ?>" class="page-link"><?= $pages_p ?></a><?php
           endif;
         ?>
-                <a href="?<?= $qstr_p ?>&p=<?= min($pages_p,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages_p?'disabled':'' ?>">Next ›</a>
+                        <a href="?<?= $qstr_p ?>&p=<?= min($pages_p,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages_p?'disabled':'' ?>">Next ></a>
             </div>
         </div>
         <?php endif; ?>
@@ -231,7 +231,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 <div class="form-group">
                     <label class="form-label">Guru <span class="text-red-500">*</span></label>
                     <select name="guru_user_id" class="form-control" required>
-                        <option value="">— Pilih Guru —</option>
+                        <option value="">-- Pilih Guru --</option>
                         <?php foreach ($guru_list as $g): ?>
                         <option value="<?= $g['id'] ?>"><?= e($g['nama_lengkap']) ?></option>
                         <?php endforeach; ?>
@@ -240,7 +240,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 <div class="form-group">
                     <label class="form-label">Mata Pelajaran <span class="text-red-500">*</span></label>
                     <select name="mapel_id" class="form-control" required>
-                        <option value="">— Pilih Mata Pelajaran —</option>
+                        <option value="">-- Pilih Mata Pelajaran --</option>
                         <?php foreach ($mapel_list as $m): ?>
                         <option value="<?= $m['id'] ?>"><?= e($m['nama_mapel']) ?></option>
                         <?php endforeach; ?>
@@ -249,7 +249,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 <div class="form-group">
                     <label class="form-label">Kelas <span class="text-red-500">*</span></label>
                     <select name="kelas_id" class="form-control" required>
-                        <option value="">— Pilih Kelas —</option>
+                        <option value="">-- Pilih Kelas --</option>
                         <?php foreach ($kelas_list as $k): ?>
                         <option value="<?= $k['id'] ?>"><?= e($k['nama_kelas']) ?></option>
                         <?php endforeach; ?>
@@ -267,8 +267,9 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="Modal.close('modalPenugasan')" class="btn btn-secondary">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="button" onclick="Modal.close('modalPenugasan')" class="btn btn-secondary"
+                    style="border-radius: 30px;">Batal</button>
+                <button type="submit" class="btn btn-primary" style="border-radius: 30px;">Simpan</button>
             </div>
         </form>
     </div>

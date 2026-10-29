@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/profil.php
- * Halaman profil pengguna — update data, foto, tanda tangan (upload atau draw)
+ * Halaman profil pengguna &mdash; update data, foto, tanda tangan (upload atau draw)
  */
 require_login();
 
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_user = db_row('SELECT * FROM users WHERE id = :id', [':id' => $uid]);
 }
 
-/** Handle file upload — foto / tanda tangan */
+/** Handle file upload &mdash; foto / tanda tangan */
 function _handle_upload(string $field, string $subdir): array {
     if (empty($_FILES[$field]['name'])) {
         return ['success'=>false, 'message'=>'Tidak ada file yang dipilih.'];
@@ -446,7 +446,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                                 <li>Klik "<strong>✕ Hapus</strong>" jika ingin mengulang</li>
                             </ol>
                             <div class="mt-2 p-2 rounded text-xs" style="background:#dbeafe;color:#1e40af">
-                                <strong>✓ Cepat</strong> — langsung dari perangkat tanpa aplikasi lain
+                                <strong>✓ Cepat</strong> &mdash; langsung dari perangkat tanpa aplikasi lain
                             </div>
                         </div>
                     </div>

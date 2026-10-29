@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/print_kelas.php
- * Cetak raport seluruh siswa dalam satu kelas — setiap siswa = 1 halaman.
+ * Cetak raport seluruh siswa dalam satu kelas &mdash; setiap siswa = 1 halaman.
  * Akses: admin, kepala_sekolah, wali_kelas (kelasnya sendiri), guru (kelasnya sendiri).
  * Siswa tidak boleh akses halaman ini.
  */
@@ -37,7 +37,7 @@ if (!$ta_id || !$kelas_id) {
 require_once __DIR__ . '/../../db.php';
 
 // Verifikasi akses: guru/wali_kelas hanya bisa cetak kelas yang diajar/dipimpin
-if (!in_array($role, ['admin','kepala_sekolah'])) {
+if (!in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     $guru_detail = db_row('SELECT * FROM guru WHERE user_id = :uid', [':uid' => $user_ses['id']]);
     $is_walas    = ($guru_detail['status'] ?? '') === 'wali_kelas';
 
@@ -66,7 +66,7 @@ if (!$kelas || !$ta) {
 }
 
 // Daftar siswa di kelas, diurutkan peringkat (rata-rata DESC)
-// :kid dipakai 2x (JOIN + WHERE) — PDO named param tidak boleh duplikat, pakai :kid2
+// :kid dipakai 2x (JOIN + WHERE) &mdash; PDO named param tidak boleh duplikat, pakai :kid2
 $bulan_cond_rank  = '';
 $rank_params      = [':kid' => $kelas_id, ':kid2' => $kelas_id, ':ta' => $ta_id, ':jenis' => $jenis];
 if (in_array($jenis, ['bulanan','sts']) && $bulan) {
@@ -108,7 +108,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> — <?= htmlspecialchars($ta['nama']) ?>
+    <title>Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> &mdash; <?= htmlspecialchars($ta['nama']) ?>
     </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,7 +220,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         break-after: avoid;
     }
 
-    /* Override raport page — ikuti ukuran kertas */
+    /* Override raport page &mdash; ikuti ukuran kertas */
     :root {
       --paper-w:     <?= $paper['w'] ?>;
       --paper-h:     <?= $paper['h'] ?>;
@@ -229,7 +229,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
     }
     .raport-page {
         width: var(--paper-w) !important;
-        min-height: var(--paper-h) !important;
+        /* No min-height on screen — prevents overflow that causes blank print pages */
         padding: var(--paper-pad-v) var(--paper-pad-h) !important;
         margin: 20px auto !important;
         box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
@@ -251,12 +251,50 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 
         .raport-page {
             width: var(--paper-w) !important;
-            min-height: 0 !important;           /* no forced blank space */
+            min-height: 0 !important;
             padding: var(--paper-pad-v) var(--paper-pad-h) !important;
-            margin: 0 !important; box-shadow: none !important;
+            margin: 0 !important;
+            box-shadow: none !important;
         }
         @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
+
+    <?php if ($ukuran === 'a4'): ?>
+    /* ── A4: compress to fit 1 page (up to Kelompok D, 12 subjects) ── */
+    @media print {
+        body[data-paper="a4"] .raport-page {
+            /* zoom shrinks the entire page uniformly — supported in Chrome/Edge print */
+            zoom: 0.87;
+        }
+        body[data-paper="a4"] .raport-nilai-table {
+            font-size: 8pt !important;
+        }
+        body[data-paper="a4"] .raport-nilai-table th,
+        body[data-paper="a4"] .raport-nilai-table td {
+            padding: 2px 4px !important;
+            line-height: 1.2 !important;
+        }
+        body[data-paper="a4"] .raport-footer-block {
+            font-size: 8pt !important;
+            margin-top: 4px !important;
+        }
+        body[data-paper="a4"] .raport-ttd-block {
+            margin-top: 4px !important;
+        }
+        body[data-paper="a4"] .raport-ttd-block td,
+        body[data-paper="a4"] .raport-ttd-block div {
+            font-size: 8pt !important;
+        }
+        /* Tighten header & student info spacing */
+        body[data-paper="a4"] .raport-page > table:first-child {
+            padding-bottom: 4px !important;
+            margin-bottom: 3px !important;
+        }
+        body[data-paper="a4"] .raport-page > div[style*="text-align:center"] {
+            margin: 4px 0 2px !important;
+        }
+    }
+    <?php endif; ?>
     </style>
 </head>
 
@@ -270,7 +308,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             </div>
             <div class="tb-meta">
                 <?= htmlspecialchars($ta['nama']) ?> · Sem. <?= $semester_lbl ?>
-                · <?= $jenis_label ?><?= $bulan_nama ? " — $bulan_nama" : '' ?>
+                · <?= $jenis_label ?><?= $bulan_nama ? " &mdash; $bulan_nama" : '' ?>
                 · <strong><?= $total_siswa ?> siswa</strong>
             </div>
         </div>
@@ -281,11 +319,11 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
                 <button onclick="setUkuran('a4')"
                     class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
                     style="border:none;border-radius:30px;padding:3px 10px"
-                    title="Kertas A4 — 210 × 297 mm">A4</button>
+                    title="Kertas A4 &mdash; 210 × 297 mm">A4</button>
                 <button onclick="setUkuran('f4')"
                     class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
                     style="border:none;border-radius:30px;padding:3px 10px"
-                    title="Kertas F4 — 215 × 330 mm">F4</button>
+                    title="Kertas F4 &mdash; 215 × 330 mm">F4</button>
             </div>
             <!-- Date picker tanggal cetak -->
             <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;white-space:nowrap">
@@ -448,7 +486,7 @@ foreach ($siswa_list as $rank_idx => $sw):
     }
 
     /**
-     * Cetak semua siswa — jeda kecil agar browser render sempurna.
+     * Cetak semua siswa &mdash; jeda kecil agar browser render sempurna.
      */
     function cetakSemua() {
         const progress = document.getElementById('loadProgress');

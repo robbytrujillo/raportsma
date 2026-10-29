@@ -52,6 +52,20 @@ function has_role($roles): bool {
 }
 
 /**
+ * Cek apakah user adalah super_admin
+ */
+function is_super_admin(): bool {
+    return ($_SESSION['role'] ?? '') === 'super_admin';
+}
+
+/**
+ * Cek apakah user adalah super_admin atau admin
+ */
+function is_admin_or_super(): bool {
+    return in_array($_SESSION['role'] ?? '', ['super_admin', 'admin'], true);
+}
+
+/**
  * Redirect ke login jika belum login
  */
 function require_login(): void {
@@ -92,7 +106,7 @@ function do_login(string $username, string $password): array {
     $valid = false;
 
     if (strlen($hash) === 32 && ctype_xdigit($hash)) {
-        // Hash MD5 — bandingkan langsung
+        // Hash MD5 &mdash; bandingkan langsung
         $valid = ($hash === md5($password));
     } else {
         // Hash bcrypt (password_hash)
@@ -195,9 +209,9 @@ function get_predikat(float $nilai, float $krit_a = null, float $krit_b = null, 
 }
 
 /**
- * Hitung nilai akhir BULANAN — fleksibel.
+ * Hitung nilai akhir BULANAN &mdash; fleksibel.
  * Rata-rata dihitung hanya dari komponen yang terisi (nilai > 0).
- * Contoh: NH1=90 saja → NA=90 | NH1=90,NH2=80 → NA=85 | semua 4 → NA=(sum/4)
+ * Contoh: NH1=90 saja &rarr; NA=90 | NH1=90,NH2=80 &rarr; NA=85 | semua 4 &rarr; NA=(sum/4)
  */
 function hitung_nilai_bulanan(float $h1, float $h2, float $h3, float $tugas): float {
     $komponen = array_filter([$h1, $h2, $h3, $tugas], fn($v) => $v > 0);

@@ -1,15 +1,15 @@
-<?php
+﻿<?php
 /**
  * pages/mapel/import.php
  * Template Excel (.xlsx) & import mata pelajaran
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
 // Daftar mapel induk untuk referensi
 $mapel_induk = db_query("SELECT id, nama_mapel, kelompok FROM mapel WHERE parent_id IS NULL ORDER BY kelompok, urutan");
 
-/* ── Download template Excel ─────────────────────────────────── */
+/* â"€â"€ Download template Excel â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 if (isset($_GET['download_template'])) {
     $ref_rows = [];
     foreach ($mapel_induk as $m) {
@@ -17,8 +17,8 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_mapel.xlsx', [
-        'title'    => 'Template Import Mata Pelajaran — Raportku',
-        'subtitle' => '★ = wajib diisi  |  Import mapel INDUK dulu, lalu sub-mapel  |  Lihat sheet "Referensi" untuk parent_id',
+        'title'    => 'Template Import Mata Pelajaran â€" Raportku',
+        'subtitle' => 'â˜... = wajib diisi  |  Import mapel INDUK dulu, lalu sub-mapel  |  Lihat sheet "Referensi" untuk parent_id',
         'columns'  => [
             ['header'=>'Nama Mapel',  'field'=>'nama_mapel',  'width'=>32, 'required'=>true,  'type'=>'text','format'=>'@',
              'example'=>'Bahasa Indonesia', 'note'=>'Nama lengkap mata pelajaran'],
@@ -41,14 +41,14 @@ if (isset($_GET['download_template'])) {
             ['Bahasa Arab',            'BARB', 'B', '', '', '1'],
         ],
         'notes_sheet' => [
-            'title'   => 'Daftar Mapel Induk — gunakan angka di kolom "ID" sebagai Parent ID untuk sub-mapel',
+            'title'   => 'Daftar Mapel Induk â€" gunakan angka di kolom "ID" sebagai Parent ID untuk sub-mapel',
             'headers' => ['ID','Nama Mapel Induk','Kelompok'],
             'rows'    => $ref_rows ?: [['(belum ada mapel induk)', '', '']],
         ],
     ]);
 }
 
-/* ── Proses Import ─────────────────────────────────────────────── */
+/* â"€â"€ Proses Import â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 $results   = [];
 $errors    = [];
 $successes = 0;
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $sublabel = excel_str($row, 4, 3);
                 $urutan   = excel_int($row, 5);
 
-                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama mapel kosong — dilewati']; continue; }
+                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama mapel kosong â€" dilewati']; continue; }
                 if (!in_array($kelompok, $valid_kelompok)) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelompok '$kelompok' tidak valid (A/B/C/C Pilihan/D/Muatan Lokal)"]; continue;
                 }
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         [':n'=>$nama,':k'=>$kode,':g'=>$kelompok,
                          ':pid'=>$parent_id,':sl'=>($sublabel?:null),':u'=>$urutan]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama — ditambahkan (Kelompok $kelompok)"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama â€" ditambahkan (Kelompok $kelompok)"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
       <h1 class="page-title">Import Mata Pelajaran</h1>
       <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan mata pelajaran sekaligus</p>
     </div>
-    <a href="index.php?page=mapel" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=mapel" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -140,9 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         </ol>
 
         <div class="p-3 mt-3 rounded-lg text-xs" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">
-          <strong>✓ Didukung:</strong> .xlsx, .xls, .csv
-          <br><strong>✓ Dropdown</strong> di kolom Kelompok
-          <br><strong>✓ Sheet "Referensi"</strong> berisi daftar mapel induk & ID-nya
+          <strong>âœ" Didukung:</strong> .xlsx, .xls, .csv
+          <br><strong>âœ" Dropdown</strong> di kolom Kelompok
+          <br><strong>âœ" Sheet "Referensi"</strong> berisi daftar mapel induk & ID-nya
         </div>
 
         <div class="divider"></div>
@@ -152,8 +152,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <th style="padding:5px 8px;text-align:left">Keterangan</th>
           </tr>
           <?php foreach ([
-            ['nama_mapel','Nama lengkap mata pelajaran — wajib'],
-            ['kode_mapel','Kode singkat misal MTK, BIND — opsional'],
+            ['nama_mapel','Nama lengkap mata pelajaran â€" wajib'],
+            ['kode_mapel','Kode singkat misal MTK, BIND â€" opsional'],
             ['kelompok','A / B / C / C Pilihan / D / Muatan Lokal (dropdown)'],
             ['parent_id','ID mapel induk (kosongkan jika mapel mandiri)'],
             ['sub_label','Label huruf: a, b, c (untuk sub-mapel)'],
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv | Maks 10MB</p>
           </div>
           <div class="p-3 rounded-lg text-xs mb-4" style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e">
-            <strong>⚠ Tips:</strong> Import mapel <strong>induk dulu</strong>, baru sub-mapelnya,
+            <strong>âš  Tips:</strong> Import mapel <strong>induk dulu</strong>, baru sub-mapelnya,
             karena parent_id merujuk ke ID mapel induk yang sudah ada di database.
           </div>
           <button type="submit" class="btn btn-primary w-full justify-center">
@@ -229,9 +229,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
           <tr>
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
-              if ($r['status']==='ok')    echo '<span class="badge badge-green">✓ OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">— Skip</span>';
-              else echo '<span class="badge badge-red">✗ Error</span>';
+              if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>
           </tr>

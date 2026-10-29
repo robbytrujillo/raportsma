@@ -1,7 +1,7 @@
 <?php
 /**
  * layout/sidebar.php
- * Sidebar navigasi — ditampilkan sesuai role
+ * Sidebar navigasi &mdash; ditampilkan sesuai role
  * Mendukung collapse/expand (desktop: icon-only mode, mobile: slide overlay)
  */
 $user = current_user();
@@ -34,7 +34,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         </svg>
       <?php endif; ?>
 
-      <!-- Nama aplikasi — disembunyikan saat collapsed -->
+      <!-- Nama aplikasi &mdash; disembunyikan saat collapsed -->
       <span class="sidebar-logo-text" style="font-size:1.25rem;font-weight:800;
             letter-spacing:-.5px;white-space:nowrap;overflow:hidden;
             transition:opacity .25s,width .25s">
@@ -45,7 +45,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <button class="sidebar-toggle-btn" id="sidebarToggleBtn"
               title="Sembunyikan / tampilkan sidebar" aria-label="Toggle sidebar">
         <span class="sidebar-toggle-icon">
-          <!-- Ikon panah ke kiri — diputar 180° saat collapsed -->
+          <!-- Ikon panah ke kiri &mdash; diputar 180° saat collapsed -->
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
                viewBox="0 0 24 24">
             <polyline points="15 18 9 12 15 6"/>
@@ -67,7 +67,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <div class="text-white text-xs font-semibold leading-tight truncate"
              style="max-width:150px"><?= e($user['nama_lengkap']) ?></div>
         <?php
-          $guru_det = ($role !== 'admin' && $role !== 'siswa' && $role !== 'kepala_sekolah')
+          $guru_det = (!in_array($role, ['super_admin','admin','siswa','kepala_sekolah']))
               ? db_row('SELECT status FROM guru WHERE user_id = :id', [':id'=>$user['id']])
               : null;
           $status_label = $guru_det
@@ -91,11 +91,11 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-tooltip">Dashboard</span>
     </a>
 
-    <?php if (in_array($role, ['admin','kepala_sekolah','wali_kelas','guru'])): ?>
+    <?php if (in_array($role, ['super_admin','admin','kepala_sekolah','wali_kelas','guru'])): ?>
     <!-- ── Akademik ─────────────────── -->
     <div class="sidebar-section-title">Akademik</div>
 
-    <?php if (in_array($role, ['admin','wali_kelas','guru'])): ?>
+    <?php if (in_array($role, ['super_admin','admin','wali_kelas','guru'])): ?>
     <a href="index.php?page=nilai.bulk" data-page="nilai.bulk,nilai">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
@@ -132,6 +132,17 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Raport</span>
       <span class="sidebar-tooltip">Raport</span>
     </a>
+
+    <?php if ($role === 'super_admin'): ?>
+    <a href="index.php?page=raport.manage" data-page="raport.manage">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      <span class="sidebar-nav-label">Manajemen Raport</span>
+      <span class="sidebar-tooltip">Manajemen Raport</span>
+    </a>
+    <?php endif; ?>
+
     <?php endif; ?>
 
     <?php if ($role === 'siswa'): ?>
@@ -146,7 +157,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </a>
     <?php endif; ?>
 
-    <?php if ($role === 'admin'): ?>
+    <?php if (in_array($role, ['super_admin','admin'])): ?>
     <!-- ── Manajemen Data ──────────── -->
     <div class="sidebar-section-title">Manajemen Data</div>
     <a href="index.php?page=siswa" data-page="siswa">
@@ -192,6 +203,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 
     <!-- ── Pengaturan ────────────────── -->
     <div class="sidebar-section-title">Pengaturan</div>
+    <?php if (in_array($role, ['super_admin','admin'])): ?>
     <a href="index.php?page=users" data-page="users">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -200,6 +212,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Pengguna</span>
       <span class="sidebar-tooltip">Pengguna</span>
     </a>
+    <?php endif; ?>
     <a href="index.php?page=tahun_ajaran" data-page="tahun_ajaran">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>

@@ -1,9 +1,13 @@
 <?php
 /**
  * pages/users/form.php
- * Form tambah / edit pengguna — admin
+ * Form tambah / edit pengguna &mdash; hanya super_admin
  */
-require_role('admin');
+require_login();
+if (!is_super_admin()) {
+    flash('error', 'Hanya Super Admin yang dapat mengelola akun pengguna.');
+    header('Location: index.php?page=users'); exit;
+}
 
 $page_action = $_GET['page'] ?? 'users.create';
 $is_edit     = ($page_action === 'users.edit');
@@ -58,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$roles = ['admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru','siswa'=>'Siswa'];
+$roles = ['super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru','siswa'=>'Siswa'];
 $d = $user_data ?? [];
 ?>
 <div class="page-content" style="max-width:680px;margin:0 auto">
@@ -67,7 +71,7 @@ $d = $user_data ?? [];
       <h1 class="page-title"><?= $is_edit ? 'Edit Pengguna' : 'Tambah Pengguna' ?></h1>
       <p class="page-subtitle"><?= $is_edit ? 'Perbarui data pengguna' : 'Buat akun pengguna baru' ?></p>
     </div>
-    <a href="index.php?page=users" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=users" class="btn btn-secondary">&larr; Kembali</a>
   </div>
 
   <?php foreach ($errors as $e): ?>

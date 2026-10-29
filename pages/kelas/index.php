@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 /**
- * pages/kelas/index.php + form.php combined — admin
+ * pages/kelas/index.php + form.php combined â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
-// ── Export CSV ─────────────────────────────────────────────────
+// â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if (isset($_GET['export'])) {
     $rows = db_query(
         'SELECT k.nama_kelas, k.tingkat, k.tahun_ajaran_id, k.wali_kelas_id,
@@ -24,7 +24,7 @@ if (isset($_GET['export'])) {
     csv_download('export_kelas_' . date('Ymd') . '.csv', $headers, $out);
 }
 
-// ── Handle ALL POST actions BEFORE any output ──────────────────
+// â"€â"€ Handle ALL POST actions BEFORE any output â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=kelas'); exit; }
 
@@ -67,7 +67,7 @@ $wali_list  = db_query("SELECT u.id, u.nama_lengkap FROM users u WHERE u.role IN
 $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_filter  = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 
-// ── Paginasi ────────────────────────────────────────────────────
+// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -132,7 +132,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
         class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
         style="text-decoration:none;cursor:pointer">
         <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
-        <?= $ta['is_aktif'] ? ' ★' : '' ?>
+        <?= $ta['is_aktif'] ? ' â˜...' : '' ?>
       </a>
       <?php endforeach; ?>
     </div>
@@ -167,7 +167,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
             <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
             <td class="font-semibold"><?= e($k['nama_kelas']) ?></td>
             <td><span class="badge badge-blue"><?= e($k['tingkat']) ?></span></td>
-            <td><?= e($k['nama_wali'] ?: '—') ?></td>
+            <td><?= e($k['nama_wali'] ?: 'â€"') ?></td>
             <td class="text-gray-500 text-sm"><?= e($k['ta_nama']) ?> Sem.<?= $k['semester'] ?></td>
             <td>
               <div class="flex gap-1">
@@ -193,21 +193,21 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
     <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
       <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> kelas)</span>
       <div class="pagination">
-        <a href="?<?= $qstr_k ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹ Prev</a>
+        <a href="?<?= $qstr_k ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">â€¹ Prev</a>
         <?php
           $start = max(1, $page_n - 3); $end = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_k ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">…</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_k ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages):
-            if ($end < $pages - 1): ?><span class="page-link disabled">…</span><?php endif;
+            if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
             ?><a href="?<?= $qstr_k ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-        <a href="?<?= $qstr_k ?>&p=<?= min($pages,$page_n+1) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
+        <a href="?<?= $qstr_k ?>&p=<?= min($pages,$page_n+1) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next â€º</a>
       </div>
     </div>
     <?php endif; ?>
@@ -244,7 +244,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
         <div class="form-group">
           <label class="form-label">Wali Kelas</label>
           <select name="wali_kelas_id" id="kelasWali" class="form-control">
-            <option value="">— Pilih Wali Kelas —</option>
+            <option value="">â€" Pilih Wali Kelas â€"</option>
             <?php foreach ($wali_list as $w): ?>
             <option value="<?= $w['id'] ?>"><?= e($w['nama_lengkap']) ?></option>
             <?php endforeach; ?>

@@ -1,12 +1,15 @@
 <?php
 /**
  * pages/users/index.php
- * Daftar semua pengguna — hanya admin
+ * Daftar semua pengguna &mdash; super_admin (CRUD penuh) atau admin (hanya lihat)
  */
-require_role('admin');
+require_login();
+if (!is_admin_or_super()) { require_role('super_admin'); } // trigger 403
 
-// ── Handle DELETE ──────────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
+$can_crud = is_super_admin(); // hanya super_admin boleh tambah/edit/hapus
+
+// ── Handle DELETE (super_admin only) ───────────────────────────
+if ($can_crud && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); }
     else {
         $id = (int)($_POST['id'] ?? 0);
@@ -44,26 +47,40 @@ $pages   = max(1, (int)ceil($total / $per));
 $users   = db_query("SELECT * FROM users WHERE $whereStr ORDER BY nama_lengkap LIMIT $per OFFSET $offset", $params);
 
 $role_labels = [
-    'admin'        => ['label'=>'Admin',        'class'=>'badge-red'],
-    'wali_kelas'   => ['label'=>'Wali Kelas',   'class'=>'badge-orange'],
-    'guru'         => ['label'=>'Guru',          'class'=>'badge-blue'],
-    'siswa'        => ['label'=>'Siswa',         'class'=>'badge-green'],
-    'kepala_sekolah'=>['label'=>'Kepala Sekolah','class'=>'badge-purple'],
+    'super_admin'  => ['label'=>'Super Admin',  'class'=>'badge-red'],
+    'admin'        => ['label'=>'Admin',         'class'=>'badge-orange'],
+    'wali_kelas'   => ['label'=>'Wali Kelas',    'class'=>'badge-orange'],
+    'guru'         => ['label'=>'Guru',           'class'=>'badge-blue'],
+    'siswa'        => ['label'=>'Siswa',          'class'=>'badge-green'],
+    'kepala_sekolah'=>['label'=>'Kepala Sekolah', 'class'=>'badge-purple'],
 ];
 ?>
 <div class="page-content">
   <div class="page-header">
     <div>
       <h1 class="page-title">Manajemen Pengguna</h1>
-      <p class="page-subtitle">Kelola akun seluruh pengguna sistem</p>
+      <p class="page-subtitle">
+        <?= $can_crud ? 'Kelola akun seluruh pengguna sistem' : 'Lihat daftar pengguna sistem (hanya Super Admin yang dapat mengelola)' ?>
+      </p>
     </div>
+    <?php if ($can_crud): ?>
     <a href="index.php?page=users.create" class="btn btn-primary">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
       Tambah Pengguna
     </a>
+    <?php endif; ?>
   </div>
+
+  <?php if (!$can_crud): ?>
+  <div class="alert alert-info" style="margin-bottom:16px">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    Anda login sebagai <strong>Admin</strong>. Hanya <strong>Super Admin</strong> yang dapat menambah, mengedit, atau menghapus akun pengguna.
+  </div>
+  <?php endif; ?>
 
   <div class="card">
     <!-- Filter Bar -->
@@ -96,12 +113,12 @@ $role_labels = [
             <th>Email</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Aksi</th>
+            <?php if ($can_crud): ?><th>Aksi</th><?php endif; ?>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($users)): ?>
-          <tr><td colspan="7" class="text-center py-8 text-gray-400">Tidak ada data.</td></tr>
+          <tr><td colspan="<?= $can_crud ? 7 : 6 ?>" class="text-center py-8 text-gray-400">Tidak ada data.</td></tr>
           <?php else: ?>
           <?php foreach ($users as $i => $u): ?>
           <tr>
@@ -129,6 +146,7 @@ $role_labels = [
                 <?= $u['is_active'] ? 'Aktif' : 'Nonaktif' ?>
               </span>
             </td>
+            <?php if ($can_crud): ?>
             <td>
               <div class="flex gap-1">
                 <a href="index.php?page=users.edit&id=<?= $u['id'] ?>" class="btn btn-sm btn-secondary tooltip-wrap">
@@ -155,6 +173,7 @@ $role_labels = [
                 <?php endif; ?>
               </div>
             </td>
+            <?php endif; ?>
           </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -168,13 +187,13 @@ $role_labels = [
       <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?></span>
       <div class="pagination">
         <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= max(1,$page_n-1) ?>"
-          class="page-link <?= $page_n<=1?'disabled':'' ?>">‹ Prev</a>
+          class="page-link <?= $page_n<=1?'disabled':'' ?>">&lsaquo; Prev</a>
         <?php for ($pi=1; $pi<=$pages; $pi++): ?>
         <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= $pi ?>"
           class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
         <?php endfor; ?>
         <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= min($pages,$page_n+1) ?>"
-          class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
+          class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next &rsaquo;</a>
       </div>
     </div>
     <?php endif; ?>

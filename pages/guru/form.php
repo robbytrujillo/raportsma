@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 /**
  * pages/guru/form.php
- * Form tambah / edit guru — admin
+ * Form tambah / edit guru â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 
 $page_action = $_GET['page'] ?? 'guru.create';
 $is_edit     = ($page_action === 'guru.edit');
@@ -20,7 +20,7 @@ if ($is_edit) {
 
 $errors = [];
 
-// ── Handle Submit ──────────────────────────────────────────────
+// â"€â"€ Handle Submit â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -88,7 +88,7 @@ $dg = $guru_data ?? [];
             <h1 class="page-title"><?= $is_edit ? 'Edit Guru' : 'Tambah Guru' ?></h1>
             <p class="page-subtitle"><?= $is_edit ? 'Perbarui data guru' : 'Daftarkan guru baru ke sistem' ?></p>
         </div>
-        <a href="index.php?page=guru" class="btn btn-secondary">← Kembali</a>
+        <a href="index.php?page=guru" class="btn btn-secondary">â† Kembali</a>
     </div>
 
     <?php foreach ($errors as $e): ?>

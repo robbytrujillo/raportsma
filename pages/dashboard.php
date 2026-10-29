@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/dashboard.php
- * Dashboard utama — tampilan berbeda per role
+ * Dashboard utama &mdash; tampilan berbeda per role
  */
 $user = current_user();
 $role = $user['role'];
@@ -9,7 +9,7 @@ $role = $user['role'];
 // ── Ambil data statistik sesuai role ─────────────────────────
 $ta_aktif = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 
-if ($role === 'admin') {
+if (in_array($role, ['admin','super_admin'])) {
     $total_siswa   = db_row('SELECT COUNT(*) as n FROM users WHERE role = "siswa" AND is_active = 1')['n'] ?? 0;
     $total_guru    = db_row('SELECT COUNT(*) as n FROM users WHERE role IN ("guru","wali_kelas") AND is_active = 1')['n'] ?? 0;
     $total_kelas   = db_row('SELECT COUNT(*) as n FROM kelas WHERE tahun_ajaran_id = :ta', [':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
@@ -70,8 +70,8 @@ if ($role === 'admin') {
 
 // Aktivitas nilai terbaru (admin/guru/walas)
 $recent_nilai = [];
-if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
-    $uid_filter = ($role === 'admin') ? '' : 'AND n.guru_user_id = ' . (int)$user['id'];
+if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
+    $uid_filter = (in_array($role, ['admin','super_admin'])) ? '' : 'AND n.guru_user_id = ' . (int)$user['id'];
     $recent_nilai = db_query(
         "SELECT n.*, u.nama_lengkap as nama_siswa, m.nama_mapel, k.nama_kelas
          FROM nilai n
@@ -92,7 +92,7 @@ if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
       <h1 class="page-title">Selamat Datang, <?= e(explode(' ', $user['nama_lengkap'])[0]) ?>!</h1>
       <p class="page-subtitle">
         <?php if ($ta_aktif): ?>
-          Tahun Ajaran <?= e($ta_aktif['nama']) ?> — Semester <?= $ta_aktif['semester'] == 1 ? 'Ganjil' : 'Genap' ?>
+          Tahun Ajaran <?= e($ta_aktif['nama']) ?> &mdash; Semester <?= $ta_aktif['semester'] == 1 ? 'Ganjil' : 'Genap' ?>
         <?php else: ?>
           Belum ada tahun ajaran aktif
         <?php endif; ?>
@@ -121,7 +121,7 @@ if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
       </div>
     </div>
 
-    <?php if ($role === 'admin'): ?>
+    <?php if (in_array($role, ['admin','super_admin'])): ?>
     <!-- Guru -->
     <div class="stat-card">
       <div class="stat-icon" style="background:#eff6ff">
@@ -147,7 +147,7 @@ if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
       </div>
       <div>
         <div class="stat-value text-green-600"><?= $total_kelas ?></div>
-        <div class="stat-label"><?= $role === 'admin' ? 'Total Kelas' : 'Kelas Diampu' ?></div>
+        <div class="stat-label"><?= in_array($role, ['admin','super_admin']) ? 'Total Kelas' : 'Kelas Diampu' ?></div>
       </div>
     </div>
 
@@ -160,8 +160,8 @@ if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
         </svg>
       </div>
       <div>
-        <div class="stat-value text-purple-600"><?= $role === 'admin' ? $total_mapel : $total_nilai ?></div>
-        <div class="stat-label"><?= $role === 'admin' ? 'Mata Pelajaran' : 'Data Nilai' ?></div>
+        <div class="stat-value text-purple-600"><?= in_array($role, ['admin','super_admin']) ? $total_mapel : $total_nilai ?></div>
+        <div class="stat-label"><?= in_array($role, ['admin','super_admin']) ? 'Mata Pelajaran' : 'Data Nilai' ?></div>
       </div>
     </div>
     <?php endif; ?>
@@ -272,7 +272,7 @@ if (in_array($role, ['admin', 'guru', 'wali_kelas'])) {
   <?php endif; ?>
 
   <!-- ── QUICK LINKS untuk Admin ────────────────────────── -->
-  <?php if ($role === 'admin'): ?>
+  <?php if (in_array($role, ['admin','super_admin'])): ?>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
     <?php
     $quick = [

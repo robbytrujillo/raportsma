@@ -5,11 +5,14 @@
  * Semua request masuk melalui file ini
  */
 
-// Output buffering — memungkinkan header() dipanggil kapan saja
+// Output buffering &mdash; memungkinkan header() dipanggil kapan saja
 // bahkan setelah output HTML sudah dimulai
 ob_start();
 
 require_once __DIR__ . '/auth.php';
+
+// Jalankan migrasi DB otomatis (aman diulang, hanya berjalan sekali per request)
+run_auto_migrations();
 
 // ── Handle AJAX / API requests ────────────────────────────────
 $page = $_GET['page'] ?? 'dashboard';
@@ -27,6 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'logout') {
         do_logout();
     }
+    // AJAX actions — include page file directly (no layout) so headers stay clean
+    if ($action === 'toggle_publikasi' && $page === 'raport') {
+        include __DIR__ . '/pages/raport/index.php';
+        ob_end_flush(); exit;
+    }
+    // raport.manage POST actions (delete_periode, edit_bulan) — go through layout normally
+    // (they redirect after action, so no JSON needed; just let them fall through to layout)
 }
 
 // ── Route mapping ke file halaman ─────────────────────────────
@@ -64,7 +74,7 @@ $routes = [
     // Nilai
     'nilai'           => 'pages/nilai/index.php',
     'nilai.input'     => 'pages/nilai/form.php',
-    'nilai.edit'      => 'pages/nilai/form.php',   // alias — form.php deteksi via ?id=
+    'nilai.edit'      => 'pages/nilai/form.php',   // alias &mdash; form.php deteksi via ?id=
     'nilai.bulk'      => 'pages/nilai/bulk.php',
     'nilai.import'    => 'pages/nilai/import.php',
 
@@ -73,6 +83,7 @@ $routes = [
     'raport.view'        => 'pages/raport/view.php',
     'raport.print'       => 'pages/raport/print.php',
     'raport.print_kelas' => 'pages/raport/print_kelas.php',
+    'raport.manage'      => 'pages/raport/manage.php',
 
     // Profil & Tanda Tangan
     'profil'          => 'pages/profil.php',

@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 /**
  * pages/siswa/form.php
- * Form tambah / edit siswa — admin
+ * Form tambah / edit siswa â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 
 $page_action = $_GET['page'] ?? 'siswa.create';
 $is_edit     = ($page_action === 'siswa.edit');
@@ -20,7 +20,7 @@ if ($is_edit) {
 
 $errors = [];
 
-// ── Handle Submit ──────────────────────────────────────────────
+// â"€â"€ Handle Submit â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -102,7 +102,7 @@ $s = $siswa_data ?? [];
     <div>
       <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
     </div>
-    <a href="index.php?page=siswa" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=siswa" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -135,7 +135,7 @@ $s = $siswa_data ?? [];
           <div class="form-group">
             <label class="form-label">Kelas <span class="text-red-500">*</span></label>
             <select name="kelas_id" class="form-control" required>
-              <option value="">— Pilih Kelas —</option>
+              <option value="">â€" Pilih Kelas â€"</option>
               <?php foreach ($kelas_list as $k): ?>
               <option value="<?= $k['id'] ?>" <?= ($s['kelas_id']??0)==$k['id']?'selected':'' ?>>
                 <?= e($k['nama_kelas']) ?> (<?= e($k['ta_nama']) ?>)

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 /**
  * pages/nilai/bulk.php
- * Input nilai bulk — semua siswa dalam 1 kelas × 1 mapel sekaligus
+ * Input nilai bulk â€" semua siswa dalam 1 kelas Ã&mdash; 1 mapel sekaligus
  * Tampilan seperti format Excel: header info + tabel siswa + tabel deskripsi kriteria
  */
-require_role(['admin', 'guru', 'wali_kelas']);
+require_role(['admin', 'super_admin', 'guru', 'wali_kelas']);
 
 $user         = current_user();
 $role         = $user['role'];
@@ -25,7 +25,7 @@ $mapel_id  = (int)($_GET['mapel'] ?? 0);
 $jenis     = $_GET['jenis'] ?? 'bulanan';
 $bulan     = (int)($_GET['bulan'] ?? 0);
 
-/* ── Deskripsi default per kriteria (CRUD) ─────────────────────
+/* â"€â"€ Deskripsi default per kriteria (CRUD) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
    Disimpan di tabel nilai_deskripsi_kriteria (dibuat runtime jika belum ada)
    Struktur: mapel_id, kelas_id, tahun_ajaran_id, jenis_raport, bulan, kriteria, deskripsi
 */
@@ -43,7 +43,7 @@ db()->exec("CREATE TABLE IF NOT EXISTS nilai_deskripsi (
     UNIQUE KEY uk_dk (mapel_id, kelas_id, tahun_ajaran_id, jenis_raport, bulan, kriteria)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-/* ── Handle POST: simpan nilai bulk + deskripsi ─────────────────*/
+/* â"€â"€ Handle POST: simpan nilai bulk + deskripsi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     $p_ta    = (int)$_POST['tahun_ajaran_id'];
     $p_kelas = (int)$_POST['kelas_id'];
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         }
 
         // Auto-isi deskripsi: jika kosong ATAU jika isinya adalah deskripsi
-        // kriteria lain (stale — predikat siswa berubah), ganti dengan yang benar
+        // kriteria lain (stale â€" predikat siswa berubah), ganti dengan yang benar
         $deskripsi_kriteria_lain = array_filter($all_desk, fn($k) => $k !== $pred, ARRAY_FILTER_USE_KEY);
         $is_stale = $desk_siswa !== '' && in_array($desk_siswa, array_values($deskripsi_kriteria_lain), true);
         if ($desk_siswa === '' || $is_stale) {
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     exit;
 }
 
-/* ── Data pendukung ─────────────────────────────────────────────*/
+/* â"€â"€ Data pendukung â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€*/
 $ta_list   = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $sekolah   = sekolah_info();
 $krit_a    = (float)($sekolah['kriteria_a_min'] ?? 92);
@@ -165,10 +165,10 @@ $krit_b    = (float)($sekolah['kriteria_b_min'] ?? 83);
 $krit_c    = (float)($sekolah['kriteria_c_min'] ?? 76);
 
 // Kelas sesuai hak akses
-if ($role === 'admin') {
+if (in_array($role, ['admin','super_admin'])) {
     $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id=:ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
 } elseif ($guru_status === 'wali_kelas') {
-    // :uid2 = nilai sama dengan :uid — PDO tidak boleh pakai named param duplikat
+    // :uid2 = nilai sama dengan :uid â€" PDO tidak boleh pakai named param duplikat
     $kelas_list = db_query(
         'SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id=k.id AND gmk.guru_user_id=:uid
@@ -188,7 +188,7 @@ if ($role === 'admin') {
 // Mapel sesuai kelas & hak akses
 $mapel_list = [];
 if ($kelas_id) {
-    if ($role === 'admin') {
+    if (in_array($role, ['admin','super_admin'])) {
         $mapel_list = db_query(
             'SELECT DISTINCT m.* FROM mapel m
              INNER JOIN guru_mapel_kelas gmk ON gmk.mapel_id=m.id
@@ -267,7 +267,7 @@ if ($kelas_id && $mapel_id) {
 $bulan_opts = BULAN_ID;
 $jenis_opts = [
     'bulanan'  => 'Bulanan (NH + Tugas)',
-    'sts'      => 'STS — Sumatif Tengah Semester',
+    'sts'      => 'STS / Sumatif Tengah Semester',
     'semester' => 'Semester / SAS',
 ];
 $ready = $kelas_id && $mapel_id && $ta_id;
@@ -275,7 +275,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
 <div class="page-content">
 
-    <!-- ── PAGE HEADER ─────────────────────────────────────────── -->
+    <!-- â"€â"€ PAGE HEADER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
     <div class="page-header">
         <div>
             <h1 class="page-title">Input Nilai Kelas</h1>
@@ -299,7 +299,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
     </div>
 
-    <!-- ── STEP 1: PILIH FILTER ────────────────────────────────── -->
+    <!-- â"€â"€ STEP 1: PILIH FILTER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
     <div class="card mb-5">
         <div class="card-header">
             <span class="flex items-center gap-2">
@@ -327,7 +327,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <div class="form-group mb-0">
                         <label class="form-label">Kelas</label>
                         <select name="kelas" class="form-control" onchange="this.form.submit()">
-                            <option value="">— Pilih —</option>
+                            <option value="">-- Pilih --</option>
                             <?php foreach ($kelas_list as $k): ?>
                             <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
                                 <?= e($k['nama_kelas']) ?></option>
@@ -338,7 +338,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <div class="form-group mb-0">
                         <label class="form-label">Mata Pelajaran</label>
                         <select name="mapel" class="form-control" onchange="this.form.submit()">
-                            <option value="">— Pilih —</option>
+                            <option value="">-- Pilih --</option>
                             <?php foreach ($mapel_list as $m): ?>
                             <option value="<?= $m['id'] ?>" <?= $m['id']==$mapel_id?'selected':'' ?>>
                                 <?= e($m['nama_mapel']) ?></option>
@@ -359,7 +359,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <div class="form-group mb-0">
                         <label class="form-label">Bulan</label>
                         <select name="bulan" class="form-control" onchange="this.form.submit()">
-                            <option value="">— Pilih —</option>
+                            <option value="">-- Pilih --</option>
                             <?php foreach ($bulan_opts as $bk => $bv): ?>
                             <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
                             <?php endforeach; ?>
@@ -393,7 +393,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
     <?php else: ?>
 
-    <!-- ── INFO HEADER (seperti format Excel) ──────────────────── -->
+    <!-- â"€â"€ INFO HEADER (seperti format Excel) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
     <div class="card mb-4" style="border-left:4px solid #f97316">
         <div class="card-body py-3">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
@@ -417,7 +417,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 <div class="flex gap-2">
                     <span class="text-gray-400 w-36 flex-shrink-0">Periode</span>
                     <span class="font-semibold">:
-                        <?= $jenis==='semester' ? 'Akhir Semester' : e($bulan_opts[$bulan] ?? '—') ?></span>
+                        <?= $jenis==='semester' ? 'Akhir Semester' : e($bulan_opts[$bulan] ?? '-') ?></span>
                 </div>
                 <div class="flex gap-2">
                     <span class="text-gray-400 w-36 flex-shrink-0">Jumlah Siswa</span>
@@ -427,7 +427,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
     </div>
 
-    <!-- ── STEP 2: FORM INPUT ──────────────────────────────────── -->
+    <!-- â"€â"€ STEP 2: FORM INPUT â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
     <form method="POST" action="index.php?page=nilai.bulk" id="formBulk">
         <?= csrf_field() ?>
         <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
@@ -441,7 +441,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
-            <!-- ── KIRI: Tabel Nilai Siswa ─────────────────────────── -->
+            <!-- â"€â"€ KIRI: Tabel Nilai Siswa â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
             <div class="xl:col-span-2">
                 <div class="card">
                     <div class="card-header">
@@ -588,7 +588,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                     <td class="text-center">
                                         <span id="pred_<?= $s['id'] ?>" class="font-bold <?= $predClass ?>"
                                             style="font-size:.9rem">
-                                            <?= $pred ?: '—' ?>
+                                            <?= $pred ?: '-' ?>
                                         </span>
                                     </td>
 
@@ -612,7 +612,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                         <div class="flex flex-col gap-2">
                                             <div class="flex items-center gap-2">
                                                 <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">
-                                                    Deskripsi — <?= e($s['nama_lengkap']) ?>:
+                                                    Deskripsi â€" <?= e($s['nama_lengkap']) ?>:
                                                 </label>
                                                 <!-- Status simpan -->
                                                 <span id="deskStatus_<?= $s['id'] ?>"
@@ -656,7 +656,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                 <tr style="background:#fff7ed;font-weight:700">
                                     <td colspan="<?= $jenis==='bulanan'?6:3 ?>" class="text-right px-3 py-2 text-sm">
                                         Rata-rata Kelas:</td>
-                                    <td class="text-center text-orange-600" id="rataKelas">—</td>
+                                    <td class="text-center text-orange-600" id="rataKelas">-</td>
                                     <td colspan="3"></td>
                                 </tr>
                             </tfoot>
@@ -678,7 +678,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 </div>
             </div>
 
-            <!-- ── KANAN: Deskripsi Kriteria ───────────────────────── -->
+            <!-- â"€â"€ KANAN: Deskripsi Kriteria â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
             <div class="xl:col-span-1">
                 <div class="card" style="position:sticky;top:80px">
                     <div class="card-header">
@@ -700,9 +700,9 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
                         <?php
             $krit_data = [
-              'A' => ['label'=>'Predikat A', 'range'=>"≥{$krit_a}", 'color'=>'green', 'border'=>'#22c55e', 'bg'=>'#f0fdf4'],
-              'B' => ['label'=>'Predikat B', 'range'=>"≥{$krit_b}", 'color'=>'blue',  'border'=>'#3b82f6', 'bg'=>'#eff6ff'],
-              'C' => ['label'=>'Predikat C', 'range'=>"≥{$krit_c}", 'color'=>'yellow','border'=>'#eab308', 'bg'=>'#fefce8'],
+              'A' => ['label'=>'Predikat A', 'range'=>">={$krit_a}", 'color'=>'green', 'border'=>'#22c55e', 'bg'=>'#f0fdf4'],
+              'B' => ['label'=>'Predikat B', 'range'=>">={$krit_b}", 'color'=>'blue',  'border'=>'#3b82f6', 'bg'=>'#eff6ff'],
+              'C' => ['label'=>'Predikat C', 'range'=>">={$krit_c}", 'color'=>'yellow','border'=>'#eab308', 'bg'=>'#fefce8'],
               'D' => ['label'=>'Predikat D', 'range'=>"<{$krit_c}", 'color'=>'red',   'border'=>'#ef4444', 'bg'=>'#fef2f2'],
             ];
             foreach ($krit_data as $kr => $kd):
@@ -728,7 +728,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                         <!-- Tombol sinkronkan semua deskripsi sekaligus -->
                         <button type="button" class="btn btn-primary w-full mt-1 text-xs"
                             style="font-size:.8rem; border-radius: 30px" onclick="sinkronSemuaDeskripsi()">
-                            🔄 Sinkronkan Semua Deskripsi
+                            ðŸ"„ Sinkronkan Semua Deskripsi
                         </button>
                         <p class="text-xs text-gray-400 mt-1" style="font-size:.73rem">
                             Overwrite deskripsi semua siswa dari kolom kanan sesuai predikat masing-masing.
@@ -736,8 +736,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
                         <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-500">
                             <strong>Kriteria nilai:</strong><br>
-                            A: ≥<?= (int)$krit_a ?> &nbsp; B: ≥<?= (int)$krit_b ?> &nbsp;
-                            C: ≥<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
+                            A: â‰¥<?= (int)$krit_a ?> &nbsp; B: â‰¥<?= (int)$krit_b ?> &nbsp;
+                            C: â‰¥<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
                         </div>
                     </div>
                 </div>
@@ -749,7 +749,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 </div>
 
 <script>
-/* ── Konfigurasi kriteria dari server ───────────────────────── */
+/* â"€â"€ Konfigurasi kriteria dari server â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 const KRIT = {
     A: <?= $krit_a ?>,
     B: <?= $krit_b ?>,
@@ -770,15 +770,15 @@ const DESK_KRIT = {
 function hitungBaris(sid) {
     let na = 0;
     if (JENIS === 'bulanan') {
-        const h1  = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value)    || 0;
-        const h2  = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value)    || 0;
-        const h3  = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value)    || 0;
+        const h1 = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value) || 0;
+        const h2 = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value) || 0;
+        const h3 = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value) || 0;
         const tug = parseFloat(document.querySelector(`[name="tugas_${sid}"]`)?.value) || 0;
         // Fleksibel: rata-rata hanya dari komponen yang terisi (> 0)
         const komponen = [h1, h2, h3, tug].filter(v => v > 0);
-        na = komponen.length > 0
-            ? komponen.reduce((a, b) => a + b, 0) / komponen.length
-            : 0;
+        na = komponen.length > 0 ?
+            komponen.reduce((a, b) => a + b, 0) / komponen.length :
+            0;
     } else if (JENIS === 'sts') {
         na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
     } else {
@@ -798,7 +798,8 @@ function hitungBaris(sid) {
 
     const predEl = document.getElementById(`pred_${sid}`);
     if (predEl) {
-        predEl.textContent = na > 0 ? pred : '—';
+        predEl.textContent = na > 0 ? pred : '-';
+        // predEl.textContent = na > 0 ? pred : 'â€"';
         predEl.className = 'font-bold ' + {
             A: 'text-green-600',
             B: 'text-blue-600',
@@ -832,13 +833,13 @@ function hitungRataKelas() {
         }
     });
     const rataEl = document.getElementById('rataKelas');
-    if (rataEl) rataEl.textContent = count > 0 ? (sum / count).toFixed(2) : '—';
+    if (rataEl) rataEl.textContent = count > 0 ? (sum / count).toFixed(2) : 'â€"';
 }
 
 /**
  * Expand/collapse baris deskripsi siswa.
  * Saat dibuka: auto-koreksi jika isi textarea adalah deskripsi kriteria LAIN
- * (stale — predikat siswa berubah sejak terakhir disimpan).
+ * (stale â€" predikat siswa berubah sejak terakhir disimpan).
  */
 function toggleDeskSiswa(sid) {
     const row = document.getElementById(`deskRow_${sid}`);
@@ -851,7 +852,7 @@ function toggleDeskSiswa(sid) {
     if (isHidden) {
         const ta = document.getElementById(`deskArea_${sid}`);
         const pred = document.getElementById(`pred_${sid}`)?.textContent.trim();
-        if (!ta || !pred || pred === '—') return;
+        if (!ta || !pred || pred === 'â€"') return;
 
         const current = ta.value.trim();
         if (current === '') {
@@ -867,7 +868,7 @@ function toggleDeskSiswa(sid) {
             ta.value = DESK_KRIT[pred];
             const status = document.getElementById(`deskStatus_${sid}`);
             if (status) {
-                status.textContent = '⚠ Deskripsi dikoreksi sesuai predikat ' + pred;
+                status.textContent = 'âš  Deskripsi dikoreksi sesuai predikat ' + pred;
                 status.style.color = '#d97706';
                 setTimeout(() => {
                     status.textContent = '';
@@ -878,7 +879,7 @@ function toggleDeskSiswa(sid) {
 }
 
 /**
- * Simpan deskripsi siswa — konfirmasi visual tanpa reload halaman.
+ * Simpan deskripsi siswa â€" konfirmasi visual tanpa reload halaman.
  * Nilai textarea sudah otomatis ikut form submit (name="deskripsi_SID"),
  * tombol ini hanya memberi feedback visual bahwa teks sudah terkunci.
  */
@@ -892,7 +893,7 @@ function simpanDeskripsi(sid) {
     ta.style.borderColor = '#16a34a';
     ta.style.background = '#f0fdf4';
     if (status) {
-        status.textContent = '✓ Deskripsi siap disimpan';
+        status.textContent = 'âœ" Deskripsi siap disimpan';
         status.style.color = '#16a34a';
     }
 
@@ -988,7 +989,7 @@ function sinkronSemuaDeskripsi() {
     });
 
     if (count > 0) {
-        showToast(`✓ ${count} deskripsi siswa berhasil disinkronkan`, 'success');
+        showToast(`âœ" ${count} deskripsi siswa berhasil disinkronkan`, 'success');
     } else {
         alert('Tidak ada deskripsi yang bisa disinkronkan.\nPastikan kolom kanan sudah diisi.');
     }

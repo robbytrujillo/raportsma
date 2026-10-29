@@ -3,7 +3,7 @@
  * pages/nilai/form.php
  * Form input/edit nilai siswa
  */
-require_role(['admin', 'guru', 'wali_kelas']);
+require_role(['admin', 'super_admin', 'guru', 'wali_kelas']);
 
 $user        = current_user();
 $role        = $user['role'];
@@ -30,7 +30,7 @@ if ($is_edit) {
     // wali_kelas: boleh jika nilai di kelasnya ATAU dia yang input
     // guru biasa: hanya yang dia input
     $boleh_edit = false;
-    if ($role === 'admin') {
+    if (in_array($role, ['admin','super_admin'])) {
         $boleh_edit = true;
     } elseif ($guru_status === 'wali_kelas') {
         $boleh_edit = ($nilai_data['guru_user_id'] == $user['id'])
@@ -46,7 +46,7 @@ if ($is_edit) {
 
 $errors = [];
 
-// ── Handle Submit ──────────────────────────────────────────────
+// â"€â"€ Handle Submit â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -126,15 +126,15 @@ $ta_sel    = (int)($_POST['tahun_ajaran_id'] ?? $nilai_data['tahun_ajaran_id'] ?
 // kelas_sel: dari POST (saat submit form), dari GET ?kelas= (saat filter), atau dari data nilai (saat edit)
 $kelas_sel = (int)($_POST['kelas_id'] ?? $_GET['kelas'] ?? $nilai_data['kelas_id'] ?? 0);
 
-// ── Kelas yang bisa dipilih ─────────────────────────────────────
-if ($role === 'admin') {
+// â"€â"€ Kelas yang bisa dipilih â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+if (in_array($role, ['admin','super_admin'])) {
     // Admin: semua kelas
     $kelas_list = db_query(
         'SELECT k.* FROM kelas k ORDER BY k.nama_kelas'
     );
 } elseif ($guru_status === 'wali_kelas') {
     // Wali kelas: kelas yang dipimpin + kelas yang diajar
-    // :uid2 = nilai sama dengan :uid — PDO tidak boleh pakai named param duplikat
+    // :uid2 = nilai sama dengan :uid â€" PDO tidak boleh pakai named param duplikat
     $kelas_list = db_query(
         'SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id AND gmk.guru_user_id = :uid
@@ -152,11 +152,11 @@ if ($role === 'admin') {
     );
 }
 
-// ── Mapel berdasarkan kelas yang dipilih & hak akses ───────────
+// â"€â"€ Mapel berdasarkan kelas yang dipilih & hak akses â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if (!$kelas_sel) {
-    // Belum pilih kelas — kosongkan
+    // Belum pilih kelas â€" kosongkan
     $mapel_list = [];
-} elseif ($role === 'admin') {
+} elseif (in_array($role, ['admin','super_admin'])) {
     // Admin: semua mapel yang ada di kelas itu
     $mapel_list = db_query(
         'SELECT DISTINCT m.* FROM mapel m
@@ -165,7 +165,7 @@ if (!$kelas_sel) {
         [':kid' => $kelas_sel]
     );
 } elseif ($guru_status === 'wali_kelas' && in_array($kelas_sel, $wali_kelas_ids)) {
-    // Wali kelas di kelas yang dipimpinnya → semua mapel di kelas tersebut
+    // Wali kelas di kelas yang dipimpinnya â†' semua mapel di kelas tersebut
     $mapel_list = db_query(
         'SELECT DISTINCT m.* FROM mapel m
          INNER JOIN guru_mapel_kelas gmk ON gmk.mapel_id = m.id
@@ -199,7 +199,7 @@ $n = $nilai_data ?? [];
       <h1 class="page-title"><?= $is_edit ? 'Edit Nilai' : 'Input Nilai' ?></h1>
       <p class="page-subtitle">Masukkan nilai siswa per mata pelajaran</p>
     </div>
-    <a href="index.php?page=nilai" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=nilai" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -207,7 +207,7 @@ $n = $nilai_data ?? [];
   <?php endforeach; ?>
 
   <?php if (!$is_edit): ?>
-  <!-- Filter Kelas — GET form, terpisah dari form POST nilai -->
+  <!-- Filter Kelas â€" GET form, terpisah dari form POST nilai -->
   <div class="card mb-4">
     <div class="card-body py-3">
       <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
@@ -215,7 +215,7 @@ $n = $nilai_data ?? [];
         <div class="form-group mb-0">
           <label class="form-label">Kelas</label>
           <select name="kelas" class="form-control" onchange="this.form.submit()">
-            <option value="">— Pilih Kelas —</option>
+            <option value="">â€" Pilih Kelas â€"</option>
             <?php foreach ($kelas_list as $k): ?>
             <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_sel?'selected':'' ?>>
               <?= e($k['nama_kelas']) ?>
@@ -256,7 +256,7 @@ $n = $nilai_data ?? [];
             <label class="form-label">Kelas <span class="text-red-500">*</span></label>
             <?php if ($is_edit): ?>
             <select name="kelas_id" class="form-control" required>
-              <option value="">— Pilih Kelas —</option>
+              <option value="">â€" Pilih Kelas â€"</option>
               <?php foreach ($kelas_list as $k): ?>
               <option value="<?= $k['id'] ?>" <?= ($n['kelas_id']??0)==$k['id']?'selected':'' ?>>
                 <?= e($k['nama_kelas']) ?>
@@ -266,7 +266,7 @@ $n = $nilai_data ?? [];
             <?php else: ?>
             <input type="hidden" name="kelas_id" value="<?= $kelas_sel ?>">
             <div class="form-control" style="background:#f9fafb;cursor:not-allowed">
-              <?= $kelas_sel ? e(array_column($kelas_list,'nama_kelas',null)[array_search($kelas_sel, array_column($kelas_list,'id'))] ?? '—') : '— Pilih kelas di atas —' ?>
+              <?= $kelas_sel ? e(array_column($kelas_list,'nama_kelas',null)[array_search($kelas_sel, array_column($kelas_list,'id'))] ?? 'â€"') : 'â€" Pilih kelas di atas â€"' ?>
             </div>
             <?php endif; ?>
           </div>
@@ -275,7 +275,7 @@ $n = $nilai_data ?? [];
           <div class="form-group">
             <label class="form-label">Mata Pelajaran <span class="text-red-500">*</span></label>
             <select name="mapel_id" class="form-control" required>
-              <option value="">— Pilih Mapel —</option>
+              <option value="">â€" Pilih Mapel â€"</option>
               <?php foreach ($mapel_list as $m): ?>
               <option value="<?= $m['id'] ?>" <?= ($n['mapel_id']??0)==$m['id']?'selected':'' ?>>
                 <?= e($m['nama_mapel']) ?>
@@ -288,7 +288,7 @@ $n = $nilai_data ?? [];
           <div class="form-group">
             <label class="form-label">Siswa <span class="text-red-500">*</span></label>
             <select name="siswa_user_id" class="form-control" required>
-              <option value="">— Pilih Siswa —</option>
+              <option value="">â€" Pilih Siswa â€"</option>
               <?php foreach ($siswa_list as $s): ?>
               <option value="<?= $s['id'] ?>" <?= ($n['siswa_user_id']??0)==$s['id']?'selected':'' ?>>
                 <?= e($s['nama_lengkap']) ?> (<?= e($s['nis']) ?>)
@@ -305,10 +305,10 @@ $n = $nilai_data ?? [];
                 Bulanan (NH1 + NH2 + NH3 + Tugas)
               </option>
               <option value="sts" <?= ($n['jenis_raport']??'')==='sts'?'selected':'' ?>>
-                STS — Sumatif Tengah Semester
+                STS â€" Sumatif Tengah Semester
               </option>
               <option value="semester" <?= ($n['jenis_raport']??'')==='semester'?'selected':'' ?>>
-                Semester / SAS — Sumatif Akhir Semester
+                Semester / SAS â€" Sumatif Akhir Semester
               </option>
             </select>
           </div>
@@ -317,7 +317,7 @@ $n = $nilai_data ?? [];
           <div class="form-group" id="fieldBulanWrap">
             <label class="form-label">Bulan</label>
             <select name="bulan" class="form-control">
-              <option value="">— Pilih Bulan —</option>
+              <option value="">â€" Pilih Bulan â€"</option>
               <?php foreach ($bulan_opts as $bk => $bv): ?>
               <option value="<?= $bk ?>" <?= ($n['bulan']??0)==$bk?'selected':'' ?>><?= $bv ?></option>
               <?php endforeach; ?>
@@ -328,11 +328,11 @@ $n = $nilai_data ?? [];
 
         <div class="divider"></div>
 
-        <!-- ── FIELD BULANAN ───────────────────────────────────── -->
+        <!-- â"€â"€ FIELD BULANAN â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
         <div id="groupBulanan">
           <p class="text-sm font-semibold text-gray-600 mb-3">
             Komponen Nilai Bulanan
-            <span class="text-xs text-gray-400 font-normal ml-1">— Nilai Akhir = (Rata-rata NH × 70%) + (Tugas × 30%)</span>
+            <span class="text-xs text-gray-400 font-normal ml-1">â€" Nilai Akhir = (Rata-rata NH Ã&mdash; 70%) + (Tugas Ã&mdash; 30%)</span>
           </p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="form-group">
@@ -358,11 +358,11 @@ $n = $nilai_data ?? [];
           </div>
         </div>
 
-        <!-- ── FIELD STS ───────────────────────────────────────── -->
+        <!-- â"€â"€ FIELD STS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
         <div id="groupSts">
           <p class="text-sm font-semibold text-gray-600 mb-3">
             Komponen Nilai STS
-            <span class="text-xs text-gray-400 font-normal ml-1">— Nilai Akhir = Nilai STS</span>
+            <span class="text-xs text-gray-400 font-normal ml-1">â€" Nilai Akhir = Nilai STS</span>
           </p>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div class="form-group">
@@ -373,11 +373,11 @@ $n = $nilai_data ?? [];
           </div>
         </div>
 
-        <!-- ── FIELD SEMESTER ──────────────────────────────────── -->
+        <!-- â"€â"€ FIELD SEMESTER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
         <div id="groupSemester">
           <p class="text-sm font-semibold text-gray-600 mb-3">
             Komponen Nilai Semester
-            <span class="text-xs text-gray-400 font-normal ml-1">— Nilai Akhir = Nilai SAS</span>
+            <span class="text-xs text-gray-400 font-normal ml-1">â€" Nilai Akhir = Nilai SAS</span>
           </p>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div class="form-group">
@@ -400,7 +400,7 @@ $n = $nilai_data ?? [];
             <label class="form-label">Predikat</label>
             <div class="form-control flex items-center" style="background:#f9fafb;height:40px">
               <span id="predikatDisplay" class="font-bold text-xl">
-                <?= $n['predikat'] ?? '—' ?>
+                <?= $n['predikat'] ?? 'â€"' ?>
               </span>
             </div>
           </div>
@@ -410,7 +410,7 @@ $n = $nilai_data ?? [];
         <div class="form-group mt-2">
           <label class="form-label">
             Deskripsi Nilai
-            <span class="text-xs text-orange-500 font-normal ml-1">— tampil di raport</span>
+            <span class="text-xs text-orange-500 font-normal ml-1">â€" tampil di raport</span>
           </label>
           <textarea name="deskripsi" class="form-control" rows="3"
             placeholder="Contoh: Murid memiliki kompetensi yang baik dalam memahami Konsep Akidah Islam"><?= e($n['deskripsi'] ?? '') ?></textarea>
@@ -420,7 +420,7 @@ $n = $nilai_data ?? [];
         <div class="form-group">
           <label class="form-label">
             Catatan Internal
-            <span class="text-xs text-gray-400 font-normal ml-1">— tidak tampil di raport</span>
+            <span class="text-xs text-gray-400 font-normal ml-1">â€" tidak tampil di raport</span>
           </label>
           <textarea name="catatan" class="form-control" rows="2"
             placeholder="Catatan internal guru (opsional)"><?= e($n['catatan'] ?? '') ?></textarea>

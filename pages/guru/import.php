@@ -1,16 +1,16 @@
-<?php
+﻿<?php
 /**
  * pages/guru/import.php
  * Template Excel (.xlsx) & import data guru
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
-/* ── Download template Excel ─────────────────────────────────── */
+/* â"€â"€ Download template Excel â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 if (isset($_GET['download_template'])) {
     xlsx_template('template_guru.xlsx', [
-        'title'    => 'Template Import Data Guru — Raportku',
-        'subtitle' => '★ = wajib diisi  |  Hapus baris contoh sebelum upload  |  Kolom "status": guru / wali_kelas / koordinator',
+        'title'    => 'Template Import Data Guru â€" Raportku',
+        'subtitle' => 'â˜... = wajib diisi  |  Hapus baris contoh sebelum upload  |  Kolom "status": guru / wali_kelas / koordinator',
         'columns'  => [
             ['header'=>'Nama Lengkap',  'field'=>'nama_lengkap',  'width'=>30, 'required'=>true,  'type'=>'text','format'=>'@',
              'example'=>'Budi Santoso, S.Pd', 'note'=>'Nama lengkap sesuai SK/ijazah'],
@@ -35,7 +35,7 @@ if (isset($_GET['download_template'])) {
     ]);
 }
 
-/* ── Proses Import ─────────────────────────────────────────────── */
+/* â"€â"€ Proses Import â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 $results   = [];
 $errors    = [];
 $successes = 0;
@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $status       = strtolower(excel_str($row, 5, 20)) ?: 'guru';
                 $bidang_studi = excel_str($row, 6, 150);
 
-                if (!$nama)     { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong — dilewati']; continue; }
-                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong — dilewati"]; continue; }
+                if (!$nama)     { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong â€" dilewati']; continue; }
+                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong â€" dilewati"]; continue; }
                 if (!in_array($status, $valid_status)) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: status '$status' tidak valid"]; continue;
                 }
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         'INSERT INTO guru (user_id,nip,status,bidang_studi) VALUES (:uid,:nip,:s,:bs)',
                         [':uid'=>$uid,':nip'=>$nip,':s'=>$status,':bs'=>$bidang_studi]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama ($status) — berhasil ditambahkan"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama ($status) â€" berhasil ditambahkan"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
       <h1 class="page-title">Import Data Guru</h1>
       <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan banyak guru sekaligus</p>
     </div>
-    <a href="index.php?page=guru" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=guru" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -127,9 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         </ol>
 
         <div class="p-3 mt-3 rounded-lg text-xs" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">
-          <strong>✓ Didukung:</strong> .xlsx, .xls, .csv
-          <br><strong>✓ Kolom merah</strong> = wajib diisi
-          <br><strong>✓ Dropdown</strong> di kolom Status (Excel)
+          <strong>âœ" Didukung:</strong> .xlsx, .xls, .csv
+          <br><strong>âœ" Kolom merah</strong> = wajib diisi
+          <br><strong>âœ" Dropdown</strong> di kolom Status (Excel)
         </div>
 
         <div class="divider"></div>
@@ -172,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv | Maks 10MB</p>
           </div>
           <div class="p-3 rounded-lg text-xs mb-4" style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e">
-            <strong>⚠ Perhatian:</strong> Username yang sudah ada akan <strong>dilewati</strong>. Password kosong → default <code>password</code>.
+            <strong>âš  Perhatian:</strong> Username yang sudah ada akan <strong>dilewati</strong>. Password kosong â†' default <code>password</code>.
           </div>
           <button type="submit" class="btn btn-primary w-full justify-center">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -203,9 +203,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
           <tr>
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
-              if ($r['status']==='ok')    echo '<span class="badge badge-green">✓ OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">— Skip</span>';
-              else echo '<span class="badge badge-red">✗ Error</span>';
+              if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>
           </tr>

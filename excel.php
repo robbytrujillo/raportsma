@@ -36,20 +36,20 @@ const XLS_COLOR_BORDER  = 'FFE5E7EB'; // border abu
  *
  * @param string $filename  Nama file yang didownload, misal 'template_siswa.xlsx'
  * @param array  $config    Konfigurasi template:
- *   'title'       => string  — Judul sheet (row 1)
- *   'subtitle'    => string  — Sub-judul (row 2)
- *   'columns'     => array   — Definisi kolom, setiap item:
- *       'header'   => string  — Label header kolom
- *       'field'    => string  — Nama field (kode)
- *       'width'    => int     — Lebar kolom (karakter, default 20)
- *       'required' => bool    — Tandai wajib? (default false)
- *       'example'  => string  — Nilai contoh di baris pertama data
- *       'note'     => string  — Komentar/tooltip di header
- *       'type'     => string  — 'text'|'number'|'date'|'dropdown'
- *       'dropdown' => array   — Opsi dropdown jika type=dropdown
- *       'format'   => string  — Format sel Excel misal '@' untuk teks, '0' angka
- *   'examples'    => array   — Array of arrays baris data contoh (opsional, tambahan row 2+)
- *   'notes_sheet' => array   — Konten sheet "Referensi" (opsional):
+ *   'title'       => string  &mdash; Judul sheet (row 1)
+ *   'subtitle'    => string  &mdash; Sub-judul (row 2)
+ *   'columns'     => array   &mdash; Definisi kolom, setiap item:
+ *       'header'   => string  &mdash; Label header kolom
+ *       'field'    => string  &mdash; Nama field (kode)
+ *       'width'    => int     &mdash; Lebar kolom (karakter, default 20)
+ *       'required' => bool    &mdash; Tandai wajib? (default false)
+ *       'example'  => string  &mdash; Nilai contoh di baris pertama data
+ *       'note'     => string  &mdash; Komentar/tooltip di header
+ *       'type'     => string  &mdash; 'text'|'number'|'date'|'dropdown'
+ *       'dropdown' => array   &mdash; Opsi dropdown jika type=dropdown
+ *       'format'   => string  &mdash; Format sel Excel misal '@' untuk teks, '0' angka
+ *   'examples'    => array   &mdash; Array of arrays baris data contoh (opsional, tambahan row 2+)
+ *   'notes_sheet' => array   &mdash; Konten sheet "Referensi" (opsional):
  *       'title'    => string
  *       'rows'     => [[col1, col2, ...], ...]
  *       'headers'  => [header1, header2, ...]
@@ -62,7 +62,7 @@ function xlsx_template(string $filename, array $config): void {
     $spreadsheet->getProperties()
         ->setCreator('Raportku')
         ->setTitle($config['title'] ?? 'Template Import')
-        ->setDescription('Template import data — dibuat otomatis oleh Raportku');
+        ->setDescription('Template import data &mdash; dibuat otomatis oleh Raportku');
 
     // ── Sheet utama ────────────────────────────────────────────
     $sheet = $spreadsheet->getActiveSheet();
@@ -269,7 +269,7 @@ function xlsx_template(string $filename, array $config): void {
  * Mengembalikan array baris data (skip header row 1).
  *
  * @param array $file          Entry dari $_FILES['namafield']
- * @param int   $header_rows   Jumlah baris header yang dilewati (default: 3 — untuk template kita)
+ * @param int   $header_rows   Jumlah baris header yang dilewati (default: 3 &mdash; untuk template kita)
  * @return array ['ok'=>bool, 'rows'=>array, 'error'=>string]
  */
 function excel_parse(array $file, int $header_rows = 3): array {

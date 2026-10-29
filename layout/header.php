@@ -1,7 +1,7 @@
 <?php
 /**
  * layout/header.php
- * HTML head + topbar — di-include di setiap halaman yang butuh layout
+ * HTML head + topbar &mdash; di-include di setiap halaman yang butuh layout
  */
 $user = current_user();
 $page = $_GET['page'] ?? 'dashboard';
@@ -26,8 +26,9 @@ $page_titles = [
     'nilai'        => 'Daftar Nilai',
     'nilai.input'  => 'Form Nilai',
     'nilai.bulk'   => 'Input Nilai Kelas',
-    'raport'       => 'Raport Siswa',
-    'raport.view'  => 'Detail Raport',
+    'raport'         => 'Raport Siswa',
+    'raport.view'    => 'Detail Raport',
+    'raport.manage'  => 'Manajemen Raport',
     'siswa'        => 'Data Siswa',
     'siswa.create' => 'Tambah Siswa',
     'siswa.edit'   => 'Edit Siswa',
@@ -51,7 +52,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= e($page_title) ?> — <?= APP_NAME ?></title>
+  <title><?= e($page_title) ?> &mdash; <?= APP_NAME ?></title>
   <!-- Favicon: gunakan logo sekolah jika tersedia -->
   <?php if (!empty($sekolah_h['logo'])): ?>
   <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_h['logo']) ?>">

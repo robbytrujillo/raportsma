@@ -1,11 +1,14 @@
 <?php
 /**
  * pages/raport/print.php
- * Halaman cetak raport — standalone (tanpa layout)
+ * Halaman cetak raport &mdash; standalone (tanpa layout)
  * Bisa diprint/save as PDF dari browser
  */
 require_once __DIR__ . '/../../auth.php';
 require_login();
+
+// Auto-create raport_publikasi if not yet migrated
+db()->exec("CREATE TABLE IF NOT EXISTS raport_publikasi (id INT AUTO_INCREMENT PRIMARY KEY, kelas_id INT NOT NULL, tahun_ajaran_id INT NOT NULL, jenis_raport ENUM('bulanan','sts','semester') NOT NULL, bulan TINYINT DEFAULT NULL, is_published TINYINT(1) NOT NULL DEFAULT 0, published_by INT DEFAULT NULL, published_at DATETIME DEFAULT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uk_pub (kelas_id, tahun_ajaran_id, jenis_raport, bulan), FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE, FOREIGN KEY (tahun_ajaran_id) REFERENCES tahun_ajaran(id) ON DELETE CASCADE, FOREIGN KEY (published_by) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 $user_ses  = current_user();
 $role      = $user_ses['role'];
@@ -33,6 +36,32 @@ require_once __DIR__ . '/raport_data.php';
 if (!$siswa) {
     http_response_code(404); echo 'Siswa tidak ditemukan.'; exit;
 }
+
+// Gate: siswa hanya bisa cetak jika raport sudah dipublikasi
+if ($role === 'siswa') {
+    $pub_bulan_p = (in_array($jenis,['bulanan','sts']) && $bulan) ? $bulan : null;
+    $pub_chk = db_row(
+        'SELECT is_published FROM raport_publikasi
+         WHERE kelas_id=:k AND tahun_ajaran_id=:t AND jenis_raport=:j
+           AND (bulan=:b OR (bulan IS NULL AND :b2 IS NULL))',
+        [':k'=>$siswa['kelas_id'],':t'=>$ta_id,':j'=>$jenis,':b'=>$pub_bulan_p,':b2'=>$pub_bulan_p]
+    );
+    if (!$pub_chk || !(int)$pub_chk['is_published']) {
+        http_response_code(403);
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Raport Belum Dirilis</title>
+        <style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f3f4f6}
+        .box{background:#fff;border-radius:16px;padding:40px 32px;text-align:center;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+        h2{margin:12px 0 8px;color:#1f2937}p{color:#6b7280;margin-bottom:20px}
+        a{display:inline-block;padding:8px 20px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none}</style></head>
+        <body><div class="box">
+        <svg width="56" height="56" fill="none" stroke="#f97316" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <h2>Raport Belum Dirilis</h2>
+        <p>Raport ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
+        <a href="javascript:history.back()">&larr; Kembali</a>
+        </div></body></html>';
+        exit;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -40,7 +69,7 @@ if (!$siswa) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
+    <title>Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
     <!-- Favicon -->
     <?php if (!empty($sekolah_l['logo'])): ?>
     <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
@@ -97,7 +126,7 @@ if (!$siswa) {
     /* ── Preview: raport ditampilkan sesuai lebar kertas ── */
     .raport-page {
       width: var(--paper-w);
-      min-height: var(--paper-h);
+      /* No min-height — prevents blank extra page when printing */
       padding: var(--paper-pad-v) var(--paper-pad-h);
       background: #fff;
       margin: 20px auto;
@@ -110,7 +139,7 @@ if (!$siswa) {
       body { background: #fff !important; padding-top: 0 !important; margin: 0 !important; }
       .print-toolbar { display: none !important; }
 
-      /* Wrapper scale — JS akan set --print-scale sebelum print */
+      /* Wrapper scale &mdash; JS akan set --print-scale sebelum print */
       #printScaleWrap {
         width: var(--paper-w);
         transform-origin: top left;
@@ -129,6 +158,34 @@ if (!$siswa) {
 
       @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
+
+    <?php if ($ukuran === 'a4'): ?>
+    /* ── A4: compress to fit 1 page (up to Kelompok D, 12 subjects) ── */
+    @media print {
+        body[data-paper="a4"] .raport-page {
+            zoom: 0.87;
+        }
+        body[data-paper="a4"] .raport-nilai-table {
+            font-size: 8pt !important;
+        }
+        body[data-paper="a4"] .raport-nilai-table th,
+        body[data-paper="a4"] .raport-nilai-table td {
+            padding: 2px 4px !important;
+            line-height: 1.2 !important;
+        }
+        body[data-paper="a4"] .raport-footer-block {
+            font-size: 8pt !important;
+            margin-top: 4px !important;
+        }
+        body[data-paper="a4"] .raport-ttd-block {
+            margin-top: 4px !important;
+        }
+        body[data-paper="a4"] .raport-ttd-block td,
+        body[data-paper="a4"] .raport-ttd-block div {
+            font-size: 8pt !important;
+        }
+    }
+    <?php endif; ?>
     </style>
 </head>
 
@@ -137,7 +194,7 @@ if (!$siswa) {
     <!-- Toolbar (hilang saat print) -->
     <div class="print-toolbar no-print">
       <div style="font-weight:700;font-size:.95rem;white-space:nowrap">
-        Raport — <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
+        Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
 
@@ -147,13 +204,13 @@ if (!$siswa) {
           <button onclick="setUkuran('a4')"
             class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
             style="border-radius:30px;padding:4px 12px;border:none"
-            title="Kertas A4 — 210 × 297 mm">
+            title="Kertas A4 &mdash; 210 × 297 mm">
             A4
           </button>
           <button onclick="setUkuran('f4')"
             class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
             style="border-radius:30px;padding:4px 12px;border:none"
-            title="Kertas F4 — 215 × 330 mm">
+            title="Kertas F4 &mdash; 215 × 330 mm">
             F4
           </button>
         </div>
@@ -174,7 +231,7 @@ if (!$siswa) {
 
         <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
            onclick="if(window.opener||history.length<=1){window.close();return false;}"
-           style="border-radius:30px">← Kembali</a>
+           style="border-radius:30px">&larr; Kembali</a>
 
         <button onclick="window.print()" style="border-radius:30px;background:rgba(255,255,255,.9);color:#f97316;font-weight:700">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

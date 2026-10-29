@@ -6,7 +6,7 @@
  * Kolom: siswa_nis, mapel_nama, kelas_nama, tahun_ajaran_id, jenis_raport, bulan,
  *        nh1, nh2, nh3, tugas, sts, sas, catatan
  */
-require_role(['admin', 'guru', 'wali_kelas']);
+require_role(['admin', 'super_admin', 'guru', 'wali_kelas']);
 require_once __DIR__ . '/../../excel.php';
 
 $user     = current_user();
@@ -47,7 +47,7 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_nilai.xlsx', [
-        'title'    => 'Template Import Nilai — Raportku',
+        'title'    => 'Template Import Nilai &mdash; Raportku',
         'subtitle' => '★ = wajib  |  Lihat sheet "Referensi" untuk nama mapel, kelas, dan ID tahun ajaran yang valid',
         'columns'  => [
             ['header'=>'NIS Siswa',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text','format'=>'@',
@@ -70,7 +70,7 @@ if (isset($_GET['download_template'])) {
             ['header'=>'Nilai Harian 3',  'field'=>'nh3',             'width'=>13,'required'=>false, 'type'=>'number',
              'example'=>90, 'note'=>'Kosongkan (isi 0) jika tidak dipakai.'],
             ['header'=>'Nilai Tugas',     'field'=>'tugas',           'width'=>12,'required'=>false, 'type'=>'number',
-             'example'=>80, 'note'=>'Kosongkan (isi 0) jika tidak dipakai. Contoh: NH1=90 saja → NA=90 | NH1=90,NH2=80 → NA=85'],
+             'example'=>80, 'note'=>'Kosongkan (isi 0) jika tidak dipakai. Contoh: NH1=90 saja &rarr; NA=90 | NH1=90,NH2=80 &rarr; NA=85'],
             ['header'=>'Nilai STS',       'field'=>'sts',             'width'=>12,'required'=>false, 'type'=>'number',
              'example'=>0, 'note'=>'Diisi jika jenis=sts. Nilai akhir = nilai STS langsung.'],
             ['header'=>'Nilai SAS',       'field'=>'sas',             'width'=>12,'required'=>false, 'type'=>'number',
@@ -79,9 +79,9 @@ if (isset($_GET['download_template'])) {
              'example'=>'', 'note'=>'Catatan guru (opsional)'],
         ],
         'examples' => [
-            // Contoh 1: bulanan — isi NH1+NH2 saja → NA = (90+88)/2 = 89
+            // Contoh 1: bulanan &mdash; isi NH1+NH2 saja &rarr; NA = (90+88)/2 = 89
             [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'bulanan', 10, 90, 88, 0, 0, 0, 0, 'Contoh: 2 nilai harian'],
-            // Contoh 2: bulanan — isi semua 4 komponen → NA = (85+88+90+80)/4 = 85.75
+            // Contoh 2: bulanan &mdash; isi semua 4 komponen &rarr; NA = (85+88+90+80)/4 = 85.75
             [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'bulanan', 10, 85, 88, 90, 80, 0, 0, 'Contoh: 4 komponen'],
             // Contoh 3: semester
             [$nis_ex, $mapel_ex, $kelas_ex, $ta_ex['id'], 'semester', '', 0, 0, 0, 0, 0, 88, 'Contoh: semester'],
@@ -130,20 +130,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $catatan    = excel_str($row, 12, 500);
 
                 // Validasi wajib
-                if (!$nis)        { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'NIS kosong — dilewati']; continue; }
-                if (!$mapel_nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: nama mapel kosong — dilewati"]; continue; }
-                if (!$kelas_nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: nama kelas kosong — dilewati"]; continue; }
-                if (!$ta_id)      { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: tahun_ajaran_id kosong — dilewati"]; continue; }
+                if (!$nis)        { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'NIS kosong &mdash; dilewati']; continue; }
+                if (!$mapel_nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: nama mapel kosong &mdash; dilewati"]; continue; }
+                if (!$kelas_nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: nama kelas kosong &mdash; dilewati"]; continue; }
+                if (!$ta_id)      { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: tahun_ajaran_id kosong &mdash; dilewati"]; continue; }
 
                 if (!in_array($jenis, ['bulanan','sts','semester'], true)) {
-                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: jenis_raport '$jenis' tidak valid — dilewati"]; continue;
+                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: jenis_raport '$jenis' tidak valid &mdash; dilewati"]; continue;
                 }
 
                 $bulan = null;
                 if ($jenis !== 'semester') {
                     $bulan = (int)$bulan_raw;
                     if ($bulan < 1 || $bulan > 12) {
-                        $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: bulan harus 1-12 untuk jenis '$jenis' — dilewati"]; continue;
+                        $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: bulan harus 1-12 untuk jenis '$jenis' &mdash; dilewati"]; continue;
                     }
                 }
 
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     $siswa_cache[$nis] = $s ? (int)$s['user_id'] : null;
                 }
                 if (!$siswa_cache[$nis]) {
-                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: siswa tidak ditemukan — dilewati"]; continue;
+                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: siswa tidak ditemukan &mdash; dilewati"]; continue;
                 }
 
                 // Lookup Mapel (cache, case-insensitive)
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     $mapel_cache[$mk] = $m ? (int)$m['id'] : null;
                 }
                 if (!$mapel_cache[$mk]) {
-                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: mapel '$mapel_nama' tidak ditemukan — dilewati"]; continue;
+                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: mapel '$mapel_nama' tidak ditemukan &mdash; dilewati"]; continue;
                 }
 
                 // Lookup Kelas (cache, case-insensitive + ta_id)
@@ -174,10 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     $kelas_cache[$kk] = $k ? (int)$k['id'] : null;
                 }
                 if (!$kelas_cache[$kk]) {
-                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: kelas '$kelas_nama' (TA ID:$ta_id) tidak ditemukan — dilewati"]; continue;
+                    $results[] = ['line'=>$line,'status'=>'skip','msg'=>"NIS $nis: kelas '$kelas_nama' (TA ID:$ta_id) tidak ditemukan &mdash; dilewati"]; continue;
                 }
 
-                // Hitung nilai akhir — bulanan fleksibel (rata-rata komponen yang terisi)
+                // Hitung nilai akhir &mdash; bulanan fleksibel (rata-rata komponen yang terisi)
                 if ($jenis === 'semester')     $na = round($sas, 2);
                 elseif ($jenis === 'sts')      $na = round($sts_val, 2);
                 else {
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                          ':na'=>$na,':pred'=>$pred,':cat'=>$catatan]
                     );
                     $results[] = ['line'=>$line,'status'=>'ok',
-                        'msg'=>"NIS $nis | $mapel_nama | NA: $na ($pred) — berhasil"];
+                        'msg'=>"NIS $nis | $mapel_nama | NA: $na ($pred) &mdash; berhasil"];
                     $successes++;
                 } catch (\PDOException $ex) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"NIS $nis: " . $ex->getMessage()];
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <h1 class="page-title">Import Data Nilai</h1>
             <p class="page-subtitle">Upload file Excel (.xlsx) untuk memasukkan nilai banyak siswa sekaligus</p>
         </div>
-        <a href="index.php?page=nilai" class="btn btn-secondary" style="border-radius: 30px">← Kembali</a>
+        <a href="index.php?page=nilai" class="btn btn-secondary" style="border-radius: 30px">&larr; Kembali</a>
     </div>
 
     <?php foreach ($errors as $err): ?>
@@ -264,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     <br><strong>✓ Dropdown Jenis:</strong> bulanan / sts / semester
                     <br><strong>✓ Sheet "Referensi":</strong> Tahun Ajaran, Mapel, Kelas dalam 1 file
                     <br><strong>✓ Data yang sudah ada:</strong> akan di-update (overwrite)
-                    <br><strong>✓ Nilai Akhir &amp; Predikat:</strong> <em>dihitung otomatis oleh sistem</em> — tidak
+                    <br><strong>✓ Nilai Akhir &amp; Predikat:</strong> <em>dihitung otomatis oleh sistem</em> &mdash; tidak
                     perlu diisi di template
                 </div>
 
@@ -276,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         <li>Kolom yang <strong>tidak diisi / diisi 0</strong> = dianggap kosong, tidak ikut dihitung
                         </li>
                         <li>Nilai akhir = <strong>rata-rata</strong> dari komponen yang terisi</li>
-                        <li>Contoh: NH1=<strong>90</strong>, NH2=<strong>80</strong>, NH3=0, Tugas=0 → NA =
+                        <li>Contoh: NH1=<strong>90</strong>, NH2=<strong>80</strong>, NH3=0, Tugas=0 &rarr; NA =
                             <strong>85</strong>
                         </li>
                     </ul>
@@ -286,11 +286,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 <p class="font-semibold text-xs text-gray-700 mb-1">Formula nilai akhir:</p>
                 <div class="p-2 rounded text-xs" style="background:#f3f4f6;font-family:monospace;line-height:2">
                     <strong>Bulanan (fleksibel):</strong><br>
-                    &nbsp;→ Isi 1 komponen: NA = nilai itu sendiri<br>
-                    &nbsp;→ Isi 2 komponen: NA = jumlah / 2<br>
-                    &nbsp;→ Isi 3 komponen: NA = jumlah / 3<br>
-                    &nbsp;→ Isi 4 komponen: NA = (NH1+NH2+NH3+Tugas) / 4<br>
-                    &nbsp;→ Nilai 0 = dianggap kosong / tidak terisi<br>
+                    &nbsp;&rarr; Isi 1 komponen: NA = nilai itu sendiri<br>
+                    &nbsp;&rarr; Isi 2 komponen: NA = jumlah / 2<br>
+                    &nbsp;&rarr; Isi 3 komponen: NA = jumlah / 3<br>
+                    &nbsp;&rarr; Isi 4 komponen: NA = (NH1+NH2+NH3+Tugas) / 4<br>
+                    &nbsp;&rarr; Nilai 0 = dianggap kosong / tidak terisi<br>
                     <strong>STS:</strong> nilai STS langsung<br>
                     <strong>Semester:</strong> nilai SAS langsung
                 </div>
@@ -303,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         <th style="padding:3px 6px;text-align:left">Keterangan</th>
                     </tr>
                     <?php foreach ([
-            ['siswa_nis',       'NIS siswa — wajib'],
+            ['siswa_nis',       'NIS siswa &mdash; wajib'],
             ['mapel_nama',      'Nama mapel PERSIS (case-insensitive)'],
             ['kelas_nama',      'Nama kelas PERSIS (case-insensitive)'],
             ['tahun_ajaran_id', 'ID tahun ajaran (lihat Referensi)'],
@@ -383,7 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
                         <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">✓ OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">— Skip</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">&mdash; Skip</span>';
               else echo '<span class="badge badge-red">✗ Error</span>';
             ?></td>
                         <td class="text-sm"><?= e($r['msg']) ?></td>

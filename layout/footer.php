@@ -1,12 +1,12 @@
 <?php
 /**
  * layout/footer.php
- * Penutup HTML — footer bar + script JS
+ * Penutup HTML &mdash; footer bar + script JS
  *
  * Urutan penutup tag di index.php:
- *   include footer.php    → tutup <footer> (masih dalam .main-content)
- *   echo </div>           → tutup .main-content
- *   echo </div>           → tutup .app-wrapper  (dari header.php)
+ *   include footer.php    &rarr; tutup <footer> (masih dalam .main-content)
+ *   echo </div>           &rarr; tutup .main-content
+ *   echo </div>           &rarr; tutup .app-wrapper  (dari header.php)
  *   include footer_end.php (atau langsung di index.php)
  *
  * Jadi footer.php HANYA berisi footer + script + </body></html>
@@ -17,7 +17,7 @@
 <?php $sekolah_f = sekolah_info(); ?>
 
 <!-- ── APP FOOTER ─────────────────────────────────────────────
-     Di dalam .main-content (flex-column) → margin-top:auto
+     Di dalam .main-content (flex-column) &rarr; margin-top:auto
      mendorongnya ke bawah konten halaman.
      ─────────────────────────────────────────────────────────── -->
 <footer class="app-footer">

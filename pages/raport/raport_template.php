@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/raport_template.php
- * Template HTML Raport — sesuai format SMA IBNU HAJAR BOARDING SCHOOL
+ * Template HTML Raport &mdash; sesuai format SMA IBNU HAJAR BOARDING SCHOOL
  *
  * Variabel tersedia dari raport_data.php:
  *   $siswa, $ta, $kelas, $nilai_list, $absensi,
@@ -128,14 +128,14 @@ if (!function_exists('predikat_lokal')) {
 
 /*
  * Susun nilai_list menjadi hierarki:
- * mapel induk → [sub-mapel list atau langsung tampil]
+ * mapel induk &rarr; [sub-mapel list atau langsung tampil]
  *
- * Jika mapel punya parent_id → sub-mapel (tampil indented di bawah induk)
- * Jika parent_id = null        → mapel mandiri (tampil langsung)
+ * Jika mapel punya parent_id &rarr; sub-mapel (tampil indented di bawah induk)
+ * Jika parent_id = null        &rarr; mapel mandiri (tampil langsung)
  *
  * Strategi: buat dua pass:
  *  1. kumpulkan semua nilai per mapel_id
- *  2. susun urutan: induk → sub-mapel-nya → mapel lain
+ *  2. susun urutan: induk &rarr; sub-mapel-nya &rarr; mapel lain
  */
 $nilai_by_mapel = [];
 foreach ($nilai_list as $n) {
@@ -158,12 +158,12 @@ if (!empty($mapel_ids)) {
     );
 
     // ── Pass 2: kumpulkan anak-anak per parent ───────────────────────────────
-    // Kita perlu parent_id → daftar anak secara berurutan.
+    // Kita perlu parent_id &rarr; daftar anak secara berurutan.
     // Juga kita perlu info mapel induk (nama, kelompok, urutan) agar bisa
     // menyisipkan parent_header di posisi yang BENAR dalam urutan global.
 
     $children_by_parent = [];   // parent_id  => [child_mi, ...]
-    $singles            = [];   // [mi, ...]  — mapel tanpa parent
+    $singles            = [];   // [mi, ...]  &mdash; mapel tanpa parent
     $parent_meta        = [];   // parent_id  => ['nama'=>.., 'kelompok'=>.., 'urutan'=>..]
 
     foreach ($mapel_info_raw as $mi) {
@@ -208,7 +208,7 @@ if (!empty($mapel_ids)) {
         ];
     }
 
-    // Urutkan slot berdasarkan kelompok → urutan
+    // Urutkan slot berdasarkan kelompok &rarr; urutan
     usort($slots, function($a, $b) {
         $kg = strcmp($a['kelompok'] ?? '', $b['kelompok'] ?? '');
         if ($kg !== 0) return $kg;
@@ -250,7 +250,7 @@ if (!empty($mapel_ids)) {
         }
     }
 } else {
-    // Tidak ada nilai — tetap tampilkan tabel kosong
+    // Tidak ada nilai &mdash; tetap tampilkan tabel kosong
 }
 
 // Nomor urut global untuk baris induk & mandiri
@@ -258,7 +258,7 @@ $row_no = 0;
 ?>
 
 <!-- ══════════════════════════════════════════════════════════
-     RAPORT PAGE — cetak A4 portrait
+     RAPORT PAGE &mdash; cetak A4 portrait
      ══════════════════════════════════════════════════════════ -->
 <div class="raport-page" id="raportContent">
 
@@ -312,7 +312,7 @@ $row_no = 0;
             <?php if ($is_bulanan): ?>
             <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
             <?php elseif ($is_sts): ?>
-            <?= sprintf($lbl['judul_sts'], $bulan_label ? ' — ' . $bulan_label : '') ?>
+            <?= sprintf($lbl['judul_sts'], $bulan_label ? ' &mdash; ' . $bulan_label : '') ?>
             <?php else: ?>
             <?= sprintf($lbl['judul_semester'], strtoupper($semester_lbl_loc)) ?>
             <?php endif; ?>
@@ -374,7 +374,7 @@ $row_no = 0;
     <table class="raport-nilai-table" style="font-family:'Times New Roman',serif;font-size:10pt">
         <thead>
             <tr style="background:#fff">
-                <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama — 5 kolom total (Pred dihapus) -->
+                <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama &mdash; 5 kolom total (Pred dihapus) -->
                 <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
                     <?= $lbl['mata_pelajaran'] ?>
                 </th>
@@ -396,7 +396,7 @@ $row_no = 0;
             <?php foreach ($ordered_rows as $row): ?>
 
             <?php if ($row['type'] === 'group'): ?>
-            <!-- ── Baris Header Kelompok — bilingual, label khusus untuk C Pilihan & D ── -->
+            <!-- ── Baris Header Kelompok &mdash; bilingual, label khusus untuk C Pilihan & D ── -->
             <?php
           $kg = $row['kelompok'] ?? '';
           if ($kg === 'C Pilihan') {
@@ -416,7 +416,7 @@ $row_no = 0;
             </tr>
 
             <?php elseif ($row['type'] === 'parent_header'): ?>
-            <!-- ── Baris Induk Mapel — nomor tampil, Pred dihapus ── -->
+            <!-- ── Baris Induk Mapel &mdash; nomor tampil, Pred dihapus ── -->
             <?php $row_no++; ?>
             <tr>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;
@@ -430,11 +430,11 @@ $row_no = 0;
             </tr>
 
             <?php elseif ($row['type'] === 'child'): ?>
-            <!-- ── Baris Sub-Mapel — kolom Pred dihapus ── -->
+            <!-- ── Baris Sub-Mapel &mdash; kolom Pred dihapus ── -->
             <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          // ?? hanya cek null — pakai ?: agar fallback jika string kosong
+          // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
         ?>
             <tr>
@@ -454,11 +454,11 @@ $row_no = 0;
             </tr>
 
             <?php elseif ($row['type'] === 'single'): ?>
-            <!-- ── Baris Mapel Mandiri — kolom Pred dihapus ── -->
+            <!-- ── Baris Mapel Mandiri &mdash; kolom Pred dihapus ── -->
             <?php
           $n    = $row['nilai'];
           $na   = (float)($n['nilai_akhir'] ?? 0);
-          // ?? hanya cek null — pakai ?: agar fallback jika string kosong
+          // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
           $row_no++;
         ?>
@@ -490,7 +490,7 @@ $row_no = 0;
             </tr>
             <?php endif; ?>
 
-            <!-- ── Baris Rata-rata — colspan disesuaikan 5 kolom ── -->
+            <!-- ── Baris Rata-rata &mdash; colspan disesuaikan 5 kolom ── -->
             <tr style="font-weight:700;background:#f9f9f9">
                 <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
                     <?= $lbl['rata_rata'] ?>
@@ -529,7 +529,7 @@ $row_no = 0;
         </div>
 
         <?php if (!$is_bulanan): ?>
-        <!-- ── KETIDAKHADIRAN — hanya untuk STS & Semester ── -->
+        <!-- ── KETIDAKHADIRAN &mdash; hanya untuk STS & Semester ── -->
         <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
             <table style="border:1px solid #000;border-collapse:collapse;width:auto">
                 <thead>
@@ -570,7 +570,7 @@ $row_no = 0;
             </table>
         </div>
 
-        <!-- ── CATATAN WALI KELAS — hanya untuk STS & Semester ─── -->
+        <!-- ── CATATAN WALI KELAS &mdash; hanya untuk STS & Semester ─── -->
         <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
             <table style="width:100%;border:1px solid #000;border-collapse:collapse">
                 <tr style="background:#f0f0f0">
@@ -598,7 +598,7 @@ $row_no = 0;
         <table class="raport-ttd-block"
             style="width:100%;margin-top:16px;font-family:'Times New Roman',serif;font-size:10.5pt">
             <tr>
-                <!-- Kepala Sekolah — KIRI -->
+                <!-- Kepala Sekolah &mdash; KIRI -->
                 <td style="width:45%;vertical-align:top;text-align:center">
                     <div><?= $lbl['mengetahui'] ?></div>
                     <div><?= $lbl['kepala_sekolah'] ?></div>
@@ -619,12 +619,12 @@ $row_no = 0;
                 <!-- Spacer tengah -->
                 <td style="width:10%"></td>
 
-                <!-- Wali Kelas — KANAN -->
+                <!-- Wali Kelas &mdash; KANAN -->
                 <td style="width:45%;vertical-align:top;text-align:center">
                     <!-- Tanggal + Kota -->
                     <?php
           // Tentukan tanggal cetak:
-          // Prioritas: $tgl_override (dari ?tgl= di URL) → fallback ke hari ini
+          // Prioritas: $tgl_override (dari ?tgl= di URL) &rarr; fallback ke hari ini
           // $tgl_override diset oleh print.php / print_kelas.php (format Y-m-d)
           $tgl_ts = isset($tgl_override) && $tgl_override
               ? strtotime($tgl_override)

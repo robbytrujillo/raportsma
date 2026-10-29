@@ -1,14 +1,14 @@
-<?php
+﻿<?php
 /**
  * pages/sekolah/index.php
- * Pengaturan Informasi Sekolah — admin
+ * Pengaturan Informasi Sekolah â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 
 $errors = [];
 $sekolah = sekolah_info();
 
-// ── Handle POST ────────────────────────────────────────────────
+// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -166,27 +166,27 @@ $s = $sekolah;
         <p class="text-sm font-semibold text-gray-600 mb-3">Kriteria Penilaian (tampil di raport)</p>
         <div class="grid grid-cols-3 gap-4">
           <div class="form-group">
-            <label class="form-label">Predikat A — minimal</label>
+            <label class="form-label">Predikat A â€" minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_a_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_a_min'] ?? 92) ?>">
-              <span class="text-sm text-gray-400">– 100</span>
+              <span class="text-sm text-gray-400">â€" 100</span>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Predikat B — minimal</label>
+            <label class="form-label">Predikat B â€" minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_b_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_b_min'] ?? 83) ?>">
-              <span class="text-sm text-gray-400">– <?= (int)($s['kriteria_a_min'] ?? 92) - 1 ?></span>
+              <span class="text-sm text-gray-400">â€" <?= (int)($s['kriteria_a_min'] ?? 92) - 1 ?></span>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Predikat C — minimal</label>
+            <label class="form-label">Predikat C â€" minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_c_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_c_min'] ?? 76) ?>">
-              <span class="text-sm text-gray-400">– <?= (int)($s['kriteria_b_min'] ?? 83) - 1 ?></span>
+              <span class="text-sm text-gray-400">â€" <?= (int)($s['kriteria_b_min'] ?? 83) - 1 ?></span>
             </div>
           </div>
         </div>

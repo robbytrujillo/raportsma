@@ -1,14 +1,14 @@
 <?php
 /**
  * pages/nilai/index.php
- * Daftar & input nilai — akses berdasarkan status guru di tabel guru:
- *   admin          → lihat semua, edit semua
- *   kepala_sekolah → lihat semua (read-only)
- *   guru biasa     → hanya kelas & mapel yang ditugaskan di guru_mapel_kelas
- *   wali_kelas     → semua mapel di kelas yang dipimpinnya + mapel yg diajarnya
- *   koordinator    → disamakan guru biasa untuk sementara
+ * Daftar & input nilai â€" akses berdasarkan status guru di tabel guru:
+ *   admin          â†' lihat semua, edit semua
+ *   kepala_sekolah â†' lihat semua (read-only)
+ *   guru biasa     â†' hanya kelas & mapel yang ditugaskan di guru_mapel_kelas
+ *   wali_kelas     â†' semua mapel di kelas yang dipimpinnya + mapel yg diajarnya
+ *   koordinator    â†' disamakan guru biasa untuk sementara
  */
-require_role(['admin', 'guru', 'wali_kelas', 'kepala_sekolah']);
+require_role(['admin', 'super_admin', 'guru', 'wali_kelas', 'kepala_sekolah']);
 require_once __DIR__ . '/../../excel.php';
 
 $user     = current_user();
@@ -33,7 +33,7 @@ if ($guru_status === 'wali_kelas') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
     if (verify_csrf()) {
         $nid = (int)$_POST['id'];
-        if ($role === 'admin') {
+        if (in_array($role, ['admin','super_admin'])) {
             db_execute('DELETE FROM nilai WHERE id = :id', [':id'=>$nid]);
         } elseif ($guru_status === 'wali_kelas') {
             // Wali kelas bisa hapus nilai di kelasnya atau nilai yang dia input
@@ -52,14 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete'
     header('Location: index.php?page=nilai'); exit;
 }
 
-// ── Filter ─────────────────────────────────────────────────────
+// â"€â"€ Filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $ta_id    = (int)($_GET['ta']    ?? ($ta_aktif['id'] ?? 0));
 $kelas_id = (int)($_GET['kelas'] ?? 0);
 $jenis    = $_GET['jenis'] ?? '';
 $ta_list  = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
-// ── Kelas yang bisa dipilih ─────────────────────────────────────
-if (in_array($role, ['admin','kepala_sekolah'])) {
+// â"€â"€ Kelas yang bisa dipilih â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     // Admin & kepala sekolah: semua kelas
     $kelas_list = db_query(
         'SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas',
@@ -67,7 +67,7 @@ if (in_array($role, ['admin','kepala_sekolah'])) {
     );
 } elseif ($guru_status === 'wali_kelas') {
     // Wali kelas: kelas yang dipimpin + kelas yang diajar
-    // :uid2 = nilai sama dengan :uid — PDO tidak boleh pakai named param duplikat
+    // :uid2 = nilai sama dengan :uid â€" PDO tidak boleh pakai named param duplikat
     $kelas_list = db_query(
         'SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id AND gmk.guru_user_id = :uid
@@ -87,11 +87,11 @@ if (in_array($role, ['admin','kepala_sekolah'])) {
     );
 }
 
-// ── Build query nilai ───────────────────────────────────────────
+// â"€â"€ Build query nilai â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $where  = ['n.tahun_ajaran_id = :ta'];
 $params = [':ta' => $ta_id];
 
-if (in_array($role, ['admin','kepala_sekolah'])) {
+if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     // Admin & kepala sekolah: lihat semua
 } elseif ($guru_status === 'wali_kelas') {
     // Wali kelas: lihat semua nilai di kelas yang dipimpin ATAU nilai yang dia input sendiri
@@ -119,7 +119,7 @@ if ($jenis) {
 
 $whereStr = implode(' AND ', $where);
 
-// ── Export CSV (filter-aware, ambil SEMUA tanpa LIMIT) ──────────
+// â"€â"€ Export CSV (filter-aware, ambil SEMUA tanpa LIMIT) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if (isset($_GET['export'])) {
     $exp_all = db_query(
         "SELECT n.*, u.nama_lengkap as nama_siswa, m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru
@@ -146,7 +146,7 @@ if (isset($_GET['export'])) {
     csv_download('export_nilai_' . date('Ymd') . '.csv', $exp_headers, $exp_rows);
 }
 
-// ── Paginasi ────────────────────────────────────────────────────
+// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -288,7 +288,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                         <th>SAS</th>
                         <th>Nilai Akhir</th>
                         <th>Pred.</th>
-                        <?php if ($role === 'admin'): ?><th>Guru</th><?php endif; ?>
+                        <?php if (in_array($role, ['admin','super_admin'])): ?><th>Guru</th><?php endif; ?>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -313,7 +313,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
               ?>
                             <span class="badge <?= $jBadge ?>"><?= $jLabel ?></span>
                         </td>
-                        <td><?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : '—' ?></td>
+                        <td><?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : 'â€"' ?></td>
                         <td><?= $n['nilai_harian_1'] ?></td>
                         <td><?= $n['nilai_harian_2'] ?></td>
                         <td><?= $n['nilai_harian_3'] ?></td>
@@ -327,7 +327,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                                 <?= $pred ?>
                             </span>
                         </td>
-                        <?php if ($role === 'admin'): ?>
+                        <?php if (in_array($role, ['admin','super_admin'])): ?>
                         <td class="text-xs text-gray-500"><?= e($n['nama_guru']) ?></td>
                         <?php endif; ?>
                         <td>
@@ -340,10 +340,10 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $n['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">×</button>
+                                    <button type="submit" class="btn btn-sm btn-danger">Ã&mdash;</button>
                                 </form>
                                 <?php else: ?>
-                                <span class="text-xs text-gray-400">—</span>
+                                <span class="text-xs text-gray-400">â€"</span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -359,23 +359,23 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
         <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> data)</span>
             <div class="pagination">
-                <a href="?<?= $qstr_n ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">‹
-                    Prev</a>
-                <?php
+                <a href="?<?= $qstr_n ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">
+                    < Prev</a>
+                        <?php
           $start = max(1, $page_n - 3); $end = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_n ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">…</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_n ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages):
-            if ($end < $pages - 1): ?><span class="page-link disabled">…</span><?php endif;
+            if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
             ?><a href="?<?= $qstr_n ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>
-                <a href="?<?= $qstr_n ?>&p=<?= min($pages,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ›</a>
+                        <a href="?<?= $qstr_n ?>&p=<?= min($pages,$page_n+1) ?>"
+                            class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next ></a>
             </div>
         </div>
         <?php endif; ?>

@@ -1,9 +1,9 @@
 <?php
 /**
  * pages/absensi/index.php
- * Data absensi siswa per kelas — input oleh wali kelas/admin
+ * Data absensi siswa per kelas &mdash; input oleh wali kelas/admin
  */
-require_role(['admin','wali_kelas','guru']);
+require_role(['admin','super_admin','wali_kelas','guru']);
 
 $user     = current_user();
 $role     = $user['role'];
@@ -44,7 +44,7 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $kelas_id   = (int)($_GET['kelas'] ?? 0);
 
 // Kelas yang bisa diakses
-if ($role === 'admin') {
+if (in_array($role, ['admin','super_admin'])) {
     $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
 } else {
     $kelas_list = db_query(
@@ -109,7 +109,7 @@ if ($kelas_id) {
                 <div>
                     <label class="form-label">Kelas</label>
                     <select name="kelas" class="form-control">
-                        <option value="">— Pilih Kelas —</option>
+                        <option value="">&mdash; Pilih Kelas &mdash;</option>
                         <?php foreach ($kelas_list as $k): ?>
                         <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
                             <?= e($k['nama_kelas']) ?></option>
@@ -127,7 +127,7 @@ if ($kelas_id) {
     <?php if ($kelas_id && !empty($siswa_list)): ?>
     <div class="card">
         <div class="card-header">
-            <span>Input Absensi Kelas —
+            <span>Input Absensi Kelas &mdash;
                 <?= e(array_column($kelas_list,'nama_kelas',null)[array_search($kelas_id, array_column($kelas_list,'id'))] ?? '') ?></span>
         </div>
         <form method="POST" action="index.php?page=absensi&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>">

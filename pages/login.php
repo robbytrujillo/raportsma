@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — <?= APP_NAME ?></title>
+    <title>Login &mdash; <?= APP_NAME ?></title>
     <!-- Favicon -->
     <?php if (!empty($sekolah_l['logo'])): ?>
     <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
@@ -62,12 +62,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="text-center mb-8">
                 <div class="flex items-center justify-center gap-3 mb-3">
                     <?php if (!empty($sekolah_l['logo'])): ?>
-                    <!-- Logo sekolah dari pengaturan — circle -->
+                    <!-- Logo sekolah dari pengaturan &mdash; circle -->
                     <img src="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>" alt="Logo <?= e($sekolah_l['nama_sekolah']) ?>"
                         style="width:56px;height:56px;object-fit:cover;border-radius:50%;
                                 box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid #fed7aa">
                     <?php else: ?>
-                    <!-- Fallback: ikon orange — circle -->
+                    <!-- Fallback: ikon orange &mdash; circle -->
                     <div style="width:52px;height:52px;background:linear-gradient(135deg,#f97316,#c2410c);
                                 border-radius:50%;display:flex;align-items:center;justify-content:center;
                                 flex-shrink:0;box-shadow:0 2px 8px rgba(249,115,22,0.35)">

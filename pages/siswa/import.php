@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 /**
  * pages/siswa/import.php
  * Template Excel (.xlsx) & import data siswa
  * Mendukung upload .xlsx / .xls / .csv
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
 $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
@@ -15,17 +15,17 @@ $kelas_list = db_query(
      ORDER BY ta.is_aktif DESC, k.tingkat, k.nama_kelas'
 );
 
-/* ── Download template Excel ─────────────────────────────────── */
+/* â"€â"€ Download template Excel â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 if (isset($_GET['download_template'])) {
     $kelas_ex   = $kelas_list[0] ?? ['id'=>1,'nama_kelas'=>'X IPA 1'];
     $kelas_ref  = [];
     foreach ($kelas_list as $k) {
-        $kelas_ref[] = [$k['id'], $k['nama_kelas'], $k['tingkat'], $k['ta_nama'], $k['is_aktif'] ? '★ Aktif' : ''];
+        $kelas_ref[] = [$k['id'], $k['nama_kelas'], $k['tingkat'], $k['ta_nama'], $k['is_aktif'] ? 'â˜... Aktif' : ''];
     }
 
     xlsx_template('template_siswa.xlsx', [
-        'title'    => 'Template Import Data Siswa — Raportku',
-        'subtitle' => '★ = wajib diisi  |  Hapus baris contoh sebelum upload  |  Lihat sheet "Referensi" untuk daftar kelas_id',
+        'title'    => 'Template Import Data Siswa â€" Raportku',
+        'subtitle' => 'â˜... = wajib diisi  |  Hapus baris contoh sebelum upload  |  Lihat sheet "Referensi" untuk daftar kelas_id',
         'columns'  => [
             ['header'=>'Nama Lengkap',    'field'=>'nama_lengkap',  'width'=>28,'required'=>true,  'type'=>'text','format'=>'@',
              'example'=>'Ahmad Fauzi', 'note'=>'Nama lengkap siswa sesuai ijazah'],
@@ -57,14 +57,14 @@ if (isset($_GET['download_template'])) {
              '2024002','0012345679',$kelas_ex['id'],'Depok','2008-07-20','Bapak Amin','Ibu Nur','Jl. Melati No.2'],
         ],
         'notes_sheet' => [
-            'title'   => 'Daftar Kelas — gunakan angka di kolom "ID" sebagai Kelas ID',
+            'title'   => 'Daftar Kelas â€" gunakan angka di kolom "ID" sebagai Kelas ID',
             'headers' => ['ID','Nama Kelas','Tingkat','Tahun Ajaran','Status'],
             'rows'    => $kelas_ref,
         ],
     ]);
 }
 
-/* ── Proses Import ─────────────────────────────────────────────── */
+/* â"€â"€ Proses Import â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 $results   = [];
 $errors    = [];
 $successes = 0;
@@ -93,10 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $ibu      = excel_str($row, 10, 200);
                 $alamat   = excel_str($row, 11, 500);
 
-                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong — dilewati']; continue; }
-                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong — dilewati"]; continue; }
-                if (!$nis) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: NIS kosong — dilewati"]; continue; }
-                if (!$kelas_id) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelas_id kosong — dilewati"]; continue; }
+                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong â€" dilewati']; continue; }
+                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong â€" dilewati"]; continue; }
+                if (!$nis) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: NIS kosong â€" dilewati"]; continue; }
+                if (!$kelas_id) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelas_id kosong â€" dilewati"]; continue; }
 
                 if (db_row('SELECT id FROM users WHERE username=:u',[':u'=>$username])) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username '$username' sudah ada"]; continue;
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         [':uid'=>$uid,':nis'=>$nis,':nisn'=>$nisn,':kid'=>$kelas_id,
                          ':tpt'=>$tpt,':tgl'=>($tgl?:null),':al'=>$alamat,':ay'=>$ayah,':ib'=>$ibu]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (NIS: $nis, Kelas ID: $kelas_id) — berhasil"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (NIS: $nis, Kelas ID: $kelas_id) â€" berhasil"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
       <h1 class="page-title">Import Data Siswa</h1>
       <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan banyak siswa sekaligus</p>
     </div>
-    <a href="index.php?page=siswa" class="btn btn-secondary">← Kembali</a>
+    <a href="index.php?page=siswa" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -169,9 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         </ol>
 
         <div class="p-3 mt-3 rounded-lg text-xs" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">
-          <strong>✓ Format yang didukung:</strong> .xlsx, .xls, .csv
-          <br><strong>✓ Kolom header berwarna merah</strong> = wajib diisi
-          <br><strong>✓ Sheet "Referensi"</strong> di file berisi daftar kelas_id
+          <strong>âœ" Format yang didukung:</strong> .xlsx, .xls, .csv
+          <br><strong>âœ" Kolom header berwarna merah</strong> = wajib diisi
+          <br><strong>âœ" Sheet "Referensi"</strong> di file berisi daftar kelas_id
         </div>
 
         <div class="divider"></div>
@@ -208,10 +208,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv | Maks 10MB</p>
           </div>
           <div class="p-3 rounded-lg text-xs" style="background:#fff7ed;border:1px solid #fed7aa;color:#92400e;margin-bottom:16px">
-            <strong>⚠ Perhatian:</strong>
+            <strong>âš  Perhatian:</strong>
             <ul style="padding-left:16px;margin-top:4px;line-height:1.7">
               <li>Baris dengan username / NIS yang sudah ada akan <strong>dilewati</strong></li>
-              <li>Password kosong → default: <code>password</code></li>
+              <li>Password kosong â†' default: <code>password</code></li>
               <li>Data dimulai baris ke-4 pada template Excel</li>
             </ul>
           </div>
@@ -244,9 +244,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
           <tr>
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
-              if ($r['status']==='ok')    echo '<span class="badge badge-green">✓ OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">— Skip</span>';
-              else echo '<span class="badge badge-red">✗ Error</span>';
+              if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>
           </tr>

@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 /**
  * pages/tahun_ajaran/index.php
- * Kelola tahun ajaran — admin
+ * Kelola tahun ajaran â€" admin
  */
-require_role('admin');
+require_role(['admin','super_admin']);
 
-// ── Handle POST ────────────────────────────────────────────────
+// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=tahun_ajaran'); exit; }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/raport_data.php
- * Shared data loader untuk raport — diinclude oleh view.php dan print.php
+ * Shared data loader untuk raport &mdash; diinclude oleh view.php dan print.php
  * Ekspor variabel: $siswa, $ta, $kelas, $nilai_list, $absensi, $wali_kelas, $kepsek, $peringkat, $total_siswa_kelas
  */
 require_once __DIR__ . '/../../db.php';
