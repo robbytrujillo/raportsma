@@ -102,8 +102,8 @@ $s = $siswa_data ?? [];
         <div>
             <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
         </div>
-        <a href="index.php?page=siswa" class="btn btn-secondary">
-            <- Kembali</a>
+        <a href="index.php?page=siswa" class="btn btn-secondary" style="border-radius: 30px">
+            Kembali</a>
     </div>
 
     <?php foreach ($errors as $err): ?>
@@ -180,7 +180,7 @@ $s = $siswa_data ?? [];
                 </div>
 
                 <div class="flex gap-3 mt-4">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 30px">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
                             viewBox="0 0 24 24">
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
@@ -188,7 +188,7 @@ $s = $siswa_data ?? [];
                         </svg>
                         <?= $is_edit ? 'Simpan' : 'Tambah Siswa' ?>
                     </button>
-                    <a href="index.php?page=siswa" class="btn btn-secondary">Batal</a>
+                    <a href="index.php?page=siswa" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
                 </div>
             </form>
         </div>
