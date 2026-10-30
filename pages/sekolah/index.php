@@ -1,14 +1,14 @@
-﻿<?php
+<?php
 /**
  * pages/sekolah/index.php
- * Pengaturan Informasi Sekolah â€" admin
+ * Pengaturan Informasi Sekolah -- admin
  */
 require_role(['admin','super_admin']);
 
 $errors = [];
 $sekolah = sekolah_info();
 
-// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// -- Handle POST --------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -36,13 +36,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($file['size'] > MAX_FILE_SIZE) {
                 $errors[] = 'Ukuran logo maks 2MB.';
             } else {
-                $ext  = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $dest = 'logos/logo_' . time() . '.' . $ext;
-                $full = UPLOAD_DIR . $dest;
-                if (!is_dir(dirname($full))) mkdir(dirname($full), 0755, true);
-                if (move_uploaded_file($file['tmp_name'], $full)) {
-                    if ($logo_path) @unlink(UPLOAD_DIR . $logo_path);
-                    $logo_path = $dest;
+                // Cek double extension
+                $orig_parts  = explode('.', strtolower(basename($file['name'])));
+                $danger_exts = ['php','php3','php4','php5','php7','php8','phtml','phar','pl','py','sh','cgi','asp','aspx'];
+                $has_danger  = array_intersect($orig_parts, $danger_exts);
+                if ($has_danger) {
+                    $errors[] = 'Nama file logo tidak diizinkan.';
+                } else {
+                    // Simpan dengan nama acak dari MIME type (bukan ekstensi dari nama asli)
+                    $ext_map = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp'];
+                    $ext  = $ext_map[$mime] ?? 'png';
+                    $dest = 'logos/logo_' . bin2hex(random_bytes(8)) . '.' . $ext;
+                    $full = UPLOAD_DIR . $dest;
+                    if (!is_dir(dirname($full))) mkdir(dirname($full), 0755, true);
+                    if (move_uploaded_file($file['tmp_name'], $full)) {
+                        if ($logo_path) @unlink(UPLOAD_DIR . $logo_path);
+                        $logo_path = $dest;
+                    }
                 }
             }
         }
@@ -166,27 +176,27 @@ $s = $sekolah;
         <p class="text-sm font-semibold text-gray-600 mb-3">Kriteria Penilaian (tampil di raport)</p>
         <div class="grid grid-cols-3 gap-4">
           <div class="form-group">
-            <label class="form-label">Predikat A â€" minimal</label>
+            <label class="form-label">Predikat A &ndash; minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_a_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_a_min'] ?? 92) ?>">
-              <span class="text-sm text-gray-400">â€" 100</span>
+              <span class="text-sm text-gray-400">&ndash; 100</span>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Predikat B â€" minimal</label>
+            <label class="form-label">Predikat B &ndash; minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_b_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_b_min'] ?? 83) ?>">
-              <span class="text-sm text-gray-400">â€" <?= (int)($s['kriteria_a_min'] ?? 92) - 1 ?></span>
+              <span class="text-sm text-gray-400">&ndash; <?= (int)($s['kriteria_a_min'] ?? 92) - 1 ?></span>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Predikat C â€" minimal</label>
+            <label class="form-label">Predikat C &ndash; minimal</label>
             <div class="flex items-center gap-2">
               <input type="number" name="kriteria_c_min" class="form-control" min="0" max="100" step="1"
                 value="<?= (int)($s['kriteria_c_min'] ?? 76) ?>">
-              <span class="text-sm text-gray-400">â€" <?= (int)($s['kriteria_b_min'] ?? 83) - 1 ?></span>
+              <span class="text-sm text-gray-400">&ndash; <?= (int)($s['kriteria_b_min'] ?? 83) - 1 ?></span>
             </div>
           </div>
         </div>

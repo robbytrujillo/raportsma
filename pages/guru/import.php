@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 /**
  * pages/guru/import.php
  * Template Excel (.xlsx) & import data guru
@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../excel.php';
 /* â"€â"€ Download template Excel â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 if (isset($_GET['download_template'])) {
     xlsx_template('template_guru.xlsx', [
-        'title'    => 'Template Import Data Guru â€" Raportku',
+        'title'    => 'Template Import Data Guru -- Raportku',
         'subtitle' => 'â˜... = wajib diisi  |  Hapus baris contoh sebelum upload  |  Kolom "status": guru / wali_kelas / koordinator',
         'columns'  => [
             ['header'=>'Nama Lengkap',  'field'=>'nama_lengkap',  'width'=>30, 'required'=>true,  'type'=>'text','format'=>'@',
@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $status       = strtolower(excel_str($row, 5, 20)) ?: 'guru';
                 $bidang_studi = excel_str($row, 6, 150);
 
-                if (!$nama)     { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong â€" dilewati']; continue; }
-                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong â€" dilewati"]; continue; }
+                if (!$nama)     { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong -- dilewati']; continue; }
+                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong -- dilewati"]; continue; }
                 if (!in_array($status, $valid_status)) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: status '$status' tidak valid"]; continue;
                 }
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         'INSERT INTO guru (user_id,nip,status,bidang_studi) VALUES (:uid,:nip,:s,:bs)',
                         [':uid'=>$uid,':nip'=>$nip,':s'=>$status,':bs'=>$bidang_studi]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama ($status) â€" berhasil ditambahkan"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama ($status) -- berhasil ditambahkan"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">-- Skip</span>';
               else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>

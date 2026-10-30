@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 /**
  * pages/mapel/import.php
  * Template Excel (.xlsx) & import mata pelajaran
@@ -17,7 +17,7 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_mapel.xlsx', [
-        'title'    => 'Template Import Mata Pelajaran â€" Raportku',
+        'title'    => 'Template Import Mata Pelajaran -- Raportku',
         'subtitle' => 'â˜... = wajib diisi  |  Import mapel INDUK dulu, lalu sub-mapel  |  Lihat sheet "Referensi" untuk parent_id',
         'columns'  => [
             ['header'=>'Nama Mapel',  'field'=>'nama_mapel',  'width'=>32, 'required'=>true,  'type'=>'text','format'=>'@',
@@ -41,7 +41,7 @@ if (isset($_GET['download_template'])) {
             ['Bahasa Arab',            'BARB', 'B', '', '', '1'],
         ],
         'notes_sheet' => [
-            'title'   => 'Daftar Mapel Induk â€" gunakan angka di kolom "ID" sebagai Parent ID untuk sub-mapel',
+            'title'   => 'Daftar Mapel Induk -- gunakan angka di kolom "ID" sebagai Parent ID untuk sub-mapel',
             'headers' => ['ID','Nama Mapel Induk','Kelompok'],
             'rows'    => $ref_rows ?: [['(belum ada mapel induk)', '', '']],
         ],
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $sublabel = excel_str($row, 4, 3);
                 $urutan   = excel_int($row, 5);
 
-                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama mapel kosong â€" dilewati']; continue; }
+                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama mapel kosong -- dilewati']; continue; }
                 if (!in_array($kelompok, $valid_kelompok)) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelompok '$kelompok' tidak valid (A/B/C/C Pilihan/D/Muatan Lokal)"]; continue;
                 }
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         [':n'=>$nama,':k'=>$kode,':g'=>$kelompok,
                          ':pid'=>$parent_id,':sl'=>($sublabel?:null),':u'=>$urutan]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama â€" ditambahkan (Kelompok $kelompok)"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama -- ditambahkan (Kelompok $kelompok)"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -152,8 +152,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <th style="padding:5px 8px;text-align:left">Keterangan</th>
           </tr>
           <?php foreach ([
-            ['nama_mapel','Nama lengkap mata pelajaran â€" wajib'],
-            ['kode_mapel','Kode singkat misal MTK, BIND â€" opsional'],
+            ['nama_mapel','Nama lengkap mata pelajaran -- wajib'],
+            ['kode_mapel','Kode singkat misal MTK, BIND -- opsional'],
             ['kelompok','A / B / C / C Pilihan / D / Muatan Lokal (dropdown)'],
             ['parent_id','ID mapel induk (kosongkan jika mapel mandiri)'],
             ['sub_label','Label huruf: a, b, c (untuk sub-mapel)'],
@@ -230,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">-- Skip</span>';
               else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>

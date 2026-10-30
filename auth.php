@@ -9,14 +9,27 @@ require_once __DIR__ . '/db.php';
 
 // Mulai session jika belum
 if (session_status() === PHP_SESSION_NONE) {
+    // Deteksi HTTPS secara otomatis
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+             || (($_SERVER['SERVER_PORT'] ?? 80) == 443)
+             || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
     session_set_cookie_params([
         'lifetime' => SESSION_LIFETIME,
         'path'     => '/',
-        'secure'   => false,
+        'secure'   => $is_https,  // true otomatis di HTTPS/hosting
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
     session_start();
+
+    // Regenerasi session ID tiap 30 menit untuk cegah session fixation
+    if (!isset($_SESSION['_last_regen'])) {
+        $_SESSION['_last_regen'] = time();
+    } elseif (time() - $_SESSION['_last_regen'] > 1800) {
+        session_regenerate_id(true);
+        $_SESSION['_last_regen'] = time();
+    }
 }
 
 /**
@@ -88,36 +101,97 @@ function require_role($roles): void {
 }
 
 /**
+ * Cek apakah IP saat ini sedang dalam periode lockout (brute force protection).
+ * Menyimpan hitungan percobaan di session — tidak butuh tabel DB tambahan.
+ * @return array ['locked' => bool, 'wait' => int (detik tersisa)]
+ */
+function check_login_lockout(): array {
+    $ip       = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $key      = 'login_fails_' . md5($ip);
+    $ts_key   = 'login_lockout_until_' . md5($ip);
+    $max      = 5;      // maks percobaan gagal
+    $window   = 300;    // 5 menit lockout setelah $max gagal
+
+    $until = $_SESSION[$ts_key] ?? 0;
+    if ($until > time()) {
+        return ['locked' => true, 'wait' => (int)($until - time())];
+    }
+    return ['locked' => false, 'wait' => 0];
+}
+
+/**
+ * Catat percobaan login gagal untuk IP ini.
+ */
+function record_login_fail(): void {
+    $ip    = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $key   = 'login_fails_' . md5($ip);
+    $ts_key = 'login_lockout_until_' . md5($ip);
+    $max   = 5;
+    $window = 300;
+
+    $_SESSION[$key] = ($_SESSION[$key] ?? 0) + 1;
+    if ($_SESSION[$key] >= $max) {
+        $_SESSION[$ts_key] = time() + $window;
+        $_SESSION[$key]    = 0; // reset hitung
+    }
+}
+
+/**
+ * Reset hitungan gagal setelah login berhasil.
+ */
+function reset_login_fail(): void {
+    $ip    = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $key   = 'login_fails_' . md5($ip);
+    $ts_key = 'login_lockout_until_' . md5($ip);
+    unset($_SESSION[$key], $_SESSION[$ts_key]);
+}
+
+/**
  * Proses login
- * @return array ['success' => bool, 'message' => string]
+ * @return array ['success' => bool, 'message' => string, 'locked' => bool]
  */
 function do_login(string $username, string $password): array {
+    // Cek lockout sebelum proses apapun
+    $lockout = check_login_lockout();
+    if ($lockout['locked']) {
+        $menit = ceil($lockout['wait'] / 60);
+        return [
+            'success' => false,
+            'locked'  => true,
+            'message' => "Terlalu banyak percobaan login. Coba lagi dalam {$menit} menit.",
+        ];
+    }
+
     $user = db_row(
         'SELECT * FROM users WHERE username = :u AND is_active = 1 LIMIT 1',
         [':u' => $username]
     );
 
     if (!$user) {
-        return ['success' => false, 'message' => 'Username atau password salah.'];
+        record_login_fail();
+        return ['success' => false, 'locked' => false, 'message' => 'Username atau password salah.'];
     }
 
     // Dukung MD5 (hash lama) maupun bcrypt (hash baru)
-    $hash = $user['password'];
+    $hash  = $user['password'];
     $valid = false;
 
     if (strlen($hash) === 32 && ctype_xdigit($hash)) {
-        // Hash MD5 &mdash; bandingkan langsung
         $valid = ($hash === md5($password));
     } else {
-        // Hash bcrypt (password_hash)
         $valid = password_verify($password, $hash);
     }
 
     if (!$valid) {
-        return ['success' => false, 'message' => 'Username atau password salah.'];
+        record_login_fail();
+        return ['success' => false, 'locked' => false, 'message' => 'Username atau password salah.'];
     }
 
-    // Set session
+    // Login berhasil — reset fail counter, regenerasi session
+    reset_login_fail();
+    session_regenerate_id(true);
+    $_SESSION['_last_regen'] = time();
+
     $_SESSION['user_id']      = $user['id'];
     $_SESSION['username']     = $user['username'];
     $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
@@ -125,7 +199,7 @@ function do_login(string $username, string $password): array {
     $_SESSION['tanda_tangan'] = $user['tanda_tangan'];
     $_SESSION['foto']         = $user['foto'];
 
-    return ['success' => true, 'message' => 'Login berhasil.'];
+    return ['success' => true, 'locked' => false, 'message' => 'Login berhasil.'];
 }
 
 /**

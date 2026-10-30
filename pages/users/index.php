@@ -158,7 +158,7 @@ $role_labels = [
                         <td>
                             <div class="flex gap-1">
                                 <a href="index.php?page=users.edit&id=<?= $u['id'] ?>"
-                                    class="btn btn-sm btn-secondary tooltip-wrap">
+                                    class="btn btn-sm btn-secondary tooltip-wrap" style="border-radius: 30px">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -172,7 +172,8 @@ $role_labels = [
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger tooltip-wrap">
+                                    <button type="submit" class="btn btn-sm btn-danger tooltip-wrap"
+                                        style="border-radius: 30px">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                                             viewBox="0 0 24 24">
                                             <polyline points="3 6 5 6 21 6" />

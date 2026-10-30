@@ -919,6 +919,7 @@ table.data-table {
   /* Ukuran font lebih kecil saat print agar muat 1 halaman */
   .raport-page {
     margin: 0 !important;
+    min-height: 0 !important;          /* ← cegah lembar kosong ekstra saat cetak F4 */
     box-shadow: none !important;
     font-size: 9.5pt !important;
   }
@@ -978,6 +979,11 @@ table.data-table {
   body[data-paper="a4"] .raport-page {
     font-size: 8.5pt !important;
     padding: 7mm 12mm !important;
+    /* zoom menyusutkan isi ~18% agar muat 1 halaman A4 (termasuk Kelompok D).
+       Didukung Chrome/Edge. margin:auto memusatkan halaman yang menjadi lebih
+       sempit setelah zoom sehingga tidak condong ke kiri. */
+    zoom: 0.82 !important;
+    margin: 0 auto !important;
   }
 
   /* Header sekolah — lebih kompak */

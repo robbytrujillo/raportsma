@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_user = db_row('SELECT * FROM users WHERE id = :id', [':id' => $uid]);
 }
 
-/** Handle file upload &mdash; foto / tanda tangan */
+/** Handle file upload -- foto / tanda tangan */
 function _handle_upload(string $field, string $subdir): array {
     if (empty($_FILES[$field]['name'])) {
         return ['success'=>false, 'message'=>'Tidak ada file yang dipilih.'];
@@ -126,12 +126,27 @@ function _handle_upload(string $field, string $subdir): array {
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['success'=>false, 'message'=>'File terlalu besar. Maksimal 2MB.'];
     }
+
+    // Cek MIME type berdasarkan isi file (bukan ekstensi dari nama file)
     $mime = mime_content_type($file['tmp_name']);
     if (!in_array($mime, ALLOWED_IMG)) {
         return ['success'=>false, 'message'=>'Format tidak didukung. Gunakan PNG, JPG, atau GIF.'];
     }
-    $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $filename = $subdir . '/' . uniqid() . '_' . time() . '.' . $ext;
+
+    // Cek double extension (misal: shell.php.jpg) -- cegah webshell
+    $original_name = strtolower(basename($file['name']));
+    $danger_exts   = ['php','php3','php4','php5','php7','php8','phtml','phar','pl','py','cgi','sh','asp','aspx','jsp'];
+    $parts         = explode('.', $original_name);
+    foreach ($parts as $part) {
+        if (in_array($part, $danger_exts, true)) {
+            return ['success'=>false, 'message'=>'Nama file tidak diizinkan.'];
+        }
+    }
+
+    // Simpan dengan nama acak (tidak memakai nama asli dari user)
+    $ext_map  = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp'];
+    $ext      = $ext_map[$mime] ?? 'jpg';
+    $filename = $subdir . '/' . bin2hex(random_bytes(12)) . '.' . $ext;
     $dest     = UPLOAD_DIR . $filename;
     if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
     if (!move_uploaded_file($file['tmp_name'], $dest)) {

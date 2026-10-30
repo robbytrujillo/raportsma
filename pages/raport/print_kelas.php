@@ -259,42 +259,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
 
-    <?php if ($ukuran === 'a4'): ?>
-    /* ── A4: compress to fit 1 page (up to Kelompok D, 12 subjects) ── */
-    @media print {
-        body[data-paper="a4"] .raport-page {
-            /* zoom shrinks the entire page uniformly — supported in Chrome/Edge print */
-            zoom: 0.87;
-        }
-        body[data-paper="a4"] .raport-nilai-table {
-            font-size: 8pt !important;
-        }
-        body[data-paper="a4"] .raport-nilai-table th,
-        body[data-paper="a4"] .raport-nilai-table td {
-            padding: 2px 4px !important;
-            line-height: 1.2 !important;
-        }
-        body[data-paper="a4"] .raport-footer-block {
-            font-size: 8pt !important;
-            margin-top: 4px !important;
-        }
-        body[data-paper="a4"] .raport-ttd-block {
-            margin-top: 4px !important;
-        }
-        body[data-paper="a4"] .raport-ttd-block td,
-        body[data-paper="a4"] .raport-ttd-block div {
-            font-size: 8pt !important;
-        }
-        /* Tighten header & student info spacing */
-        body[data-paper="a4"] .raport-page > table:first-child {
-            padding-bottom: 4px !important;
-            margin-bottom: 3px !important;
-        }
-        body[data-paper="a4"] .raport-page > div[style*="text-align:center"] {
-            margin: 4px 0 2px !important;
-        }
-    }
-    <?php endif; ?>
+    /* A4 zoom + tightening sudah ditangani style.css @media print body[data-paper="a4"] */
     </style>
 </head>
 

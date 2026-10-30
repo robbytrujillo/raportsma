@@ -32,7 +32,7 @@ ServerSignature Off
 </FilesMatch>
 
 # ── 4. BLOKIR EKSTENSI FILE YANG TIDAK BOLEH DIAKSES PUBLIK ─────────────────
-<FilesMatch "\.(sql|log|ini|env|sh|bash|htpasswd|bak|tmp|lock)$">
+<FilesMatch "\.(sql|log|ini|env|sh|bash|htpasswd|bak|tmp|lock|py|mjs|md|json|lock|xml|yml|yaml)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -41,6 +41,25 @@ ServerSignature Off
         Deny from all
     </IfModule>
 </FilesMatch>
+
+# ── 4b. BLOKIR DOUBLE EXTENSION (file.php.jpg) ───────────────────────────────
+<FilesMatch "\.php\.(jpg|jpeg|png|gif|webp|bmp|ico|svg)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── 4c. BLOKIR SCANNER & BOT UMUM ────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    # Blokir request dengan User-Agent scanner umum
+    RewriteCond %{HTTP_USER_AGENT} (nikto|sqlmap|nessus|nmap|masscan|zgrab|python-requests|go-http-client|curl\/[0-9]) [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} (acunetix|burpsuite|dirbuster|wfuzz|gobuster|ffuf) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
 
 # ── 5. PROTEKSI FOLDER .git DAN FILE DOT-FILE ────────────────────────────────
 <IfModule mod_rewrite.c>
@@ -53,8 +72,13 @@ ServerSignature Off
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Permissions Policy: matikan fitur browser yang tidak dipakai
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+    # Content-Security-Policy: izinkan CDN Tailwind + Google Fonts
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
     Header always unset X-Powered-By
     Header unset X-Powered-By
+    Header always unset Server
 </IfModule>
 
 # ── 7. CACHE FILE STATIS ──────────────────────────────────────────────────────
@@ -88,3 +112,16 @@ ServerSignature Off
 #     RewriteCond %{HTTPS} off
 #     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # </IfModule>
+
+# ── 11. BLOKIR REQUEST MALFORMED / EXPLOIT UMUM ──────────────────────────────
+<IfModule mod_rewrite.c>
+    # Blokir null byte injection
+    RewriteCond %{QUERY_STRING} (%00|%0a|%0d) [NC]
+    RewriteRule .* - [F,L]
+    # Blokir upaya path traversal
+    RewriteCond %{QUERY_STRING} (\.\./|\.\.%2f|%2e%2e/) [NC]
+    RewriteRule .* - [F,L]
+    # Blokir upaya akses /etc/passwd, wp-admin, phpmyadmin dari luar
+    RewriteCond %{REQUEST_URI} (wp-admin|wp-login|xmlrpc|phpmyadmin|\.git|\.svn|eval\(|base64_decode) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>

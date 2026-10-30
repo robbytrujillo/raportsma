@@ -66,79 +66,83 @@ $roles = ['super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepal
 $d = $user_data ?? [];
 ?>
 <div class="page-content" style="max-width:680px;margin:0 auto">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title"><?= $is_edit ? 'Edit Pengguna' : 'Tambah Pengguna' ?></h1>
-      <p class="page-subtitle"><?= $is_edit ? 'Perbarui data pengguna' : 'Buat akun pengguna baru' ?></p>
-    </div>
-    <a href="index.php?page=users" class="btn btn-secondary">&larr; Kembali</a>
-  </div>
-
-  <?php foreach ($errors as $e): ?>
-  <div class="alert alert-danger"><?= htmlspecialchars($e) ?></div>
-  <?php endforeach; ?>
-
-  <div class="card">
-    <div class="card-header">Informasi Pengguna</div>
-    <div class="card-body">
-      <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit ? '&id='.$id : '' ?>">
-        <?= csrf_field() ?>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="form-group md:col-span-2">
-            <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
-            <input type="text" name="nama_lengkap" class="form-control" required
-              value="<?= e($d['nama_lengkap'] ?? ($_POST['nama_lengkap'] ?? '')) ?>" placeholder="Masukkan nama lengkap">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Username <span class="text-red-500">*</span></label>
-            <input type="text" name="username" class="form-control" required
-              value="<?= e($d['username'] ?? ($_POST['username'] ?? '')) ?>" placeholder="Username unik">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control"
-              value="<?= e($d['email'] ?? ($_POST['email'] ?? '')) ?>" placeholder="email@sekolah.sch.id">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Password <?= $is_edit ? '(kosongkan jika tidak diubah)' : '<span class="text-red-500">*</span>' ?></label>
-            <input type="password" name="password" class="form-control"
-              placeholder="<?= $is_edit ? 'Biarkan kosong jika tidak ingin mengubah' : 'Password minimal 6 karakter' ?>">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Role <span class="text-red-500">*</span></label>
-            <select name="role" class="form-control">
-              <?php foreach ($roles as $k => $v): ?>
-              <option value="<?= $k ?>" <?= ($d['role']??$_POST['role']??'siswa')===$k?'selected':'' ?>><?= $v ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="form-group md:col-span-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="is_active" value="1" <?= ($d['is_active']??1)?'checked':'' ?>
-                class="w-4 h-4 accent-orange-500">
-              <span class="form-label mb-0">Akun Aktif</span>
-            </label>
-          </div>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><?= $is_edit ? 'Edit Pengguna' : 'Tambah Pengguna' ?></h1>
+            <p class="page-subtitle"><?= $is_edit ? 'Perbarui data pengguna' : 'Buat akun pengguna baru' ?></p>
         </div>
-
-        <div class="flex gap-3 mt-4">
-          <button type="submit" class="btn btn-primary">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
-            </svg>
-            <?= $is_edit ? 'Simpan Perubahan' : 'Buat Pengguna' ?>
-          </button>
-          <a href="index.php?page=users" class="btn btn-secondary">Batal</a>
-        </div>
-      </form>
+        <a href="index.php?page=users" class="btn btn-secondary" style="border-radius: 30px">&larr; Kembali</a>
     </div>
-  </div>
+
+    <?php foreach ($errors as $e): ?>
+    <div class="alert alert-danger"><?= htmlspecialchars($e) ?></div>
+    <?php endforeach; ?>
+
+    <div class="card">
+        <div class="card-header">Informasi Pengguna</div>
+        <div class="card-body">
+            <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit ? '&id='.$id : '' ?>">
+                <?= csrf_field() ?>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_lengkap" class="form-control" required
+                            value="<?= e($d['nama_lengkap'] ?? ($_POST['nama_lengkap'] ?? '')) ?>"
+                            placeholder="Masukkan nama lengkap">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Username <span class="text-red-500">*</span></label>
+                        <input type="text" name="username" class="form-control" required
+                            value="<?= e($d['username'] ?? ($_POST['username'] ?? '')) ?>" placeholder="Username unik">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control"
+                            value="<?= e($d['email'] ?? ($_POST['email'] ?? '')) ?>" placeholder="email@sekolah.sch.id">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password
+                            <?= $is_edit ? '(kosongkan jika tidak diubah)' : '<span class="text-red-500">*</span>' ?></label>
+                        <input type="password" name="password" class="form-control"
+                            placeholder="<?= $is_edit ? 'Biarkan kosong jika tidak ingin mengubah' : 'Password minimal 6 karakter' ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Role <span class="text-red-500">*</span></label>
+                        <select name="role" class="form-control">
+                            <?php foreach ($roles as $k => $v): ?>
+                            <option value="<?= $k ?>" <?= ($d['role']??$_POST['role']??'siswa')===$k?'selected':'' ?>>
+                                <?= $v ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group md:col-span-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" <?= ($d['is_active']??1)?'checked':'' ?>
+                                class="w-4 h-4 accent-orange-500">
+                            <span class="form-label mb-0">Akun Aktif</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 30px">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        <?= $is_edit ? 'Simpan Perubahan' : 'Buat Pengguna' ?>
+                    </button>
+                    <a href="index.php?page=users" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

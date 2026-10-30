@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 /**
  * pages/siswa/import.php
  * Template Excel (.xlsx) & import data siswa
@@ -24,7 +24,7 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_siswa.xlsx', [
-        'title'    => 'Template Import Data Siswa â€" Raportku',
+        'title'    => 'Template Import Data Siswa -- Raportku',
         'subtitle' => 'â˜... = wajib diisi  |  Hapus baris contoh sebelum upload  |  Lihat sheet "Referensi" untuk daftar kelas_id',
         'columns'  => [
             ['header'=>'Nama Lengkap',    'field'=>'nama_lengkap',  'width'=>28,'required'=>true,  'type'=>'text','format'=>'@',
@@ -57,7 +57,7 @@ if (isset($_GET['download_template'])) {
              '2024002','0012345679',$kelas_ex['id'],'Depok','2008-07-20','Bapak Amin','Ibu Nur','Jl. Melati No.2'],
         ],
         'notes_sheet' => [
-            'title'   => 'Daftar Kelas â€" gunakan angka di kolom "ID" sebagai Kelas ID',
+            'title'   => 'Daftar Kelas -- gunakan angka di kolom "ID" sebagai Kelas ID',
             'headers' => ['ID','Nama Kelas','Tingkat','Tahun Ajaran','Status'],
             'rows'    => $kelas_ref,
         ],
@@ -93,10 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $ibu      = excel_str($row, 10, 200);
                 $alamat   = excel_str($row, 11, 500);
 
-                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong â€" dilewati']; continue; }
-                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong â€" dilewati"]; continue; }
-                if (!$nis) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: NIS kosong â€" dilewati"]; continue; }
-                if (!$kelas_id) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelas_id kosong â€" dilewati"]; continue; }
+                if (!$nama) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kosong -- dilewati']; continue; }
+                if (!$username) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username kosong -- dilewati"]; continue; }
+                if (!$nis) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: NIS kosong -- dilewati"]; continue; }
+                if (!$kelas_id) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: kelas_id kosong -- dilewati"]; continue; }
 
                 if (db_row('SELECT id FROM users WHERE username=:u',[':u'=>$username])) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: username '$username' sudah ada"]; continue;
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         [':uid'=>$uid,':nis'=>$nis,':nisn'=>$nisn,':kid'=>$kelas_id,
                          ':tpt'=>$tpt,':tgl'=>($tgl?:null),':al'=>$alamat,':ay'=>$ayah,':ib'=>$ibu]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (NIS: $nis, Kelas ID: $kelas_id) â€" berhasil"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (NIS: $nis, Kelas ID: $kelas_id) -- berhasil"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -245,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">-- Skip</span>';
               else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>

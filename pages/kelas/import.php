@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 /**
  * pages/kelas/import.php
  * Template Excel (.xlsx) & import data kelas
@@ -30,7 +30,7 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_kelas.xlsx', [
-        'title'    => 'Template Import Data Kelas â€" Raportku',
+        'title'    => 'Template Import Data Kelas -- Raportku',
         'subtitle' => 'â˜... = wajib diisi  |  Lihat sheet "Referensi" untuk ID tahun ajaran dan wali kelas',
         'columns'  => [
             ['header'=>'Nama Kelas',      'field'=>'nama_kelas',      'width'=>20, 'required'=>true,  'type'=>'text','format'=>'@',
@@ -49,7 +49,7 @@ if (isset($_GET['download_template'])) {
             ['XII IPA',  'XII', $ta_ex['id'], ''],
         ],
         'notes_sheet' => [
-            'title'   => 'Referensi ID â€" Tahun Ajaran & Wali Kelas',
+            'title'   => 'Referensi ID -- Tahun Ajaran & Wali Kelas',
             'headers' => ['ID Tahun Ajaran','Nama','Semester','Status','','ID Guru/Wali','Nama Guru','Status Guru'],
             'rows'    => array_map(function($i) use ($ta_ref, $wali_ref) {
                 $ta  = $ta_ref[$i]  ?? ['','','',''];
@@ -81,9 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $ta_id    = excel_int($row, 2);
                 $wali_id  = excel_int($row, 3);
 
-                if (!$nama)    { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kelas kosong â€" dilewati']; continue; }
-                if (!$tingkat) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: tingkat kosong â€" dilewati"]; continue; }
-                if (!$ta_id)   { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: tahun_ajaran_id kosong â€" dilewati"]; continue; }
+                if (!$nama)    { $results[] = ['line'=>$line,'status'=>'skip','msg'=>'Nama kelas kosong -- dilewati']; continue; }
+                if (!$tingkat) { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: tingkat kosong -- dilewati"]; continue; }
+                if (!$ta_id)   { $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: tahun_ajaran_id kosong -- dilewati"]; continue; }
 
                 if (!db_row('SELECT id FROM tahun_ajaran WHERE id=:id',[':id'=>$ta_id])) {
                     $results[] = ['line'=>$line,'status'=>'skip','msg'=>"$nama: tahun_ajaran_id $ta_id tidak ditemukan"]; continue;
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         'INSERT INTO kelas (nama_kelas,tingkat,wali_kelas_id,tahun_ajaran_id) VALUES (:n,:t,:w,:ta)',
                         [':n'=>$nama,':t'=>$tingkat,':w'=>$wali_id_save,':ta'=>$ta_id]
                     );
-                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (Tingkat $tingkat) â€" berhasil ditambahkan"];
+                    $results[] = ['line'=>$line,'status'=>'ok','msg'=>"$nama (Tingkat $tingkat) -- berhasil ditambahkan"];
                     $successes++;
                 } catch (\PDOException $e) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         <ol style="padding-left:18px;color:#374151">
           <li>Klik <strong>Download Template Excel</strong></li>
           <li>Isi data mulai baris ke-<strong>4</strong></li>
-          <li>Kolom <strong>Tingkat</strong> sudah ada dropdown (VIIâ€"XII)</li>
+          <li>Kolom <strong>Tingkat</strong> sudah ada dropdown (VII--XII)</li>
           <li>Lihat sheet <strong>"Referensi"</strong> untuk ID tahun ajaran & wali kelas</li>
           <li>Upload file .xlsx</li>
         </ol>
@@ -240,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <td class="text-gray-400 text-xs"><?= $r['line'] ?></td>
             <td><?php
               if ($r['status']==='ok')    echo '<span class="badge badge-green">âœ" OK</span>';
-              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">â€" Skip</span>';
+              elseif ($r['status']==='skip') echo '<span class="badge badge-gray">-- Skip</span>';
               else echo '<span class="badge badge-red">âœ&mdash; Error</span>';
             ?></td>
             <td class="text-sm"><?= e($r['msg']) ?></td>
