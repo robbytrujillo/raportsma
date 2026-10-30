@@ -56,7 +56,7 @@ if ($role === 'siswa') {
             <h1 class="page-title">Preview Raport</h1>
             <p class="page-subtitle"><?= e($siswa['nama_lengkap']) ?> &mdash; <?= e($ta['nama'] ?? '') ?></p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap">
             <a href="javascript:history.back()" class="btn btn-secondary" style="border-radius: 30px">&larr; Kembali</a>
             <a href="index.php?page=raport.print&siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                 target="_blank" class="btn btn-primary" style="border-radius: 30px">
@@ -70,8 +70,8 @@ if ($role === 'siswa') {
         </div>
     </div>
 
-    <div class="card" style="max-width:880px;margin:0 auto">
-        <div class="card-body" style="padding:0">
+    <div class="card raport-preview-card" style="max-width:880px;margin:0 auto;overflow:visible">
+        <div class="card-body raport-preview-scroll" style="padding:0">
             <!-- Embed raport content dalam preview -->
             <?php include __DIR__ . '/raport_template.php'; ?>
         </div>

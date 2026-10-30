@@ -772,6 +772,12 @@ table.data-table {
 .ttd-box { text-align: center; width: 200px; }
 .ttd-img { height: 70px; object-fit: contain; margin: 6px auto; display: block; }
 
+/* ── Raport Preview — mobile scroll wrapper ─────────────────── */
+.raport-preview-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Responsive: Mobile ─────────────────────────────────────── */
 .hamburger {
   cursor: pointer;
@@ -839,6 +845,68 @@ table.data-table {
   }
   .page-content { padding: 16px; }
   .topbar { padding: 0 16px; }
+
+  /* ── Page header: stack vertically on small screens ── */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page-header > div:last-child,
+  .page-header > .flex {
+    width: 100%;
+  }
+
+  /* ── Card header: allow wrapping ── */
+  .card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── Raport preview: scale down to fit screen ── */
+  .raport-preview-scroll {
+    /* Let the fixed-width raport page scroll horizontally */
+    overflow-x: auto;
+  }
+
+  /* ── Pagination: center & wrap ── */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pagination-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .page-header > .flex.gap-2,
+  .page-header > div.flex {
+    flex-wrap: wrap;
+  }
+  .card-header .flex.items-center.gap-2 {
+    flex-wrap: wrap;
+  }
+  /* Raport preview card: remove overflow:hidden so horizontal scroll works */
+  .card.raport-preview-card {
+    overflow: visible;
+  }
+  /* Kriteria grid: stack to 1 column on very small screens */
+  .kriteria-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Topbar: shrink page title on tiny screens */
+  .topbar-title {
+    font-size: 0.9rem;
+  }
+  /* Stat cards: keep 2 columns but reduce padding */
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+  .stat-value { font-size: 1.4rem; }
 }
 
 /* ── Misc Utilities ─────────────────────────────────────────── */

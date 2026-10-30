@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
@@ -202,7 +202,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
 
         <!-- Paginasi -->
         <?php if ($pages > 1): ?>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> kelas)</span>
             <div class="pagination">
                 <a href="?<?= $qstr_k ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">

@@ -356,7 +356,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
 
         <!-- Paginasi -->
         <?php if ($pages > 1): ?>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> data)</span>
             <div class="pagination">
                 <a href="?<?= $qstr_n ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">

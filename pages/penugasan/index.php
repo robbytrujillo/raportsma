@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/penugasan/index.php
  * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
@@ -189,7 +189,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
 
         <!-- Paginasi -->
         <?php if ($pages_p > 1): ?>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages_p ?> (<?= $total_p ?>
                 penugasan)</span>
             <div class="pagination">

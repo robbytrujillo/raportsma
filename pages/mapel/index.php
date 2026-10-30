@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/mapel/index.php
  * Daftar Mata Pelajaran â€" admin
@@ -213,7 +213,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
 
         <!-- Paginasi -->
         <?php if ($pages_m > 1): ?>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages_m ?> (<?= $total_m ?>
                 mapel)</span>
             <div class="pagination">

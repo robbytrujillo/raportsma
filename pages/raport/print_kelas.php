@@ -132,29 +132,42 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         z-index: 999;
         background: #f97316;
         color: #fff;
-        padding: 8px 24px;
+        padding: 8px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        gap: 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .print-toolbar .tb-left {
+        flex: 1;
+        min-width: 0;
     }
 
     .print-toolbar .tb-title {
         font-weight: 700;
         font-size: .95rem;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .print-toolbar .tb-meta {
         font-size: .78rem;
         opacity: .85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .print-toolbar .tb-btns {
         display: flex;
         gap: 8px;
         flex-shrink: 0;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .print-toolbar a,
@@ -189,6 +202,19 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
     .btn-paper-active {
         background: rgba(255,255,255,.9) !important;
         color: #f97316 !important; font-weight: 700 !important;
+    }
+
+    @media (max-width: 600px) {
+        body { padding-top: 110px; }
+        .print-toolbar { padding: 8px 12px; gap: 6px; }
+        .print-toolbar .tb-title { font-size: .82rem; }
+        .print-toolbar .tb-meta { font-size: .72rem; }
+        .print-toolbar .tb-btns { gap: 6px; }
+        .print-toolbar a, .print-toolbar button { padding: 5px 10px; font-size: .75rem; }
+    }
+    @media (max-width: 420px) {
+        body { padding-top: 130px; }
+        .print-toolbar .tb-title { font-size: .75rem; }
     }
 
     /* ── Progress indicator ── */
@@ -267,7 +293,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 
     <!-- ── Toolbar ──────────────────────────────────────────── -->
     <div class="print-toolbar">
-        <div>
+        <div class="tb-left">
             <div class="tb-title">
                 Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>
             </div>

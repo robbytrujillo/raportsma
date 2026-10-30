@@ -105,10 +105,20 @@ if ($role === 'siswa') {
 
     .print-toolbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: #f97316; color: #fff; padding: 8px 20px;
+      background: #f97316; color: #fff; padding: 8px 16px;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2); gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2); gap: 8px;
       font-family: 'Poppins', sans-serif;
+      flex-wrap: wrap;
+    }
+    .print-toolbar-title {
+      font-weight: 700; font-size: .95rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      flex: 1; min-width: 0; max-width: 100%;
+    }
+    .print-toolbar-actions {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .print-toolbar button, .print-toolbar a {
       background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5);
@@ -117,6 +127,20 @@ if ($role === 'siswa') {
       display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
     }
     .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,.35); }
+
+    @media (max-width: 600px) {
+      body { padding-top: 110px; }
+      .print-toolbar { padding: 8px 12px; gap: 6px; }
+      .print-toolbar-title { font-size: .82rem; }
+      .print-toolbar-actions { gap: 6px; }
+      .print-toolbar button, .print-toolbar a {
+        padding: 5px 10px; font-size: .75rem;
+      }
+    }
+    @media (max-width: 420px) {
+      body { padding-top: 130px; }
+      .print-toolbar-title { font-size: .75rem; }
+    }
 
     .btn-paper-active {
       background: rgba(255,255,255,.9) !important;
@@ -167,10 +191,10 @@ if ($role === 'siswa') {
 
     <!-- Toolbar (hilang saat print) -->
     <div class="print-toolbar no-print">
-      <div style="font-weight:700;font-size:.95rem;white-space:nowrap">
+      <div class="print-toolbar-title">
         Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="print-toolbar-actions">
 
         <!-- Pilih ukuran kertas -->
         <div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.15);

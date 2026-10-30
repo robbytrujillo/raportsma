@@ -174,7 +174,7 @@ $s = $sekolah;
         <!-- Kriteria Nilai -->
         <div class="divider"></div>
         <p class="text-sm font-semibold text-gray-600 mb-3">Kriteria Penilaian (tampil di raport)</p>
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-4 kriteria-grid">
           <div class="form-group">
             <label class="form-label">Predikat A &ndash; minimal</label>
             <div class="flex items-center gap-2">
