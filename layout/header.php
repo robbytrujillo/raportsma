@@ -89,7 +89,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../style.css') ?>">
 </head>
 <body>
 <div class="app-wrapper">

@@ -396,7 +396,12 @@ function initActiveNav() {
   const currentPage = new URLSearchParams(window.location.search).get('page') || 'dashboard';
   document.querySelectorAll('.sidebar-nav a[data-page]').forEach(link => {
     const pages = link.dataset.page.split(',');
-    if (pages.some(p => currentPage.startsWith(p.trim()))) {
+    // Exact match OR sub-page match (e.g. "nilai.bulk" matches data-page="nilai")
+    // but use dot-boundary to prevent "raport" matching "raport.manage"
+    if (pages.some(p => {
+      const pt = p.trim();
+      return currentPage === pt || currentPage.startsWith(pt + '.');
+    })) {
       link.classList.add('active');
     }
   });

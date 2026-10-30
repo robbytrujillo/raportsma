@@ -122,7 +122,7 @@ if ($page === 'login') {
     include __DIR__ . '/layout/footer.php'; // <footer> di dalam .main-content
     echo '</div><!-- /.main-content -->';
     echo '</div><!-- /.app-wrapper -->';
-    echo '<script src="' . BASE_URL . '/script.js"></script>';
+    echo '<script src="' . BASE_URL . '/script.js?v=' . filemtime(__DIR__ . '/script.js') . '"></script>';
     echo '</body></html>';
 }
 
