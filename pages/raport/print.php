@@ -158,26 +158,40 @@ if ($role === 'siswa') {
       box-sizing: border-box;
     }
 
+    /* ── Mobile scale-to-fit outer wrapper ── */
+    .print-scale-outer {
+      overflow: hidden;
+      width: 100%;
+    }
+    .print-scale-wrap {
+      transform-origin: top left;
+      transform: scale(var(--print-preview-scale, 1));
+    }
+
     /* ── Print: paksa 1 halaman dengan zoom otomatis ── */
     @media print {
       body { background: #fff !important; padding-top: 0 !important; margin: 0 !important; }
       .print-toolbar { display: none !important; }
 
-      /* Wrapper scale &mdash; JS akan set --print-scale sebelum print */
-      #printScaleWrap {
-        width: var(--paper-w);
-        transform-origin: top left;
-        transform: scale(var(--print-scale, 1));
+      /* Reset mobile scale wrapper so print layout is unaffected */
+      .print-scale-outer {
+        overflow: visible !important;
+        height: auto !important;
+        width: auto !important;
+        margin: 0 !important;
       }
 
+      /* Reset JS-applied mobile zoom/transform on the raport page for printing */
       .raport-page {
+        zoom: 1 !important;
+        transform: none !important;
         width: var(--paper-w) !important;
-        min-height: 0 !important;           /* biarkan natural height */
+        min-height: 0 !important;
         padding: var(--paper-pad-v) var(--paper-pad-h) !important;
         margin: 0 !important;
         box-shadow: none !important;
-        page-break-after: always;
-        break-after: page;
+        page-break-after: avoid;
+        break-after: avoid;
       }
 
       @page { size: <?= $paper['size_css'] ?>; margin: 0; }
@@ -254,8 +268,48 @@ if ($role === 'siswa') {
     }
     </script>
 
-    <!-- Konten Raport -->
-    <?php include __DIR__ . '/raport_template.php'; ?>
+    <!-- Konten Raport — scale-to-fit wrapper for mobile preview -->
+    <div class="print-scale-outer" id="printScaleOuter">
+      <div class="print-scale-wrap" id="printScaleWrap">
+        <?php include __DIR__ . '/raport_template.php'; ?>
+      </div>
+    </div>
+
+    <script>
+    (function () {
+      function scalePrintPreview() {
+        var outer = document.getElementById('printScaleOuter');
+        var page  = outer && outer.querySelector('.raport-page');
+        if (!outer || !page) return;
+
+        // Reset so we measure the true natural size
+        page.style.zoom      = '';
+        page.style.transform = '';
+        outer.style.height   = '';
+
+        var pageW  = page.getBoundingClientRect().width;
+        var pageH  = page.getBoundingClientRect().height;
+        var availW = outer.getBoundingClientRect().width;
+
+        if (!pageW || availW <= 0) return;
+        if (availW >= pageW) return; // wide enough, no scaling
+
+        var scale = availW / pageW;
+
+        if ('zoom' in page.style) {
+          page.style.zoom = scale;
+        } else {
+          page.style.transformOrigin = 'top left';
+          page.style.transform       = 'scale(' + scale + ')';
+          outer.style.height = Math.ceil(pageH * scale) + 'px';
+        }
+      }
+
+      window.addEventListener('load',   scalePrintPreview);
+      window.addEventListener('resize', scalePrintPreview);
+      if (document.readyState === 'complete') { scalePrintPreview(); }
+    })();
+    </script>
 
 </body>
 

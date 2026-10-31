@@ -778,6 +778,19 @@ table.data-table {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Raport Preview Mobile Scale-to-Fit ─────────────────────── */
+/* zoom/transform is applied directly to .raport-page by JS      */
+.raport-scale-outer,
+.print-scale-outer {
+  overflow: hidden;
+  width: 100%;
+}
+/* print-scale-outer provides vertical spacing */
+.print-scale-outer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
 /* ── Responsive: Mobile ─────────────────────────────────────── */
 .hamburger {
   cursor: pointer;
@@ -864,8 +877,7 @@ table.data-table {
 
   /* ── Raport preview: scale down to fit screen ── */
   .raport-preview-scroll {
-    /* Let the fixed-width raport page scroll horizontally */
-    overflow-x: auto;
+    overflow-x: hidden; /* JS-driven scale replaces horizontal scroll on mobile */
   }
 
   /* ── Pagination: center & wrap ── */
@@ -986,6 +998,8 @@ table.data-table {
 
   /* Ukuran font lebih kecil saat print agar muat 1 halaman */
   .raport-page {
+    zoom: 1 !important;
+    transform: none !important;
     margin: 0 !important;
     min-height: 0 !important;          /* ← cegah lembar kosong ekstra saat cetak F4 */
     box-shadow: none !important;

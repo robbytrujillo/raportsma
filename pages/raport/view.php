@@ -72,8 +72,60 @@ if ($role === 'siswa') {
 
     <div class="card raport-preview-card" style="max-width:880px;margin:0 auto;overflow:visible">
         <div class="card-body raport-preview-scroll" style="padding:0">
-            <!-- Embed raport content dalam preview -->
-            <?php include __DIR__ . '/raport_template.php'; ?>
+            <!-- Scale-to-fit: outer clips, inner wraps the raport page -->
+            <div class="raport-scale-outer" id="raportScaleOuter" style="overflow:hidden;width:100%">
+                <?php include __DIR__ . '/raport_template.php'; ?>
+            </div>
         </div>
     </div>
 </div>
+<script>
+(function () {
+    var _timer = null;
+
+    function scaleRaport() {
+        var outer = document.getElementById('raportScaleOuter');
+        var page  = outer && outer.querySelector('.raport-page');
+        if (!outer || !page) return;
+
+        // 1. Clear any previous scaling on the page element
+        page.style.removeProperty('zoom');
+        page.style.removeProperty('transform');
+        page.style.removeProperty('transform-origin');
+        page.style.removeProperty('margin-bottom');
+        outer.style.removeProperty('height');
+
+        // 2. Force layout recalculation
+        void page.offsetWidth;
+
+        // 3. Measure natural page width and available container width
+        var pageW  = page.offsetWidth;          // px equivalent of 210mm
+        var pageH  = page.offsetHeight;
+        var availW = outer.parentElement
+                     ? outer.parentElement.clientWidth   // card-body clientWidth (no border)
+                     : outer.clientWidth;
+
+        if (!pageW || availW <= 0) return;
+        if (availW >= pageW) return;             // fits already
+
+        var scale = availW / pageW;
+
+        // 4. Apply scale via zoom (Chrome/Edge/Safari/Firefox 126+)
+        // zoom adjusts the element size in layout flow — simple and reliable.
+        // We always set explicit outer height to handle any quirky flow differences.
+        page.style.zoom = scale;
+        outer.style.height = Math.ceil(pageH * scale) + 'px';
+    }
+
+    function scheduleScale() {
+        clearTimeout(_timer);
+        _timer = setTimeout(scaleRaport, 50);
+    }
+
+    // Run at multiple timing points to handle CDN-loaded Tailwind CSS
+    document.addEventListener('DOMContentLoaded', scheduleScale);
+    window.addEventListener('load', scaleRaport);
+    window.addEventListener('load', function () { setTimeout(scaleRaport, 500); });
+    window.addEventListener('resize', scheduleScale);
+})();
+</script>
