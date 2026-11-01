@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/guru/index.php
  * Daftar Guru â€" admin saja
@@ -40,8 +40,10 @@ $search = trim($_GET['q'] ?? '');
 $params = [];
 $where  = "u.role IN ('guru','wali_kelas')";
 if ($search) {
-    $where .= ' AND (u.nama_lengkap LIKE :q OR u.username LIKE :q OR g.nip LIKE :q)';
-    $params[':q'] = "%$search%";
+    $where .= ' AND (u.nama_lengkap LIKE :q1 OR u.username LIKE :q2 OR g.nip LIKE :q3)';
+    $params[':q1'] = "%$search%";
+    $params[':q2'] = "%$search%";
+    $params[':q3'] = "%$search%";
 }
 
 // â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€

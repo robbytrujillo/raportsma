@@ -70,62 +70,58 @@ if ($role === 'siswa') {
         </div>
     </div>
 
-    <div class="card raport-preview-card" style="max-width:880px;margin:0 auto;overflow:visible">
-        <div class="card-body raport-preview-scroll" style="padding:0">
-            <!-- Scale-to-fit: outer clips, inner wraps the raport page -->
-            <div class="raport-scale-outer" id="raportScaleOuter" style="overflow:hidden;width:100%">
-                <?php include __DIR__ . '/raport_template.php'; ?>
-            </div>
-        </div>
+    <div id="raportIframeWrap" style="overflow:hidden;border-radius:14px;background:#fff;border:1px solid #e5e7eb;max-width:880px;margin:0 auto">
+        <iframe
+            id="raportIframe"
+            src="index.php?page=raport.print&siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>&embed=1"
+            style="width:840px;height:600px;border:none;display:block;transform-origin:top left"
+            scrolling="no"
+            title="Preview Raport"
+        ></iframe>
     </div>
 </div>
 <script>
 (function () {
-    var _timer = null;
+    var IFRAME_W = 840; // natural width of the raport page in px
 
-    function scaleRaport() {
-        var outer = document.getElementById('raportScaleOuter');
-        var page  = outer && outer.querySelector('.raport-page');
-        if (!outer || !page) return;
+    function fitIframe() {
+        var wrap   = document.getElementById('raportIframeWrap');
+        var iframe = document.getElementById('raportIframe');
+        if (!wrap || !iframe) return;
 
-        // 1. Clear any previous scaling on the page element
-        page.style.removeProperty('zoom');
-        page.style.removeProperty('transform');
-        page.style.removeProperty('transform-origin');
-        page.style.removeProperty('margin-bottom');
-        outer.style.removeProperty('height');
+        var availW = wrap.getBoundingClientRect().width;
+        if (!availW || availW <= 0) return;
 
-        // 2. Force layout recalculation
-        void page.offsetWidth;
+        var scale    = (availW < IFRAME_W) ? availW / IFRAME_W : 1;
+        var naturalH = iframe._naturalH || 1200; // fallback height until postMessage arrives
 
-        // 3. Measure natural page width and available container width
-        var pageW  = page.offsetWidth;          // px equivalent of 210mm
-        var pageH  = page.offsetHeight;
-        var availW = outer.parentElement
-                     ? outer.parentElement.clientWidth   // card-body clientWidth (no border)
-                     : outer.clientWidth;
-
-        if (!pageW || availW <= 0) return;
-        if (availW >= pageW) return;             // fits already
-
-        var scale = availW / pageW;
-
-        // 4. Apply scale via zoom (Chrome/Edge/Safari/Firefox 126+)
-        // zoom adjusts the element size in layout flow — simple and reliable.
-        // We always set explicit outer height to handle any quirky flow differences.
-        page.style.zoom = scale;
-        outer.style.height = Math.ceil(pageH * scale) + 'px';
+        // zoom shrinks the rendered content AND the layout box in Chrome/Edge/Safari.
+        iframe.style.zoom   = scale;
+        iframe.style.width  = IFRAME_W + 'px';
+        iframe.style.height = naturalH + 'px';
+        wrap.style.height   = Math.ceil(naturalH * scale) + 'px';
     }
 
-    function scheduleScale() {
-        clearTimeout(_timer);
-        _timer = setTimeout(scaleRaport, 50);
-    }
+    // Receive content height from iframe (postMessage from print.php embed mode)
+    window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'raport-iframe-height') {
+            var iframe = document.getElementById('raportIframe');
+            var wrap   = document.getElementById('raportIframeWrap');
+            if (!iframe || !wrap) return;
+            iframe._naturalH    = e.data.height;
+            iframe.style.height = e.data.height + 'px';
+            fitIframe();
+        }
+    });
 
-    // Run at multiple timing points to handle CDN-loaded Tailwind CSS
-    document.addEventListener('DOMContentLoaded', scheduleScale);
-    window.addEventListener('load', scaleRaport);
-    window.addEventListener('load', function () { setTimeout(scaleRaport, 500); });
-    window.addEventListener('resize', scheduleScale);
+    window.addEventListener('resize', fitIframe);
+    window.addEventListener('load', function () { fitIframe(); setTimeout(fitIframe, 400); });
+
+    // ResizeObserver: most reliable — fires whenever the container changes size
+    if (window.ResizeObserver) {
+        var ro = new ResizeObserver(function () { fitIframe(); });
+        var wrap = document.getElementById('raportIframeWrap');
+        if (wrap) ro.observe(wrap);
+    }
 })();
 </script>

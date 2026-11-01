@@ -60,8 +60,9 @@ $offset   = ($page_n - 1) * $per;
 $where_m  = '1=1';
 $params_m = [];
 if ($search_m) {
-    $where_m       = '(nama_mapel LIKE :q OR kode_mapel LIKE :q)';
-    $params_m[':q'] = "%$search_m%";
+    $where_m        = '(nama_mapel LIKE :q1 OR kode_mapel LIKE :q2)';
+    $params_m[':q1'] = "%$search_m%";
+    $params_m[':q2'] = "%$search_m%";
 }
 
 $total_m = (int)(db_row("SELECT COUNT(*) as n FROM mapel WHERE $where_m", $params_m)['n'] ?? 0);

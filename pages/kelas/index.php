@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
@@ -99,7 +99,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
             <p class="page-subtitle">Kelola kelas per tahun ajaran</p>
         </div>
         <div class="flex gap-2">
-            <a href="index.php?page=kelas&export=1" class="btn btn-secondary">
+            <a href="index.php?page=kelas&export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -107,7 +107,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=kelas.import" class="btn btn-secondary">
+            <a href="index.php?page=kelas.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -115,7 +115,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 </svg>
                 Import CSV
             </a>
-            <button onclick="Modal.open('modalKelas')" class="btn btn-primary">
+            <button onclick="Modal.open('modalKelas')" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -182,14 +182,15 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                         <td class="text-gray-500 text-sm"><?= e($k['ta_nama']) ?> Sem.<?= $k['semester'] ?></td>
                         <td>
                             <div class="flex gap-1">
-                                <button onclick='editKelas(<?= json_encode($k) ?>)'
-                                    class="btn btn-sm btn-secondary">Edit</button>
+                                <button onclick='editKelas(<?= json_encode($k) ?>)' class="btn btn-sm btn-secondary"
+                                    style="border-radius: 30px">Edit</button>
                                 <form method="POST" action="index.php?page=kelas" style="display:inline"
                                     onsubmit="return confirm('Hapus kelas <?= e($k['nama_kelas']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $k['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        style="border-radius: 30px">Hapus</button>
                                 </form>
                             </div>
                         </td>
@@ -278,8 +279,9 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="Modal.close('modalKelas')" class="btn btn-secondary">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="button" onclick="Modal.close('modalKelas')" class="btn btn-secondary"
+                    style="border-radius: 30px">Batal</button>
+                <button type="submit" class="btn btn-primary" style="border-radius: 30px">Simpan</button>
             </div>
         </form>
     </div>

@@ -56,8 +56,10 @@ if ($kelas_id) {
     $params[':ta'] = $ta_id;
 }
 if ($search) {
-    $where[] = '(u.nama_lengkap LIKE :q OR s.nis LIKE :q OR s.nisn LIKE :q)';
-    $params[':q'] = "%$search%";
+    $where[]       = '(u.nama_lengkap LIKE :q1 OR s.nis LIKE :q2 OR s.nisn LIKE :q3)';
+    $params[':q1'] = "%$search%";
+    $params[':q2'] = "%$search%";
+    $params[':q3'] = "%$search%";
 }
 $whereStr = implode(' AND ', $where);
 

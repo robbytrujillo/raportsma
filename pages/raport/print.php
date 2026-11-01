@@ -22,6 +22,8 @@ $tgl_override = ($tgl_raw && preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_raw))
     ? $tgl_raw : date('Y-m-d');
 // Ukuran kertas: a4 (default) atau f4
 $ukuran = in_array($_GET['ukuran'] ?? '', ['a4','f4']) ? $_GET['ukuran'] : 'a4';
+// Mode embed: disematkan sebagai iframe di halaman preview (tanpa toolbar)
+$embed  = !empty($_GET['embed']);
 $paper  = $ukuran === 'f4'
     ? ['w'=>'215mm','h'=>'330mm','pad_v'=>'12mm','pad_h'=>'18mm','size_css'=>'215mm 330mm']
     : ['w'=>'210mm','h'=>'297mm','pad_v'=>'10mm','pad_h'=>'15mm','size_css'=>'A4'];
@@ -101,7 +103,15 @@ if ($role === 'siswa') {
       --paper-pad-h: <?= $paper['pad_h'] ?>;
     }
 
-    body { background: #f3f4f6; margin: 0; padding-top: 60px; }
+    body { background: #f3f4f6; margin: 0; padding-top: <?= $embed ? '0' : '60px' ?>; }
+    <?php if ($embed): ?>
+    /* Embed mode: clean white background, no gap */
+    body { background: #fff; }
+    .raport-page {
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+    <?php endif; ?>
 
     .print-toolbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
@@ -203,7 +213,8 @@ if ($role === 'siswa') {
 
 <body data-paper="<?= $ukuran ?>">
 
-    <!-- Toolbar (hilang saat print) -->
+    <!-- Toolbar (hilang saat print atau embed) -->
+    <?php if (!$embed): ?>
     <div class="print-toolbar no-print">
       <div class="print-toolbar-title">
         Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
@@ -255,6 +266,7 @@ if ($role === 'siswa') {
         </button>
       </div>
     </div>
+    <?php endif; // !$embed ?>
     <script>
     function applyTglCetak(val) {
       const url = new URL(window.location.href);
@@ -310,6 +322,22 @@ if ($role === 'siswa') {
       if (document.readyState === 'complete') { scalePrintPreview(); }
     })();
     </script>
+
+    <?php if ($embed): ?>
+    <script>
+    // In embed mode: notify parent of document height so iframe auto-sizes
+    function notifyHeight() {
+      var h = document.body.scrollHeight;
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'raport-iframe-height', height: h }, '*');
+      }
+    }
+    window.addEventListener('load', notifyHeight);
+    window.addEventListener('resize', notifyHeight);
+    // Also notify after a short delay in case fonts shift layout
+    window.addEventListener('load', function(){ setTimeout(notifyHeight, 500); });
+    </script>
+    <?php endif; ?>
 
 </body>
 

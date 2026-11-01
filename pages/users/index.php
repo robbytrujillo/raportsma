@@ -33,8 +33,10 @@ $offset = ($page_n - 1) * $per;
 $where = ['1=1'];
 $params = [];
 if ($search) {
-    $where[] = '(nama_lengkap LIKE :q OR username LIKE :q OR email LIKE :q)';
-    $params[':q'] = "%$search%";
+    $where[]       = '(nama_lengkap LIKE :q1 OR username LIKE :q2 OR email LIKE :q3)';
+    $params[':q1'] = "%$search%";
+    $params[':q2'] = "%$search%";
+    $params[':q3'] = "%$search%";
 }
 if ($role_f) {
     $where[] = 'role = :role';

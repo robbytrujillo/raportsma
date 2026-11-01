@@ -49,8 +49,10 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $where_p  = 'gmk.tahun_ajaran_id = :ta';
 $params_p = [':ta' => $ta_id];
 if ($search_p) {
-    $where_p           .= ' AND (u.nama_lengkap LIKE :q OR m.nama_mapel LIKE :q OR k.nama_kelas LIKE :q)';
-    $params_p[':q']     = "%$search_p%";
+    $where_p           .= ' AND (u.nama_lengkap LIKE :q1 OR m.nama_mapel LIKE :q2 OR k.nama_kelas LIKE :q3)';
+    $params_p[':q1']    = "%$search_p%";
+    $params_p[':q2']    = "%$search_p%";
+    $params_p[':q3']    = "%$search_p%";
 }
 
 // â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
