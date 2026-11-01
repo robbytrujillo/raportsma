@@ -88,7 +88,7 @@ $dg = $guru_data ?? [];
             <h1 class="page-title"><?= $is_edit ? 'Edit Guru' : 'Tambah Guru' ?></h1>
             <p class="page-subtitle"><?= $is_edit ? 'Perbarui data guru' : 'Daftarkan guru baru ke sistem' ?></p>
         </div>
-        <a href="index.php?page=guru" class="btn btn-secondary">â† Kembali</a>
+        <a href="index.php?page=guru" class="btn btn-secondary" style="border-radius: 30px"> Kembali</a>
     </div>
 
     <?php foreach ($errors as $e): ?>
@@ -161,7 +161,7 @@ $dg = $guru_data ?? [];
                         </svg>
                         <?= $is_edit ? 'Simpan' : 'Tambah Guru' ?>
                     </button>
-                    <a href="index.php?page=guru" class="btn btn-secondary">Batal</a>
+                    <a href="index.php?page=guru" class="btn btn-secondary" style="border-radius: 30px;">Batal</a>
                 </div>
             </form>
         </div>
