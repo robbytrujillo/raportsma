@@ -35,6 +35,7 @@ $page_titles = [
     'profil'       => 'Profil & Tanda Tangan',
     'absensi'      => 'Data Absensi',
     'tahun_ajaran' => 'Tahun Ajaran',
+    'jenis_raport' => 'Jenis Raport',
     'sekolah'      => 'Pengaturan Sekolah',
 ];
 $page_title = $page_titles[$page] ?? 'Raportku';

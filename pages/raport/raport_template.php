@@ -34,6 +34,28 @@ $is_bulanan   = ($jenis === 'bulanan');
 $is_sts       = ($jenis === 'sts');
 $bulan_label  = (($is_bulanan || $is_sts) && $bulan) ? strtoupper($bulan_names[$bulan] ?? '') : '';
 
+// ── Lookup jenis_raport dari DB (opsional, tidak wajib ada) ──────
+// Cek apakah ada kode_raport di URL (?kode_jr=xxx), fallback ke jenis
+// Ini memungkinkan halaman print menggunakan judul kustom tanpa mengubah
+// logika nilai yang sudah ada.
+$kode_jr      = $_GET['kode_jr'] ?? null;
+$jr_row       = null;
+if ($kode_jr) {
+    // Lookup by kode — lebih spesifik
+    $jr_row = db_row('SELECT * FROM jenis_raport WHERE kode = :k AND is_aktif = 1 LIMIT 1',
+                     [':k' => $kode_jr]);
+}
+if (!$jr_row) {
+    // Fallback: cari jenis_raport yang tipe-nya cocok dengan $jenis (ambil pertama aktif)
+    // Ini memastikan raport lama tetap bekerja tanpa perubahan URL
+    $jr_row = null; // tetap null → judul otomatis dipakai
+}
+// judul_cetak kustom (dari jenis_raport), NULL = pakai judul otomatis
+$judul_cetak_kustom = !empty($jr_row['judul_cetak']) ? $jr_row['judul_cetak'] : null;
+// tipe_basis: menentukan logika tampilan header judul
+// Jika ada kustom, bisa override is_bulanan/is_sts untuk keperluan judul saja
+$tipe_basis_aktif = $jr_row['tipe_basis'] ?? $jenis;
+
 // ── Deteksi kelas Global (raport bahasa Inggris) ─────────────
 // Kelas Global ditandai dengan nama kelas mengandung kata "Global" (case-insensitive)
 $nama_kelas_raw = $siswa['nama_kelas'] ?? '';
@@ -309,7 +331,18 @@ $row_no = 0;
     <!-- ── JUDUL RAPORT ──────────────────────────────────────── -->
     <div style="text-align:center;margin:10px 0 4px;font-family:'Times New Roman',serif">
         <div style="font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px">
-            <?php if ($is_bulanan): ?>
+            <?php
+            // Jika ada judul kustom dari tabel jenis_raport, pakai itu
+            if ($judul_cetak_kustom !== null):
+                // %s diganti dengan bulan atau semester sesuai tipe_basis_aktif
+                $placeholder = '';
+                if (in_array($tipe_basis_aktif, ['bulanan','uts'])) {
+                    $placeholder = $bulan_label;
+                } else {
+                    $placeholder = strtoupper($semester_lbl_loc);
+                }
+                echo sprintf(htmlspecialchars($judul_cetak_kustom), $placeholder);
+            elseif ($is_bulanan): ?>
             <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
             <?php elseif ($is_sts): ?>
             <?= sprintf($lbl['judul_sts'], $bulan_label ? ' &mdash; ' . $bulan_label : '') ?>

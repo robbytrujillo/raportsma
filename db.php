@@ -109,6 +109,43 @@ function run_auto_migrations(): void {
         $pdo->prepare("INSERT INTO users (username,password,nama_lengkap,role,is_active) VALUES (?,?,?,?,1)")
             ->execute(['superadmin', $hash, 'Super Administrator', 'super_admin']);
     }
+
+    // v6: buat tabel jenis_raport jika belum ada
+    $pdo->exec("CREATE TABLE IF NOT EXISTS jenis_raport (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        nama        VARCHAR(100) NOT NULL,
+        kode        VARCHAR(30)  NOT NULL UNIQUE,
+        tipe        ENUM('bulanan','uts','semester') NOT NULL DEFAULT 'bulanan',
+        deskripsi   TEXT DEFAULT NULL,
+        is_aktif    TINYINT(1) NOT NULL DEFAULT 1,
+        urutan      INT NOT NULL DEFAULT 0,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // v6b: tambah kolom judul_cetak dan tipe_basis ke jenis_raport jika belum ada
+    $cols_jr = $pdo->query("SHOW COLUMNS FROM jenis_raport")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('judul_cetak', $cols_jr)) {
+        $pdo->exec("ALTER TABLE jenis_raport ADD COLUMN judul_cetak VARCHAR(255) DEFAULT NULL AFTER deskripsi");
+    }
+    if (!in_array('tipe_basis', $cols_jr)) {
+        $pdo->exec("ALTER TABLE jenis_raport ADD COLUMN tipe_basis ENUM('bulanan','uts','semester') NOT NULL DEFAULT 'bulanan' AFTER tipe");
+    }
+
+    // v6: seed data awal jenis_raport jika masih kosong
+    $cnt = (int)$pdo->query('SELECT COUNT(*) FROM jenis_raport')->fetchColumn();
+    if ($cnt === 0) {
+        $pdo->exec("INSERT INTO jenis_raport (nama, kode, tipe, deskripsi, urutan) VALUES
+            ('Raport Bulanan Diniyah',  'bulanan_diniyah',  'bulanan',  'Raport bulanan untuk program Diniyah',  1),
+            ('Raport Bulanan Global',   'bulanan_global',   'bulanan',  'Raport bulanan untuk program Global',   2),
+            ('Raport Bulanan Regular',  'bulanan_regular',  'bulanan',  'Raport bulanan untuk program Regular',  3),
+            ('Raport UTS Diniyah',      'uts_diniyah',      'uts',      'Raport UTS untuk program Diniyah',      4),
+            ('Raport UTS Global',       'uts_global',       'uts',      'Raport UTS untuk program Global',       5),
+            ('Raport UTS Regular',      'uts_regular',      'uts',      'Raport UTS untuk program Regular',      6),
+            ('Raport Semester Diniyah', 'semester_diniyah', 'semester', 'Raport semester untuk program Diniyah', 7),
+            ('Raport Semester Global',  'semester_global',  'semester', 'Raport semester untuk program Global',  8),
+            ('Raport Semester Regular', 'semester_regular', 'semester', 'Raport semester untuk program Regular', 9)");
+    }
 }
 
 /**

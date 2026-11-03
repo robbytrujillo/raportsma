@@ -94,6 +94,9 @@ $routes = [
     // Tahun Ajaran
     'tahun_ajaran'    => 'pages/tahun_ajaran/index.php',
 
+    // Jenis Raport
+    'jenis_raport'    => 'pages/jenis_raport/index.php',
+
     // Siswa
     'siswa'           => 'pages/siswa/index.php',
     'siswa.create'    => 'pages/siswa/form.php',
