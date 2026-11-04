@@ -85,7 +85,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            overflow: hidden;
+            overflow: visible;           /* jangan crop gambar */
             background: linear-gradient(160deg, #1e3a5f 0%, #2d5a8e 40%, #1a3a6b 100%);
             min-height: 100vh;
             height: 100vh;
