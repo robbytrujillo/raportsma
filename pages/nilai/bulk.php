@@ -728,7 +728,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                         <!-- Tombol sinkronkan semua deskripsi sekaligus -->
                         <button type="button" class="btn btn-primary w-full mt-1 text-xs"
                             style="font-size:.8rem; border-radius: 30px" onclick="sinkronSemuaDeskripsi()">
-                            ðŸ"„ Sinkronkan Semua Deskripsi
+                            Sinkronkan Semua Deskripsi
                         </button>
                         <p class="text-xs text-gray-400 mt-1" style="font-size:.73rem">
                             Overwrite deskripsi semua siswa dari kolom kanan sesuai predikat masing-masing.
