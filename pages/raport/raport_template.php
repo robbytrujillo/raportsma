@@ -64,7 +64,7 @@ $is_global      = stripos($nama_kelas_raw, 'global') !== false;
 // ── Label bilingual ───────────────────────────────────────────
 // Digunakan di seluruh template: jika $is_global pakai EN, jika tidak pakai ID
 $lbl = $is_global ? [
-    'judul_bulanan'   => 'MONTHLY REPORT (PERIOD: %s)',
+    'judul_bulanan'   => ' (PERIOD: %s)',
     'judul_sts'       => 'MID-SEMESTER REPORT%s',
     'judul_semester'  => 'SEMESTER %s ACADEMIC REPORT',
     'tahun_pelajaran' => 'ACADEMIC YEAR %s',
@@ -368,12 +368,6 @@ $row_no = 0;
             <td style="padding:1px 0;font-weight:600"><?= $lbl['nis_nisn'] ?></td>
             <td>:</td>
             <td><?= htmlspecialchars(($siswa['nis'] ?? '') . ($siswa['nisn'] ? ' / ' . $siswa['nisn'] : '')) ?></td>
-        </tr>
-        <?php elseif ($is_global && $siswa['nisn']): ?>
-        <tr>
-            <td style="padding:1px 0;font-weight:600">NISN</td>
-            <td>:</td>
-            <td><?= htmlspecialchars($siswa['nisn'] ?? '') ?></td>
         </tr>
         <?php endif; ?>
         <tr>

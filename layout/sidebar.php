@@ -79,7 +79,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </div>
   </div><!-- /.sidebar-header -->
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" id="sidebarNav">
 
     <!-- Dashboard -->
     <a href="index.php?page=dashboard" data-page="dashboard">
@@ -93,7 +93,18 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 
     <?php if (in_array($role, ['super_admin','admin','kepala_sekolah','wali_kelas','guru'])): ?>
     <!-- ── Akademik ─────────────────── -->
-    <div class="sidebar-section-title">Akademik</div>
+    <?php $isAdminRole = in_array($role, ['super_admin','admin']); ?>
+    <div class="sidebar-section-title<?= $isAdminRole ? ' sb-accordion-title' : '' ?>"
+         <?= $isAdminRole ? 'data-group="akademik" data-open="1"' : '' ?>>
+      <span class="sidebar-nav-label">Akademik</span>
+      <?php if ($isAdminRole): ?>
+      <svg class="sb-chev" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"
+           viewBox="0 0 24 24" style="margin-left:auto;margin-right:2px;transition:transform .2s;flex-shrink:0">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+      <?php endif; ?>
+    </div>
+    <div class="sb-group" data-group="akademik">
 
     <?php if (in_array($role, ['super_admin','admin','wali_kelas','guru'])): ?>
     <a href="index.php?page=nilai.bulk" data-page="nilai.bulk,nilai">
@@ -143,6 +154,19 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </a>
     <?php endif; ?>
 
+    <?php if (in_array($role, ['admin', 'super_admin'])): ?>
+    <a href="index.php?page=raport.manage_nilai" data-page="raport.manage_nilai">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg>
+      <span class="sidebar-nav-label">Kelola Nilai Raport</span>
+      <span class="sidebar-tooltip">Kelola Nilai Raport</span>
+    </a>
+    <?php endif; ?>
+
+    </div><!-- /.sb-group[akademik] -->
     <?php endif; ?>
 
     <?php if ($role === 'siswa'): ?>
@@ -159,7 +183,15 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 
     <?php if (in_array($role, ['super_admin','admin'])): ?>
     <!-- ── Manajemen Data ──────────── -->
-    <div class="sidebar-section-title">Manajemen Data</div>
+    <div class="sidebar-section-title sb-accordion-title"
+         data-group="manajemen" data-open="0">
+      <span class="sidebar-nav-label">Manajemen Data</span>
+      <svg class="sb-chev" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"
+           viewBox="0 0 24 24" style="margin-left:auto;margin-right:2px;transition:transform .2s;transform:rotate(180deg);flex-shrink:0">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </div>
+    <div class="sb-group" data-group="manajemen">
     <a href="index.php?page=siswa" data-page="siswa">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -200,9 +232,18 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Penugasan Guru</span>
       <span class="sidebar-tooltip">Penugasan Guru</span>
     </a>
+    </div><!-- /.sb-group[manajemen] -->
 
     <!-- ── Pengaturan ────────────────── -->
-    <div class="sidebar-section-title">Pengaturan</div>
+    <div class="sidebar-section-title sb-accordion-title"
+         data-group="pengaturan" data-open="0">
+      <span class="sidebar-nav-label">Pengaturan</span>
+      <svg class="sb-chev" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"
+           viewBox="0 0 24 24" style="margin-left:auto;margin-right:2px;transition:transform .2s;transform:rotate(180deg);flex-shrink:0">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </div>
+    <div class="sb-group" data-group="pengaturan">
     <?php if (in_array($role, ['super_admin','admin'])): ?>
     <a href="index.php?page=users" data-page="users">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -241,6 +282,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Info Sekolah</span>
       <span class="sidebar-tooltip">Info Sekolah</span>
     </a>
+    </div><!-- /.sb-group[pengaturan] -->
     <?php endif; ?>
 
     <!-- ── Akun ──────────────────────── -->
@@ -281,6 +323,119 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
   </nav>
 </aside>
 <!-- ── END SIDEBAR ──────────────────────────────────────────── -->
+
+<style>
+/* Accordion section-title (hanya untuk admin/super_admin) */
+.sb-accordion-title {
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  user-select: none;
+  padding-right: 14px !important;
+}
+.sb-accordion-title:hover { color: rgba(255,255,255,.85) !important; }
+
+/* Group wrapper: overflow hidden untuk animasi smooth */
+.sb-group {
+  overflow: hidden;
+  transition: max-height .28s ease, opacity .22s ease;
+  max-height: 600px; /* cukup besar untuk semua item */
+  opacity: 1;
+}
+.sb-group.sb-closed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* Saat sidebar collapsed: semua group tampil, chevron sembunyikan */
+.sidebar.collapsed .sb-accordion-title { cursor: default; }
+.sidebar.collapsed .sb-chev { display: none !important; }
+.sidebar.collapsed .sb-group.sb-closed {
+  max-height: 600px !important;
+  opacity: 1;
+  display: block !important;
+}
+</style>
+
+<script>
+(function () {
+  /* ── Peta page → group ── */
+  var pageGroup = {
+    'nilai.bulk':'akademik','nilai':'akademik','absensi':'akademik',
+    'raport':'akademik','raport.view':'akademik','raport.manage':'akademik',
+    'raport.manage_nilai':'akademik','raport.print':'akademik',
+    'siswa':'manajemen','siswa.create':'manajemen','siswa.edit':'manajemen',
+    'guru':'manajemen','guru.create':'manajemen','guru.edit':'manajemen',
+    'kelas':'manajemen','kelas.create':'manajemen','kelas.edit':'manajemen',
+    'mapel':'manajemen','mapel.create':'manajemen','mapel.edit':'manajemen',
+    'penugasan':'manajemen','penugasan.create':'manajemen',
+    'users':'pengaturan','users.create':'pengaturan','users.edit':'pengaturan',
+    'tahun_ajaran':'pengaturan','jenis_raport':'pengaturan','sekolah':'pengaturan'
+  };
+
+  var currentPage = (new URLSearchParams(window.location.search)).get('page') || 'dashboard';
+  var activeGroup = pageGroup[currentPage] || null;
+
+  /* ── Helper: tutup satu group ── */
+  function closeGroup(title, group) {
+    group.classList.add('sb-closed');
+    var chev = title.querySelector('.sb-chev');
+    if (chev) chev.style.transform = 'rotate(180deg)';
+    title.setAttribute('data-open', '0');
+  }
+
+  /* ── Helper: buka satu group ── */
+  function openGroup(title, group) {
+    group.classList.remove('sb-closed');
+    var chev = title.querySelector('.sb-chev');
+    if (chev) chev.style.transform = 'rotate(0deg)';
+    title.setAttribute('data-open', '1');
+  }
+
+  /* ── Inisialisasi semua group sekaligus ── */
+  var titles = document.querySelectorAll('.sb-accordion-title');
+
+  titles.forEach(function (title) {
+    var g     = title.getAttribute('data-group');
+    var group = document.querySelector('.sb-group[data-group="' + g + '"]');
+    if (!group) return;
+
+    /* Tentukan apakah group ini harus terbuka:
+       - group yang berisi halaman aktif → selalu buka
+       - group "akademik" (data-open=1) → buka hanya jika tidak ada activeGroup lain */
+    var shouldOpen = (g === activeGroup) ||
+                     (activeGroup === null && title.getAttribute('data-open') === '1');
+
+    if (shouldOpen) {
+      openGroup(title, group);
+    } else {
+      closeGroup(title, group);
+    }
+
+    /* ── Click handler ── */
+    title.addEventListener('click', function () {
+      /* Abaikan saat sidebar collapsed (icon-only mode) */
+      var sidebar = document.getElementById('sidebar');
+      if (sidebar && sidebar.classList.contains('collapsed')) return;
+
+      var isOpen = title.getAttribute('data-open') === '1';
+
+      if (isOpen) {
+        /* Klik group yang sudah terbuka → tutup saja */
+        closeGroup(title, group);
+      } else {
+        /* Klik group yang tertutup → tutup semua, buka yang ini */
+        titles.forEach(function (t) {
+          var tg = t.getAttribute('data-group');
+          var tGroup = document.querySelector('.sb-group[data-group="' + tg + '"]');
+          if (tGroup && t !== title) closeGroup(t, tGroup);
+        });
+        openGroup(title, group);
+      }
+    });
+  });
+})();
+</script>
 
 <!-- Topbar -->
 <header class="topbar">

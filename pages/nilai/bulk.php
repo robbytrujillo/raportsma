@@ -612,7 +612,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                         <div class="flex flex-col gap-2">
                                             <div class="flex items-center gap-2">
                                                 <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">
-                                                    Deskripsi â€" <?= e($s['nama_lengkap']) ?>:
+                                                    Deskripsi : <?= e($s['nama_lengkap']) ?>:
                                                 </label>
                                                 <!-- Status simpan -->
                                                 <span id="deskStatus_<?= $s['id'] ?>"
@@ -736,8 +736,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
                         <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-500">
                             <strong>Kriteria nilai:</strong><br>
-                            A: â‰¥<?= (int)$krit_a ?> &nbsp; B: â‰¥<?= (int)$krit_b ?> &nbsp;
-                            C: â‰¥<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
+                            A: >=<?= (int)$krit_a ?> &nbsp; B: >=<?= (int)$krit_b ?> &nbsp;
+                            C: >=<?= (int)$krit_c ?> &nbsp; D: &lt;<?= (int)$krit_c ?>
                         </div>
                     </div>
                 </div>

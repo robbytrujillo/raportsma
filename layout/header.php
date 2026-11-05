@@ -26,9 +26,10 @@ $page_titles = [
     'nilai'        => 'Daftar Nilai',
     'nilai.input'  => 'Form Nilai',
     'nilai.bulk'   => 'Input Nilai Kelas',
-    'raport'         => 'Raport Siswa',
-    'raport.view'    => 'Detail Raport',
-    'raport.manage'  => 'Manajemen Raport',
+    'raport'              => 'Raport Siswa',
+    'raport.view'         => 'Detail Raport',
+    'raport.manage'       => 'Manajemen Raport',
+    'raport.manage_nilai' => 'Manajemen Nilai Raport',
     'siswa'        => 'Data Siswa',
     'siswa.create' => 'Tambah Siswa',
     'siswa.edit'   => 'Edit Siswa',
@@ -50,50 +51,54 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 <?php $sekolah_h = sekolah_info(); ?>
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= e($page_title) ?> &mdash; <?= APP_NAME ?></title>
-  <!-- Favicon: gunakan logo sekolah jika tersedia -->
-  <?php if (!empty($sekolah_h['logo'])): ?>
-  <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_h['logo']) ?>">
-  <link rel="shortcut icon" href="<?= UPLOAD_URL . e($sekolah_h['logo']) ?>">
-  <?php else: ?>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%23f97316'/><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' fill='none' stroke='white' stroke-width='2'/><polyline points='14 2 14 8 20 8' fill='none' stroke='white' stroke-width='2'/></svg>">
-  <?php endif; ?>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            orange: {
-              50:  '#fff7ed',
-              100: '#ffedd5',
-              200: '#fed7aa',
-              300: '#fdba74',
-              400: '#fb923c',
-              500: '#f97316',
-              600: '#ea580c',
-              700: '#c2410c',
-              800: '#9a3412',
-              900: '#7c2d12',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <!-- Google Fonts: Poppins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../style.css') ?>">
-</head>
-<body>
-<div class="app-wrapper">
 
-<!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= e($page_title) ?> | <?= APP_NAME ?></title>
+    <!-- Favicon: gunakan logo sekolah jika tersedia -->
+    <?php if (!empty($sekolah_h['logo'])): ?>
+    <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_h['logo']) ?>">
+    <link rel="shortcut icon" href="<?= UPLOAD_URL . e($sekolah_h['logo']) ?>">
+    <?php else: ?>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%23f97316'/><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' fill='none' stroke='white' stroke-width='2'/><polyline points='14 2 14 8 20 8' fill='none' stroke='white' stroke-width='2'/></svg>">
+    <?php endif; ?>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    orange: {
+                        50: '#fff7ed',
+                        100: '#ffedd5',
+                        200: '#fed7aa',
+                        300: '#fdba74',
+                        400: '#fb923c',
+                        500: '#f97316',
+                        600: '#ea580c',
+                        700: '#c2410c',
+                        800: '#9a3412',
+                        900: '#7c2d12',
+                    }
+                }
+            }
+        }
+    }
+    </script>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../style.css') ?>">
+</head>
+
+<body>
+    <div class="app-wrapper">
+
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>

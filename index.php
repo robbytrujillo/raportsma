@@ -79,11 +79,12 @@ $routes = [
     'nilai.import'    => 'pages/nilai/import.php',
 
     // Raport
-    'raport'             => 'pages/raport/index.php',
-    'raport.view'        => 'pages/raport/view.php',
-    'raport.print'       => 'pages/raport/print.php',
-    'raport.print_kelas' => 'pages/raport/print_kelas.php',
-    'raport.manage'      => 'pages/raport/manage.php',
+    'raport'              => 'pages/raport/index.php',
+    'raport.view'         => 'pages/raport/view.php',
+    'raport.print'        => 'pages/raport/print.php',
+    'raport.print_kelas'  => 'pages/raport/print_kelas.php',
+    'raport.manage'       => 'pages/raport/manage.php',
+    'raport.manage_nilai' => 'pages/raport/manage_nilai.php',
 
     // Profil & Tanda Tangan
     'profil'          => 'pages/profil.php',
