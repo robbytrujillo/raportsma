@@ -534,6 +534,9 @@ body {
 .btn-success { background: #22c55e; color: #fff; }
 .btn-success:hover { background: #16a34a; }
 
+.btn-warning { background: #f59e0b; color: #fff; }
+.btn-warning:hover { background: #d97706; }
+
 .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
 .btn-lg { padding: 11px 22px; font-size: 1rem; }
 

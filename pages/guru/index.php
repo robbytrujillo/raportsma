@@ -24,6 +24,21 @@ if (isset($_GET['export'])) {
     csv_download('export_guru_' . date('Ymd') . '.csv', $headers, $out);
 }
 
+
+// ── Handle TOGGLE AKTIF ────────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
+    if (verify_csrf()) {
+        $tid     = (int)($_POST['id'] ?? 0);
+        $cur     = (int)(db_row('SELECT is_active FROM users WHERE id=:id', [':id'=>$tid])['is_active'] ?? 1);
+        $new_val = $cur ? 0 : 1;
+        db_execute('UPDATE users SET is_active=:a WHERE id=:id AND role IN ("guru","wali_kelas")', [':a'=>$new_val,':id'=>$tid]);
+        flash('success', 'Status guru diubah menjadi ' . ($new_val ? 'Aktif' : 'Nonaktif') . '.');
+    }
+    $back = http_build_query(['page'=>'guru','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
+    header("Location: index.php?$back"); exit;
+}
+
+
 // â"€â"€ Handle DELETE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); }
@@ -38,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
 
 $search = trim($_GET['q'] ?? '');
 $params = [];
+// Tampilkan semua guru (aktif & nonaktif) agar bisa di-toggle
 $where  = "u.role IN ('guru','wali_kelas')";
 if ($search) {
     $where .= ' AND (u.nama_lengkap LIKE :q1 OR u.username LIKE :q2 OR g.nip LIKE :q3)';
@@ -141,6 +157,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         <th>NIP</th>
                         <th>Bidang Studi</th>
                         <th>Username</th>
+                        <th>Jabatan</th>
                         <th>Status</th>
                         <th>TTD</th>
                         <th>Aksi</th>
@@ -149,11 +166,11 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 <tbody>
                     <?php if (empty($guru_list)): ?>
                     <tr>
-                        <td colspan="8" class="text-center py-8 text-gray-400">Belum ada data guru.</td>
+                        <td colspan="9" class="text-center py-8 text-gray-400">Belum ada data guru.</td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($guru_list as $i => $g): ?>
-                    <tr>
+                    <tr style="<?= !($g['is_active'] ?? 1) ? 'opacity:.6' : '' ?>">
                         <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
                         <td>
                             <div class="font-semibold"><?= e($g['nama_lengkap']) ?></div>
@@ -167,6 +184,11 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                             <span class="badge <?= $cls ?>"><?= $lbl ?></span>
                         </td>
                         <td>
+                            <span class="badge <?= ($g['is_active'] ?? 1) ? 'badge-green' : 'badge-red' ?>">
+                                <?= ($g['is_active'] ?? 1) ? 'Aktif' : 'Nonaktif' ?>
+                            </span>
+                        </td>
+                        <td>
                             <?php if ($g['tanda_tangan']): ?>
                             <img src="<?= UPLOAD_URL . e($g['tanda_tangan']) ?>" alt="TTD"
                                 style="height:36px;object-fit:contain">
@@ -178,6 +200,20 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                             <div class="flex gap-1">
                                 <a href="index.php?page=guru.edit&id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
+                                <!-- Tombol Toggle Aktif/Nonaktif -->
+                                <form method="POST" action="index.php?page=guru" style="display:inline"
+                                    onsubmit="return confirm('<?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> guru <?= e($g['nama_lengkap']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="toggle_active">
+                                    <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                                    <input type="hidden" name="q" value="<?= e($search) ?>">
+                                    <input type="hidden" name="per" value="<?= $per ?>">
+                                    <button type="submit"
+                                        class="btn btn-sm <?= ($g['is_active']??1) ? 'btn-warning' : 'btn-success' ?>"
+                                        style="border-radius:30px">
+                                        <?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                    </button>
+                                </form>
                                 <form method="POST" action="index.php?page=guru" style="display:inline"
                                     onsubmit="return confirm('Hapus guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>

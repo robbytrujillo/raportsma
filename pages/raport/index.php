@@ -296,6 +296,19 @@ if ($kelas_id) {
     );
 }
 
+// Cek apakah user boleh akses leger untuk kelas yang sedang dipilih
+// - super_admin, admin, kepala_sekolah: selalu boleh
+// - wali_kelas: hanya jika dia wali_kelas dari kelas yang dipilih
+// - guru biasa: tidak boleh
+if (in_array($role, ['super_admin','admin','kepala_sekolah'])) {
+    $leger_boleh = true;
+} elseif ($role === 'wali_kelas' && $kelas_id) {
+    $kelas_row   = db_row('SELECT wali_kelas_id FROM kelas WHERE id = :id', [':id' => $kelas_id]);
+    $leger_boleh = ($kelas_row && (int)$kelas_row['wali_kelas_id'] === (int)$user['id']);
+} else {
+    $leger_boleh = false;
+}
+
 // Status publikasi raport saat ini (untuk kelas+ta+jenis+bulan yang dipilih)
 $pub_status = null;
 if ($kelas_id && $ta_id && $jenis) {
@@ -390,6 +403,27 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <?php endif; ?>
 
                 <?php if (!in_array($role, ['siswa'])): ?>
+                <?php if ($leger_boleh): ?>
+                <a href="index.php?page=raport.leger&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                    target="_blank" class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
+                    style="border-radius:30px">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 9h18M3 15h18M9 3v18"/>
+                    </svg>
+                    Leger
+                </a>
+                <?php else: ?>
+                <button type="button" onclick="document.getElementById('modalLegerDitolak').style.display='flex'"
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
+                    style="border-radius:30px">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 9h18M3 15h18M9 3v18"/>
+                    </svg>
+                    Leger
+                </button>
+                <?php endif; ?>
                 <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                     target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
                     style="border-radius:30px">
@@ -490,6 +524,52 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
     </div>
     <?php endif; ?>
 </div>
+
+<?php if (!$leger_boleh && $role !== 'siswa'): ?>
+<?php
+// Tentukan pesan modal sesuai kondisi
+$kelas_dipilih_nama = '';
+if ($kelas_id && isset($kelas_row)) {
+    // Ambil nama kelas untuk pesan modal wali kelas
+    $kelas_nama_row = db_row('SELECT nama_kelas FROM kelas WHERE id = :id', [':id' => $kelas_id]);
+    $kelas_dipilih_nama = $kelas_nama_row['nama_kelas'] ?? '';
+}
+$modal_pesan = ($role === 'wali_kelas')
+    ? 'Anda bukan Wali Kelas dari kelas <strong>' . htmlspecialchars($kelas_dipilih_nama) . '</strong>.<br><br>Leger hanya dapat dibuka oleh Wali Kelas dari kelas yang bersangkutan, serta Admin dan Kepala Sekolah.'
+    : 'Halaman <strong>Leger Raport</strong> hanya dapat diakses oleh<br><strong>Super Admin, Admin, Kepala Sekolah,</strong> dan <strong>Wali Kelas</strong>.<br><br>Akun Anda sebagai <strong>Guru</strong> tidak memiliki izin untuk membuka halaman ini.';
+?>
+<!-- Modal peringatan leger -->
+<div id="modalLegerDitolak"
+     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
+            align-items:center;justify-content:center"
+     onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:440px;width:90%;
+                text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative">
+        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'"
+                style="position:absolute;top:12px;right:14px;background:none;border:none;
+                       font-size:1.3rem;color:#9ca3af;cursor:pointer;line-height:1">&times;</button>
+        <div style="width:60px;height:60px;background:#fff3e0;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <svg width="30" height="30" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <circle cx="12" cy="16" r=".6" fill="#f97316"/>
+            </svg>
+        </div>
+        <div style="font-size:1.05rem;font-weight:700;color:#1f2328;margin-bottom:8px">
+            Akses Tidak Diizinkan
+        </div>
+        <div style="font-size:.87rem;color:#57606a;line-height:1.65;margin-bottom:22px">
+            <?= $modal_pesan ?>
+        </div>
+        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'"
+                style="background:#f97316;color:#fff;border:none;border-radius:30px;
+                       padding:10px 28px;font-size:.88rem;font-weight:700;cursor:pointer">
+            Mengerti
+        </button>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php if (is_admin_or_super() && $kelas_id): ?>
 <script>

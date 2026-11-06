@@ -8,6 +8,24 @@ if (!is_admin_or_super()) { require_role('super_admin'); } // trigger 403
 
 $can_crud = is_super_admin(); // hanya super_admin boleh tambah/edit/hapus
 
+// ── Handle TOGGLE AKTIF (super_admin only) ─────────────────────
+if ($can_crud && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle_active') {
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); }
+    else {
+        $tid     = (int)($_POST['id'] ?? 0);
+        if ($tid === (int)current_user()['id']) {
+            flash('error', 'Tidak dapat mengubah status akun Anda sendiri.');
+        } else {
+            $cur     = (int)(db_row('SELECT is_active FROM users WHERE id=:id', [':id'=>$tid])['is_active'] ?? 1);
+            $new_val = $cur ? 0 : 1;
+            db_execute('UPDATE users SET is_active=:a WHERE id=:id', [':a'=>$new_val,':id'=>$tid]);
+            flash('success', 'Status pengguna diubah menjadi ' . ($new_val ? 'Aktif' : 'Nonaktif') . '.');
+        }
+    }
+    $back = http_build_query(['page'=>'users','q'=>$_POST['q']??'','role'=>$_POST['role']??'','p'=>$_POST['page_n']??1]);
+    header("Location: index.php?$back"); exit;
+}
+
 // ── Handle DELETE (super_admin only) ───────────────────────────
 if ($can_crud && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); }
@@ -169,25 +187,39 @@ $role_labels = [
                                     <span class="tooltip-text">Edit</span>
                                 </a>
                                 <?php if ($u['id'] != current_user()['id']): ?>
-                                <form method="POST" action="index.php?page=users" style="display:inline"
-                                    onsubmit="return confirm('Hapus pengguna <?= e($u['nama_lengkap']) ?>?')">
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger tooltip-wrap"
-                                        style="border-radius: 30px">
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
-                                            viewBox="0 0 24 24">
-                                            <polyline points="3 6 5 6 21 6" />
-                                            <path d="M19 6l-1 14H6L5 6" />
-                                            <path d="M10 11v6" />
-                                            <path d="M14 11v6" />
-                                            <path d="M9 6V4h6v2" />
-                                        </svg>
-                                        <span class="tooltip-text">Hapus</span>
-                                    </button>
-                                </form>
-                                <?php endif; ?>
+                                        <!-- Tombol Toggle Aktif/Nonaktif -->
+                                        <form method="POST" action="index.php?page=users" style="display:inline"
+                                            onsubmit="return confirm('<?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?> pengguna <?= e($u['nama_lengkap']) ?>?')">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="toggle_active">
+                                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                                            <input type="hidden" name="q" value="<?= e($search) ?>">
+                                            <input type="hidden" name="role" value="<?= e($role_f) ?>">
+                                            <button type="submit"
+                                                class="btn btn-sm <?= $u['is_active'] ? 'btn-warning' : 'btn-success' ?>"
+                                                style="border-radius:30px">
+                                                <?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="index.php?page=users" style="display:inline"
+                                            onsubmit="return confirm('Hapus pengguna <?= e($u['nama_lengkap']) ?>?')">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger tooltip-wrap"
+                                                style="border-radius: 30px">
+                                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                                                    viewBox="0 0 24 24">
+                                                    <polyline points="3 6 5 6 21 6" />
+                                                    <path d="M19 6l-1 14H6L5 6" />
+                                                    <path d="M10 11v6" />
+                                                    <path d="M14 11v6" />
+                                                    <path d="M9 6V4h6v2" />
+                                                </svg>
+                                                <span class="tooltip-text">Hapus</span>
+                                            </button>
+                                        </form>
+                                        <?php endif; ?>
                             </div>
                         </td>
                         <?php endif; ?>

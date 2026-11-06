@@ -27,6 +27,21 @@ if (isset($_GET['export'])) {
     csv_download('export_siswa_' . date('Ymd') . '.csv', $headers, $out);
 }
 
+
+// ── Handle TOGGLE AKTIF ────────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
+    if (verify_csrf()) {
+        $tid     = (int)($_POST['id'] ?? 0);
+        $cur     = (int)(db_row('SELECT is_active FROM users WHERE id=:id AND role="siswa"', [':id'=>$tid])['is_active'] ?? 1);
+        $new_val = $cur ? 0 : 1;
+        db_execute('UPDATE users SET is_active=:a WHERE id=:id AND role="siswa"', [':a'=>$new_val,':id'=>$tid]);
+        flash('success', 'Status siswa diubah menjadi ' . ($new_val ? 'Aktif' : 'Nonaktif') . '.');
+    }
+    $back = http_build_query(['page'=>'siswa','ta'=>$_POST['ta']??'','kelas'=>$_POST['kelas']??'','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
+    header("Location: index.php?$back"); exit;
+}
+
+
 // â"€â"€ Handle DELETE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
     if (verify_csrf()) {
@@ -44,7 +59,8 @@ $search   = trim($_GET['q'] ?? '');
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
 
-$where  = ['u.role = "siswa"', 'u.is_active = 1'];
+// Tampilkan semua siswa (aktif & nonaktif) agar bisa di-toggle
+$where  = ['u.role = "siswa"'];
 $params = [];
 
 if ($kelas_id) {
@@ -82,7 +98,7 @@ if ($page_n > $pages) $page_n = $pages;
 $offset = ($page_n - 1) * $per;
 
 $siswa_list = db_query(
-    "SELECT u.id, u.nama_lengkap, u.username, u.email,
+    "SELECT u.id, u.nama_lengkap, u.username, u.email, u.is_active,
             s.id as siswa_id, s.nis, s.nisn, s.tanggal_lahir, s.tempat_lahir,
             k.nama_kelas, k.id as kelas_id
      FROM users u
@@ -189,17 +205,18 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         <th>Kelas</th>
                         <th>Tempat, Tgl Lahir</th>
                         <th>Username</th>
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($siswa_list)): ?>
                     <tr>
-                        <td colspan="8" class="text-center py-8 text-gray-400">Belum ada data siswa.</td>
+                        <td colspan="9" class="text-center py-8 text-gray-400">Belum ada data siswa.</td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($siswa_list as $i => $s): ?>
-                    <tr>
+                    <tr style="<?= !($s['is_active'] ?? 1) ? 'opacity:.6' : '' ?>">
                         <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
                         <td class="font-semibold"><?= e($s['nama_lengkap']) ?></td>
                         <td><?= e($s['nis'] ?: '-') ?></td>
@@ -211,9 +228,30 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         </td>
                         <td class="text-gray-500"><?= e($s['username']) ?></td>
                         <td>
+                            <span class="badge <?= ($s['is_active'] ?? 1) ? 'badge-green' : 'badge-red' ?>">
+                                <?= ($s['is_active'] ?? 1) ? 'Aktif' : 'Nonaktif' ?>
+                            </span>
+                        </td>
+                        <td>
                             <div class="flex gap-1">
                                 <a href="index.php?page=siswa.edit&id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px">Edit</a>
+                                <!-- Tombol Toggle Aktif/Nonaktif -->
+                                <form method="POST" action="index.php?page=siswa" style="display:inline"
+                                    onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> siswa <?= e($s['nama_lengkap']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="toggle_active">
+                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                    <input type="hidden" name="ta" value="<?= $ta_id ?>">
+                                    <input type="hidden" name="kelas" value="<?= $kelas_id ?>">
+                                    <input type="hidden" name="q" value="<?= e($search) ?>">
+                                    <input type="hidden" name="per" value="<?= $per ?>">
+                                    <button type="submit"
+                                        class="btn btn-sm <?= ($s['is_active']??1) ? 'btn-warning' : 'btn-success' ?>"
+                                        style="border-radius:30px">
+                                        <?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                    </button>
+                                </form>
                                 <form method="POST" action="index.php?page=siswa" style="display:inline"
                                     onsubmit="return confirm('Hapus siswa <?= e($s['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>

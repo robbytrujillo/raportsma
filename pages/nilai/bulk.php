@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/nilai/bulk.php
  * Input nilai bulk â€" semua siswa dalam 1 kelas Ã&mdash; 1 mapel sekaligus
@@ -90,10 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         } elseif ($p_jenis === 'sts') {
             $na = round($sts, 2);
         } else {
-            // Fleksibel: hitung rata-rata hanya dari field yang terisi (> 0)
-            $komponen = array_filter([$h1, $h2, $h3, $tug], fn($v) => $v > 0);
-            $na = count($komponen) > 0
-                ? round(array_sum($komponen) / count($komponen), 2)
+            // Gunakan hanya kolom yang diaktifkan guru (checkbox); defaultnya semua aktif
+            $aktif_nh1   = (int)($_POST['aktif_nh1']   ?? 1);
+            $aktif_nh2   = (int)($_POST['aktif_nh2']   ?? 1);
+            $aktif_nh3   = (int)($_POST['aktif_nh3']   ?? 1);
+            $aktif_tugas = (int)($_POST['aktif_tugas'] ?? 1);
+
+            // Kumpulkan nilai dari kolom aktif (nilai 0 tetap dihitung; dibagi jumlah kolom aktif)
+            $komponen_aktif = [];
+            if ($aktif_nh1)   $komponen_aktif[] = $h1;
+            if ($aktif_nh2)   $komponen_aktif[] = $h2;
+            if ($aktif_nh3)   $komponen_aktif[] = $h3;
+            if ($aktif_tugas) $komponen_aktif[] = $tug;
+
+            $na = count($komponen_aktif) > 0
+                ? round(array_sum($komponen_aktif) / count($komponen_aktif), 2)
                 : 0;
         }
 
@@ -438,6 +449,13 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <?php foreach ($siswa_list as $s): ?>
         <input type="hidden" name="siswa_ids[]" value="<?= $s['id'] ?>">
         <?php endforeach; ?>
+        <?php if ($jenis === 'bulanan'): ?>
+        <!-- Kolom aktif diinjeksi JS sebelum submit; defaultnya semua aktif -->
+        <input type="hidden" id="hid_nh1"   name="aktif_nh1"   value="1">
+        <input type="hidden" id="hid_nh2"   name="aktif_nh2"   value="1">
+        <input type="hidden" id="hid_nh3"   name="aktif_nh3"   value="1">
+        <input type="hidden" id="hid_tugas" name="aktif_tugas" value="1">
+        <?php endif; ?>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
@@ -479,6 +497,27 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <div class="table-container">
                         <table class="data-table" id="tblNilai">
                             <thead>
+                                <?php if ($jenis === 'bulanan'): ?>
+                                <!-- Baris checkbox pemilih kolom — hanya bulanan -->
+                                <tr style="background:#fff7ed">
+                                    <th colspan="2" style="text-align:right;font-size:.7rem;color:#9ca3af;font-weight:500;padding:4px 8px">
+                                        Kolom aktif:
+                                    </th>
+                                    <?php foreach (['nh1'=>'NH1','nh2'=>'NH2','nh3'=>'NH3','tugas'=>'Tugas'] as $col=>$lbl): ?>
+                                    <th style="text-align:center;padding:4px 2px">
+                                        <label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
+                                            <input type="checkbox" id="chk_<?= $col ?>"
+                                                class="kolom-aktif-chk"
+                                                data-col="<?= $col ?>"
+                                                checked
+                                                style="width:14px;height:14px;cursor:pointer;accent-color:#f97316">
+                                            <span style="font-size:.65rem;color:#6b7280;font-weight:500"><?= $lbl ?></span>
+                                        </label>
+                                    </th>
+                                    <?php endforeach; ?>
+                                    <th colspan="3"></th>
+                                </tr>
+                                <?php endif; ?>
                                 <tr>
                                     <th style="width:32px">No</th>
                                     <th>Nama Siswa</th>
@@ -765,20 +804,32 @@ const DESK_KRIT = {
 };
 
 /**
+ * Kembalikan daftar field bulanan yang sedang AKTIF (checkbox dicentang)
+ */
+function getKolomAktif() {
+    const map = { nh1: 'h1', nh2: 'h2', nh3: 'h3', tugas: 'tugas' };
+    const aktif = [];
+    document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+        if (chk.checked) aktif.push(map[chk.dataset.col]);
+    });
+    return aktif; // e.g. ['h1', 'tugas']
+}
+
+/**
  * Hitung nilai akhir satu baris siswa
  */
 function hitungBaris(sid) {
     let na = 0;
     if (JENIS === 'bulanan') {
-        const h1 = parseFloat(document.querySelector(`[name="h1_${sid}"]`)?.value) || 0;
-        const h2 = parseFloat(document.querySelector(`[name="h2_${sid}"]`)?.value) || 0;
-        const h3 = parseFloat(document.querySelector(`[name="h3_${sid}"]`)?.value) || 0;
-        const tug = parseFloat(document.querySelector(`[name="tugas_${sid}"]`)?.value) || 0;
-        // Fleksibel: rata-rata hanya dari komponen yang terisi (> 0)
-        const komponen = [h1, h2, h3, tug].filter(v => v > 0);
-        na = komponen.length > 0 ?
-            komponen.reduce((a, b) => a + b, 0) / komponen.length :
-            0;
+        const kolomAktif = getKolomAktif();
+        // Hanya kolom aktif yang masuk perhitungan; nilai 0/kosong tetap dihitung (dibagi jumlah kolom aktif)
+        const nilaiKolom = kolomAktif.map(f => {
+            const el = document.querySelector(`[name="${f}_${sid}"]`);
+            return el ? (parseFloat(el.value) || 0) : 0;
+        });
+        na = kolomAktif.length > 0
+            ? nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length
+            : 0;
     } else if (JENIS === 'sts') {
         na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
     } else {
@@ -868,7 +919,7 @@ function toggleDeskSiswa(sid) {
             ta.value = DESK_KRIT[pred];
             const status = document.getElementById(`deskStatus_${sid}`);
             if (status) {
-                status.textContent = 'âš  Deskripsi dikoreksi sesuai predikat ' + pred;
+                status.textContent = 'Deskripsi dikoreksi sesuai predikat ' + pred;
                 status.style.color = '#d97706';
                 setTimeout(() => {
                     status.textContent = '';
@@ -893,7 +944,7 @@ function simpanDeskripsi(sid) {
     ta.style.borderColor = '#16a34a';
     ta.style.background = '#f0fdf4';
     if (status) {
-        status.textContent = 'âœ" Deskripsi siap disimpan';
+        status.textContent = 'Deskripsi siap disimpan';
         status.style.color = '#16a34a';
     }
 
@@ -989,7 +1040,7 @@ function sinkronSemuaDeskripsi() {
     });
 
     if (count > 0) {
-        showToast(`âœ" ${count} deskripsi siswa berhasil disinkronkan`, 'success');
+        showToast(` ${count} deskripsi siswa berhasil disinkronkan`, 'success');
     } else {
         alert('Tidak ada deskripsi yang bisa disinkronkan.\nPastikan kolom kanan sudah diisi.');
     }
@@ -1011,7 +1062,8 @@ function isiSemuaRata() {
     document.querySelectorAll('[id^="row_"]').forEach(row => {
         const sid = row.id.replace('row_', '');
         if (JENIS === 'bulanan') {
-            ['h1', 'h2', 'h3', 'tugas'].forEach(f => {
+            // Hanya isi kolom yang aktif (checkbox dicentang)
+            getKolomAktif().forEach(f => {
                 const el = document.querySelector(`[name="${f}_${sid}"]`);
                 if (el) el.value = num;
             });
@@ -1026,8 +1078,78 @@ function isiSemuaRata() {
     });
 }
 
-// Init: hitung semua baris yang sudah ada nilai
+// Init
 document.addEventListener('DOMContentLoaded', () => {
+
+    if (JENIS === 'bulanan') {
+        const fieldMap = { nh1: 'h1', nh2: 'h2', nh3: 'h3', tugas: 'tugas' };
+        const hidMap   = { nh1: 'hid_nh1', nh2: 'hid_nh2', nh3: 'hid_nh3', tugas: 'hid_tugas' };
+
+        // ── Key localStorage unik per konteks penilaian ──────────────────
+        const LS_KEY = 'kolom_aktif_<?= (int)$ta_id ?>_<?= (int)$kelas_id ?>_<?= (int)$mapel_id ?>_<?= e($jenis) ?>_<?= (int)$bulan ?>';
+
+        /** Simpan state checkbox saat ini ke localStorage */
+        function simpanStateKolom() {
+            const state = {};
+            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+                state[chk.dataset.col] = chk.checked;
+            });
+            try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+        }
+
+        /** Terapkan disable/style ke kolom berdasarkan checked */
+        function terapkanKolom(col, checked) {
+            const field = fieldMap[col];
+            document.querySelectorAll(`[name^="${field}_"]`).forEach(inp => {
+                inp.disabled           = !checked;
+                inp.style.background   = checked ? '' : '#f3f4f6';
+                inp.style.color        = checked ? '' : '#9ca3af';
+                inp.style.cursor       = checked ? '' : 'not-allowed';
+            });
+        }
+
+        // ── Restore state dari localStorage (sebelum hitungBaris) ────────
+        let savedState = null;
+        try {
+            const raw = localStorage.getItem(LS_KEY);
+            if (raw) savedState = JSON.parse(raw);
+        } catch(e) {}
+
+        if (savedState) {
+            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+                const col     = chk.dataset.col;
+                const checked = savedState[col] !== undefined ? !!savedState[col] : true;
+                chk.checked   = checked;
+                terapkanKolom(col, checked);
+                // Sync hidden input juga
+                const hid = document.getElementById(hidMap[col]);
+                if (hid) hid.value = checked ? '1' : '0';
+            });
+        }
+
+        // ── Checkbox change: disable kolom + recalc + simpan ─────────────
+        document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+            chk.addEventListener('change', function () {
+                terapkanKolom(this.dataset.col, this.checked);
+                // Hitung ulang semua baris
+                document.querySelectorAll('[id^="row_"]').forEach(row => {
+                    hitungBaris(parseInt(row.id.replace('row_', '')));
+                });
+                simpanStateKolom();
+            });
+        });
+
+        // ── Sebelum submit: sync hidden inputs + simpan state ────────────
+        document.getElementById('formBulk')?.addEventListener('submit', function () {
+            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+                const hid = document.getElementById(hidMap[chk.dataset.col]);
+                if (hid) hid.value = chk.checked ? '1' : '0';
+            });
+            simpanStateKolom();
+        });
+    }
+
+    // ── Hitung semua baris (setelah state kolom di-restore) ──────────────
     document.querySelectorAll('[id^="row_"]').forEach(row => {
         const sid = row.id.replace('row_', '');
         hitungBaris(parseInt(sid));

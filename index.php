@@ -83,6 +83,7 @@ $routes = [
     'raport.view'         => 'pages/raport/view.php',
     'raport.print'        => 'pages/raport/print.php',
     'raport.print_kelas'  => 'pages/raport/print_kelas.php',
+    'raport.leger'        => 'pages/raport/leger.php',
     'raport.manage'       => 'pages/raport/manage.php',
     'raport.manage_nilai' => 'pages/raport/manage_nilai.php',
 
@@ -114,7 +115,7 @@ $page_file = $routes[$page] ?? 'pages/404.php';
 // ── Render: login tanpa layout, halaman lain dengan layout ─────
 if ($page === 'login') {
     include __DIR__ . '/' . $page_file;
-} elseif ($page === 'raport.print' || $page === 'raport.print_kelas') {
+} elseif ($page === 'raport.print' || $page === 'raport.print_kelas' || $page === 'raport.leger') {
     // Raport print tanpa layout (fullscreen PDF-like)
     include __DIR__ . '/' . $page_file;
 } else {
