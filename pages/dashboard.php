@@ -66,6 +66,47 @@ if (in_array($role, ['admin','super_admin'])) {
         }
         $total_siswa_kelas = count($rank_data);
     }
+
+    // ── Data grafik: nilai per mapel per bulan (bulanan) ────────
+    // Ambil semua mapel yang punya nilai bulanan untuk siswa ini di TA aktif
+    $chart_rows = db_query(
+        'SELECT n.bulan, m.nama_mapel, n.nilai_akhir
+         FROM nilai n
+         INNER JOIN mapel m ON m.id = n.mapel_id
+         WHERE n.siswa_user_id = :uid
+           AND n.tahun_ajaran_id = :ta
+           AND n.jenis_raport = "bulanan"
+           AND n.bulan IS NOT NULL
+           AND n.nilai_akhir > 0
+         ORDER BY n.bulan ASC, m.urutan ASC, m.nama_mapel ASC',
+        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0]
+    );
+
+    // Susun data: $chart_data[nama_mapel][bulan] = nilai_akhir
+    $chart_mapel_list = [];
+    $chart_bulan_list = [];
+    $chart_data       = [];
+    foreach ($chart_rows as $cr) {
+        $nm = $cr['nama_mapel'];
+        $bl = (int)$cr['bulan'];
+        if (!in_array($nm, $chart_mapel_list)) $chart_mapel_list[] = $nm;
+        if (!in_array($bl, $chart_bulan_list)) $chart_bulan_list[] = $bl;
+        $chart_data[$nm][$bl] = (float)$cr['nilai_akhir'];
+    }
+    sort($chart_bulan_list);
+
+    // Juga ambil nilai leger (semua jenis) per mapel — untuk bar chart per mapel terbaru
+    $leger_rows = db_query(
+        'SELECT m.nama_mapel, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
+         FROM nilai n
+         INNER JOIN mapel m ON m.id = n.mapel_id
+         WHERE n.siswa_user_id = :uid
+           AND n.tahun_ajaran_id = :ta
+           AND n.nilai_akhir > 0
+         GROUP BY n.mapel_id
+         ORDER BY m.urutan ASC, m.nama_mapel ASC',
+        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0]
+    );
 }
 
 // Aktivitas nilai terbaru (admin/guru/walas)
@@ -223,6 +264,484 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
     <?php endif; ?>
 
   </div>
+
+  <!-- ── GRAFIK NILAI SISWA ──────────────────────────────── -->
+  <?php if ($role === 'siswa'): ?>
+  <?php
+    $bulan_id_arr = BULAN_ID;
+    $pal = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308',
+            '#ef4444','#06b6d4','#84cc16','#f43f5e','#8b5cf6',
+            '#0ea5e9','#10b981','#fb923c','#6366f1','#14b8a6'];
+    $pal_bg = ['#fff7ed','#eff6ff','#f0fdf4','#fdf4ff','#fefce8',
+               '#fef2f2','#ecfeff','#f7fee7','#fff1f2','#f5f3ff',
+               '#f0f9ff','#ecfdf5','#fff7ed','#eef2ff','#f0fdfa'];
+
+    // Hitung KKM / KTP dari sekolah_info
+    $krit_c_val = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
+  ?>
+
+  <?php if (!empty($leger_rows)): ?>
+  <?php
+    // Bar chart SVG: rata-rata per mapel
+    // Label X = nomor urut (1..n), legend di bawah = grid nama mapel
+    $bar_data   = $leger_rows;
+    $bar_count  = count($bar_data);
+    $bar_max    = 100;
+    $bar_w_per  = max(40, min(64, (int)floor(820 / max($bar_count,1))));
+    $bar_gap    = 14;
+    $svg_w      = max(560, $bar_count * ($bar_w_per + $bar_gap) + 80);
+    $pad_left   = 52; $pad_top = 40;
+    $chart_h    = 200;
+    $svg_h      = $pad_top + $chart_h + 28; // 28 = ruang nomor X
+  ?>
+  <!-- Bar chart: Rata-rata nilai per mapel -->
+  <div class="card mt-6" style="overflow:hidden">
+    <div class="card-header" style="background:linear-gradient(135deg,#fff7ed 0%,#fff 60%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="background:#f97316;border-radius:8px;padding:6px 8px;display:flex">
+          <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>
+          </svg>
+        </span>
+        <div>
+          <div style="font-weight:700;font-size:.95rem;color:#1f2937">Rata-rata Nilai per Mata Pelajaran</div>
+          <div style="font-size:.75rem;color:#9ca3af">Semua jenis raport &bull; TA <?= e($ta_aktif['nama'] ?? '') ?></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" style="padding:16px 16px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <svg viewBox="0 0 <?= $svg_w ?> <?= $svg_h ?>" width="100%" style="min-width:<?= min($svg_w,420) ?>px;display:block">
+        <!-- Grid lines & Y labels -->
+        <?php for ($gi=0;$gi<=5;$gi++): $gy_val=$gi*20; $gy=$pad_top+($chart_h*(1-$gy_val/$bar_max)); ?>
+        <line x1="<?= $pad_left ?>" y1="<?= $gy ?>" x2="<?= $svg_w-16 ?>" y2="<?= $gy ?>" stroke="#f3f4f6" stroke-width="1"/>
+        <text x="<?= $pad_left-8 ?>" y="<?= $gy+4 ?>" text-anchor="end" font-size="11" fill="#9ca3af"><?= $gy_val ?></text>
+        <?php endfor; ?>
+        <!-- KKM line -->
+        <?php $kkm_y = $pad_top + $chart_h*(1-$krit_c_val/$bar_max); ?>
+        <line x1="<?= $pad_left ?>" y1="<?= $kkm_y ?>" x2="<?= $svg_w-16 ?>" y2="<?= $kkm_y ?>"
+              stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+        <text x="<?= $pad_left+8 ?>" y="<?= $kkm_y-5 ?>" text-anchor="start" font-size="10" fill="#ef4444" opacity="0.65">KKM <?= $krit_c_val ?></text>
+        <!-- Bars -->
+        <?php foreach ($bar_data as $bi => $br):
+          $bval  = (float)$br['avg_nilai'];
+          $bclr  = $pal[$bi % count($pal)];
+          $bbg   = $pal_bg[$bi % count($pal_bg)];
+          $bx    = $pad_left + $bi * ($bar_w_per + $bar_gap) + (int)($bar_gap/2);
+          $bbarw = $bar_w_per;
+          $bh    = max(6, $chart_h * ($bval / $bar_max));
+          $by    = $pad_top + $chart_h - $bh;
+          $lvy   = $by - 7;
+          $num   = $bi + 1; // nomor urut 1..n
+        ?>
+        <!-- bar bg track -->
+        <rect x="<?= $bx ?>" y="<?= $pad_top ?>" width="<?= $bbarw ?>" height="<?= $chart_h ?>"
+              fill="<?= $bbg ?>" rx="5" opacity="0.6"/>
+        <!-- bar fill -->
+        <rect x="<?= $bx ?>" y="<?= $by ?>" width="<?= $bbarw ?>" height="<?= $bh ?>"
+              fill="<?= $bclr ?>" rx="5" opacity="0.88">
+          <title><?= htmlspecialchars($br['nama_mapel']) ?>: <?= $bval ?></title>
+        </rect>
+        <!-- nilai label di atas bar -->
+        <text x="<?= $bx + $bbarw/2 ?>" y="<?= $lvy ?>" text-anchor="middle"
+              font-size="11" font-weight="700" fill="<?= $bclr ?>"><?= number_format($bval,1) ?></text>
+        <!-- nomor urut di bawah bar -->
+        <text x="<?= $bx + $bbarw/2 ?>" y="<?= $pad_top+$chart_h+17 ?>" text-anchor="middle"
+              font-size="11" font-weight="600" fill="<?= $bclr ?>"><?= $num ?></text>
+        <?php endforeach; ?>
+        <!-- X axis -->
+        <line x1="<?= $pad_left ?>" y1="<?= $pad_top+$chart_h ?>" x2="<?= $svg_w-16 ?>" y2="<?= $pad_top+$chart_h ?>"
+              stroke="#e5e7eb" stroke-width="1.5"/>
+      </svg>
+      <!-- Legend: grid 2 kolom, nomor + dot warna + nama + nilai -->
+      <div class="bar-legend-grid" style="margin-top:14px;border-top:1px solid #f3f4f6;padding-top:12px">
+        <?php foreach ($bar_data as $bi => $br): ?>
+        <div class="bar-legend-item">
+          <span class="bar-legend-num" style="color:<?= $pal[$bi%count($pal)] ?>"><?= $bi+1 ?></span>
+          <span class="bar-legend-dot" style="background:<?= $pal[$bi%count($pal)] ?>"></span>
+          <span class="bar-legend-name"><?= htmlspecialchars($br['nama_mapel']) ?></span>
+          <span class="bar-legend-val" style="color:<?= $pal[$bi%count($pal)] ?>"><?= number_format((float)$br['avg_nilai'],1) ?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <?php if (!empty($chart_bulan_list) && !empty($chart_mapel_list)): ?>
+  <?php
+    // ── Data untuk pie chart per mapel per bulan ──────────────
+    // $chart_data[nama_mapel][bulan] = nilai
+    // $chart_bulan_list = sorted array of int bulan
+    // $chart_mapel_list = array of nama_mapel
+    $pc_bulan = $chart_bulan_list;   // mis. [10] atau [10,11,12]
+    $pc_mapel = $chart_mapel_list;   // array nama mapel
+    $pc_data  = $chart_data;         // [mapel][bulan] = nilai
+    $pc_n     = count($pc_bulan);
+    $pc_kkm   = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
+
+    // Palet warna untuk pie (sama dengan bar chart atas)
+    $pc_pal = $pal;
+
+    // Buat map index mapel → warna
+    $pc_mapel_color = [];
+    foreach ($pc_mapel as $mi => $mn) {
+      $pc_mapel_color[$mn] = $pc_pal[$mi % count($pc_pal)];
+    }
+
+    // Encode data ke JSON untuk JavaScript
+    $pc_js_data   = json_encode($pc_data);
+    $pc_js_bulan  = json_encode($pc_bulan);
+    $pc_js_mapel  = json_encode($pc_mapel);
+    $pc_js_colors = json_encode($pc_mapel_color);
+    $pc_js_bnames = json_encode(array_combine(
+      $pc_bulan,
+      array_map(fn($b) => $bulan_id_arr[$b] ?? 'Bulan '.$b, $pc_bulan)
+    ));
+    $pc_js_kkm = $pc_kkm;
+    // Mapel pertama sebagai default
+    $pc_default_mapel = htmlspecialchars($pc_mapel[0] ?? '', ENT_QUOTES);
+  ?>
+
+  <!-- ── PIE CHART: Perbandingan Nilai Bulanan per Mapel ─── -->
+  <div class="card mt-4" style="overflow:hidden" id="card-pie-chart">
+    <div class="card-header" style="background:linear-gradient(135deg,#eff6ff 0%,#fff 60%)">
+      <div class="pie-card-header-inner">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="background:#3b82f6;border-radius:8px;padding:6px 8px;display:flex;flex-shrink:0">
+            <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+            </svg>
+          </span>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:#1f2937">Perbandingan Nilai Bulanan per Mapel</div>
+            <div style="font-size:.75rem;color:#9ca3af">Raport Bulanan &bull; TA <?= e($ta_aktif['nama'] ?? '') ?></div>
+          </div>
+        </div>
+        <!-- Combobox pilih mapel -->
+        <div class="pie-select-wrap">
+          <label for="pie-mapel-select" style="font-size:.8rem;font-weight:600;color:#374151;white-space:nowrap">Mata Pelajaran:</label>
+          <div style="position:relative;flex:1;min-width:0">
+            <select id="pie-mapel-select" class="pie-select">
+              <?php foreach ($pc_mapel as $mn): ?>
+              <option value="<?= htmlspecialchars($mn, ENT_QUOTES) ?>"><?= htmlspecialchars($mn) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none" width="12" height="12" fill="none" stroke="#6b7280" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" style="padding:24px 20px 20px">
+      <!-- Container pie charts — diisi JS -->
+      <div id="pie-charts-container" style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;min-height:200px"></div>
+      <!-- Info di bawah -->
+      <div id="pie-info-bar" style="margin-top:20px;padding-top:16px;border-top:1px solid #f3f4f6;display:flex;flex-wrap:wrap;gap:16px;justify-content:center"></div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var chartData   = <?= $pc_js_data ?>;
+    var bulanList   = <?= $pc_js_bulan ?>;
+    var mapelList   = <?= $pc_js_mapel ?>;
+    var mapelColors = <?= $pc_js_colors ?>;
+    var bulanNames  = <?= $pc_js_bnames ?>;
+    var kkm         = <?= $pc_js_kkm ?>;
+
+    var container   = document.getElementById('pie-charts-container');
+    var infoBar     = document.getElementById('pie-info-bar');
+    var selectEl    = document.getElementById('pie-mapel-select');
+
+    // ── Draw a single donut pie chart as inline SVG ──────────
+    function makePie(mapel, bulan, nilai, color, bulanName) {
+      var r      = 70;   // radius lingkaran luar
+      var ri     = 46;   // radius inner (donut hole)
+      var cx     = 90, cy = 90;
+      var size   = 180;
+
+      // nilai = 0..100, arc = proporsi dari lingkaran penuh
+      var pct     = Math.min(Math.max(nilai, 0), 100) / 100;
+      var angle   = pct * 2 * Math.PI;
+      var startX  = cx + r * Math.sin(0);
+      var startY  = cy - r * Math.cos(0);
+      var endX    = cx + r * Math.sin(angle);
+      var endY    = cy - r * Math.cos(angle);
+      var large   = angle > Math.PI ? 1 : 0;
+
+      // Inner ring start/end
+      var iStartX = cx + ri * Math.sin(0);
+      var iStartY = cy - ri * Math.cos(0);
+      var iEndX   = cx + ri * Math.sin(angle);
+      var iEndY   = cy - ri * Math.cos(angle);
+
+      var aboveKkm = nilai >= kkm;
+      var grayClr  = '#e5e7eb';
+
+      // Path for filled arc (donut segment)
+      var dFill = nilai >= 100
+        ? [ 'M', cx, cy - r,
+            'A', r, r, 0, 1, 1, cx - 0.001, cy - r,
+            'Z',
+            'M', cx, cy - ri,
+            'A', ri, ri, 0, 1, 0, cx + 0.001, cy - ri,
+            'Z' ].join(' ')
+        : [ 'M', startX.toFixed(2), startY.toFixed(2),
+            'A', r, r, 0, large, 1, endX.toFixed(2), endY.toFixed(2),
+            'L', iEndX.toFixed(2), iEndY.toFixed(2),
+            'A', ri, ri, 0, large, 0, iStartX.toFixed(2), iStartY.toFixed(2),
+            'Z' ].join(' ');
+
+      // Path for remaining arc (background)
+      var remAngle = (1 - pct) * 2 * Math.PI;
+      var rEndX    = cx + r  * Math.sin(angle + remAngle);
+      var rEndY    = cy - r  * Math.cos(angle + remAngle);
+      var riEndX   = cx + ri * Math.sin(angle + remAngle);
+      var riEndY   = cy - ri * Math.cos(angle + remAngle);
+      var rLarge   = remAngle > Math.PI ? 1 : 0;
+
+      var dBg = nilai <= 0
+        ? ''
+        : [ 'M', endX.toFixed(2), endY.toFixed(2),
+            'A', r, r, 0, rLarge, 1, rEndX.toFixed(2), rEndY.toFixed(2),
+            'L', riEndX.toFixed(2), riEndY.toFixed(2),
+            'A', ri, ri, 0, rLarge, 0, iEndX.toFixed(2), iEndY.toFixed(2),
+            'Z' ].join(' ');
+
+      // Badge warna: hijau jika di atas KKM, merah jika di bawah
+      var badgeClr = aboveKkm ? '#22c55e' : '#ef4444';
+      var badgeTxt = aboveKkm ? '✓' : '✗';
+
+      var ns = 'http://www.w3.org/2000/svg';
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'text-align:center;flex:0 0 auto;';
+
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+      svg.setAttribute('width',  size);
+      svg.setAttribute('height', size);
+      svg.style.overflow = 'visible';
+
+      // Background full circle (sisa nilai)
+      if (dBg) {
+        var bgPath = document.createElementNS(ns, 'path');
+        bgPath.setAttribute('d', dBg);
+        bgPath.setAttribute('fill', grayClr);
+        svg.appendChild(bgPath);
+      }
+      // Fill arc (nilai)
+      var fillPath = document.createElementNS(ns, 'path');
+      fillPath.setAttribute('d', dFill);
+      fillPath.setAttribute('fill', color);
+      svg.appendChild(fillPath);
+
+      // Center text: nilai angka
+      var tVal = document.createElementNS(ns, 'text');
+      tVal.setAttribute('x', cx); tVal.setAttribute('y', cy + 7);
+      tVal.setAttribute('text-anchor', 'middle');
+      tVal.setAttribute('font-size', '22');
+      tVal.setAttribute('font-weight', '800');
+      tVal.setAttribute('fill', color);
+      tVal.textContent = nilai.toFixed(1);
+      svg.appendChild(tVal);
+
+      // Center sub-text: /100
+      var tSub = document.createElementNS(ns, 'text');
+      tSub.setAttribute('x', cx); tSub.setAttribute('y', cy + 22);
+      tSub.setAttribute('text-anchor', 'middle');
+      tSub.setAttribute('font-size', '11');
+      tSub.setAttribute('fill', '#9ca3af');
+      tSub.textContent = '/ 100';
+      svg.appendChild(tSub);
+
+      // Badge atas kanan
+      var badge = document.createElementNS(ns, 'circle');
+      badge.setAttribute('cx', cx + r * 0.68); badge.setAttribute('cy', cy - r * 0.68);
+      badge.setAttribute('r', '11');
+      badge.setAttribute('fill', badgeClr);
+      svg.appendChild(badge);
+      var badgeT = document.createElementNS(ns, 'text');
+      badgeT.setAttribute('x', cx + r * 0.68); badgeT.setAttribute('y', cy - r * 0.68 + 4);
+      badgeT.setAttribute('text-anchor', 'middle');
+      badgeT.setAttribute('font-size', '12');
+      badgeT.setAttribute('font-weight', '700');
+      badgeT.setAttribute('fill', '#fff');
+      badgeT.textContent = badgeTxt;
+      svg.appendChild(badgeT);
+
+      wrap.appendChild(svg);
+
+      // Nama bulan di bawah pie
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:.85rem;font-weight:700;color:#374151;margin-top:6px';
+      lbl.textContent = bulanName;
+      wrap.appendChild(lbl);
+
+      // KKM info
+      var kkmLbl = document.createElement('div');
+      kkmLbl.style.cssText = 'font-size:.75rem;color:' + badgeClr + ';margin-top:2px;font-weight:600';
+      kkmLbl.textContent = aboveKkm ? 'Di atas KKM (' + kkm + ')' : 'Di bawah KKM (' + kkm + ')';
+      wrap.appendChild(kkmLbl);
+
+      return wrap;
+    }
+
+    // ── Render semua pie untuk mapel yang dipilih ─────────────
+    function renderPies(mapel) {
+      container.innerHTML = '';
+      infoBar.innerHTML   = '';
+
+      var color = mapelColors[mapel] || '#3b82f6';
+      var hasAny = false;
+
+      bulanList.forEach(function(bl) {
+        var blStr = String(bl);
+        var mapelData = chartData[mapel];
+        if (!mapelData) return;
+        var nilai = mapelData[blStr] !== undefined ? parseFloat(mapelData[blStr]) : null;
+        if (nilai === null) return;
+        hasAny = true;
+        var bulanName = bulanNames[blStr] || ('Bulan ' + bl);
+        container.appendChild(makePie(mapel, bl, nilai, color, bulanName));
+      });
+
+      if (!hasAny) {
+        container.innerHTML = '<div style="color:#9ca3af;font-size:.88rem;padding:40px 0;width:100%;text-align:center">Belum ada data nilai bulanan untuk mata pelajaran ini</div>';
+      }
+
+      // Info bar: ringkasan semua bulan
+      bulanList.forEach(function(bl) {
+        var blStr = String(bl);
+        var mapelData = chartData[mapel];
+        if (!mapelData || mapelData[blStr] === undefined) return;
+        var nilai     = parseFloat(mapelData[blStr]);
+        var bulanName = bulanNames[blStr] || ('Bulan ' + bl);
+        var above     = nilai >= kkm;
+        var chip = document.createElement('div');
+        chip.style.cssText = 'display:flex;align-items:center;gap:6px;background:' + (above ? '#f0fdf4' : '#fef2f2') + ';border:1px solid ' + (above ? '#bbf7d0' : '#fecaca') + ';border-radius:20px;padding:4px 12px;font-size:.8rem';
+        chip.innerHTML = '<span style="font-weight:700;color:' + color + '">' + bulanName + '</span>'
+          + '<span style="color:#374151">' + nilai.toFixed(1) + '</span>'
+          + '<span style="color:' + (above ? '#22c55e' : '#ef4444') + ';font-weight:700">' + (above ? '▲' : '▼') + '</span>';
+        infoBar.appendChild(chip);
+      });
+    }
+
+    // ── Event listener combobox ────────────────────────────────
+    selectEl.addEventListener('change', function() {
+      renderPies(this.value);
+    });
+
+    // Render default (mapel pertama)
+    if (mapelList.length > 0) renderPies(mapelList[0]);
+  })();
+  </script>
+  <?php endif; ?>
+
+  <?php if (empty($leger_rows)): ?>
+  <!-- State kosong jika belum ada nilai sama sekali -->
+  <div class="card mt-6" style="text-align:center;padding:48px 24px">
+    <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px">
+      <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+    </svg>
+    <p style="font-size:.95rem;font-weight:600;color:#6b7280;margin:0 0 6px">Belum ada data nilai</p>
+    <p style="font-size:.82rem;color:#9ca3af;margin:0">Grafik akan muncul setelah guru menginput nilai raport</p>
+  </div>
+  <?php endif; ?>
+
+  <!-- ── Responsive CSS untuk grafik siswa ──────────────── -->
+  <style>
+  /* Legend grid bar chart: 2 kolom default, 1 kolom di mobile */
+  .bar-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 20px;
+  }
+  .bar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .78rem;
+    color: #374151;
+    min-width: 0;
+  }
+  .bar-legend-num {
+    font-size: .72rem;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .bar-legend-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #374151;
+  }
+  .bar-legend-val {
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: .78rem;
+  }
+
+  /* Pie card header: row di desktop, column di mobile */
+  .pie-card-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+  }
+  .pie-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    max-width: 420px;
+  }
+  .pie-select {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 7px 32px 7px 12px;
+    font-size: .85rem;
+    color: #1f2937;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 0;
+  }
+  .pie-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+  }
+
+  /* Mobile <= 600px */
+  @media (max-width: 600px) {
+    .bar-legend-grid { grid-template-columns: 1fr; }
+    .pie-card-header-inner { flex-direction: column; align-items: flex-start; }
+    .pie-select-wrap { max-width: 100%; width: 100%; }
+    #pie-charts-container { gap: 16px; }
+    #pie-charts-container > div { flex: 0 0 auto; }
+    .card-header { flex-wrap: wrap; }
+  }
+  /* Tablet <= 900px */
+  @media (max-width: 900px) {
+    .bar-legend-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  </style>
+
+  <?php endif; // role === 'siswa' ?>
 
   <!-- ── RECENT ACTIVITY ─────────────────────────────────── -->
   <?php if (!empty($recent_nilai)): ?>

@@ -895,6 +895,110 @@ table.data-table {
   }
 }
 
+/* ── Tablet: 769px – 1024px ────────────────────────────────────
+   Sidebar di-collapse otomatis (icon-only 64px) agar konten
+   punya ruang cukup tanpa harus scroll horizontal.
+   ─────────────────────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Auto-collapse sidebar → icon only */
+  .sidebar {
+    width: 64px !important;
+  }
+  .sidebar .sidebar-logo-text,
+  .sidebar .sidebar-user-info,
+  .sidebar .sidebar-section-title,
+  .sidebar .sidebar-nav-label,
+  .sidebar .sidebar-nav-logout-label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .sidebar .sidebar-nav a {
+    justify-content: center;
+    padding: 12px 0;
+  }
+  .sidebar .sidebar-nav a svg { margin: 0; }
+  .sidebar .sidebar-toggle-btn { margin: 0 auto; }
+  .sidebar .sidebar-toggle-icon { transform: rotate(180deg); }
+  /* Tooltip hover muncul di kanan ikon */
+  .sidebar .sidebar-nav a .sidebar-tooltip {
+    display: block;
+    position: absolute;
+    left: 68px; top: 50%;
+    transform: translateY(-50%);
+    background: #1f2937; color: #fff;
+    font-size: 0.75rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s; z-index: 200;
+  }
+  .sidebar .sidebar-nav a:hover .sidebar-tooltip { opacity: 1; }
+
+  /* Main content sesuai sidebar 64px */
+  .main-content { margin-left: 64px !important; }
+  .app-wrapper.sidebar-collapsed .main-content { margin-left: 64px !important; }
+
+  /* Page padding lebih kecil di tablet */
+  .page-content { padding: 16px 18px; }
+
+  /* Topbar */
+  .topbar { padding: 0 16px; }
+  .topbar-title { font-size: 0.9rem; }
+
+  /* Stat cards: 2 kolom di tablet */
+  .grid.grid-cols-4,
+  .grid.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stat-card { padding: 14px 12px; gap: 10px; }
+  .stat-icon { width: 40px; height: 40px; }
+  .stat-value { font-size: 1.4rem; }
+
+  /* Table: font sedikit lebih kecil */
+  .data-table { font-size: 0.82rem; }
+  .data-table thead th { padding: 9px 10px; font-size: 0.72rem; }
+  .data-table tbody td { padding: 9px 10px; }
+
+  /* Card header: allow wrap */
+  .card-header { flex-wrap: wrap; gap: 8px; }
+
+  /* Form grids: 2 kolom → 1 kolom */
+  .grid.grid-cols-2,
+  .grid.md\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  .grid.grid-cols-3,
+  .grid.md\\:grid-cols-3,
+  .grid.lg\\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Modal: lebih lebar */
+  .modal { max-width: 90vw; }
+
+  /* Page header */
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Filter bar: wrap */
+  .filter-bar,
+  .flex.items-center.gap-3.flex-wrap { flex-wrap: wrap; }
+
+  /* Bar chart legend: 2 kolom */
+  .bar-legend-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Pie card header */
+  .pie-card-header-inner { flex-wrap: wrap; gap: 10px; }
+  .pie-select-wrap { max-width: 100%; }
+}
+
 /* Extra small screens */
 @media (max-width: 480px) {
   .page-header > .flex.gap-2,

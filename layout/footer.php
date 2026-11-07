@@ -48,7 +48,7 @@
         <span class="app-footer-dot"></span>
         <span class="app-footer-credit">
             Build with
-            <a href="https://robbyilham.com" target="_blank" rel="noopener">robbyilham</a> IT Development
+            <a href="https://robbyilham.com" target="_blank" rel="noopener">robby</a> IT Development
         </span>
     </div>
 

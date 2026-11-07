@@ -665,7 +665,9 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
 
                 <!-- Footer -->
                 <div class="lf-footer">
-                    &copy; <?= date('Y') ?> <?= APP_NAME ?> v<?= APP_VERSION ?>
+                    <!--  &copy; <?= date('Y') ?> <?= APP_NAME ?> v<?= APP_VERSION ?> -->
+
+                    &copy; <?= date('Y') ?> <?= APP_NAME ?>
                 </div>
 
             </div><!-- /login-right-inner -->

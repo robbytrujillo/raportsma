@@ -34,9 +34,16 @@ function initSidebar() {
     overlay.classList.remove('open');
   }
 
-  // ── Desktop helpers (collapse icon-only) ─────────────────────
+  // ── Mobile/Tablet helpers ─────────────────────────────────────
+  // Tablet (769–1024px): sidebar di-handle via CSS (auto icon-only).
+  // JS hanya perlu tahu apakah hamburger/overlay mode aktif.
   function isMobile() {
     return window.innerWidth <= 768;
+  }
+  // Tablet: sidebar sudah icon-only via CSS, hamburger tetap berfungsi
+  // untuk expand/collapse desktop-style saat > 768px
+  function isTablet() {
+    return window.innerWidth > 768 && window.innerWidth <= 1024;
   }
 
   function collapseSidebar() {
@@ -66,7 +73,9 @@ function initSidebar() {
   }
 
   // ── Restore state dari localStorage ─────────────────────────
-  if (!isMobile() && localStorage.getItem(STORAGE_KEY) === '1') {
+  // Di tablet, CSS sudah auto-collapse, jadi tidak perlu tambahan JS.
+  // Di desktop, restore dari localStorage.
+  if (!isMobile() && !isTablet() && localStorage.getItem(STORAGE_KEY) === '1') {
     collapseSidebar();
   }
 
@@ -94,16 +103,20 @@ function initSidebar() {
   // ── Overlay: tutup sidebar mobile ────────────────────────────
   overlay?.addEventListener('click', closeMobileSidebar);
 
-  // ── Tutup mobile sidebar saat resize ke desktop ───────────────
+  // ── Tutup mobile sidebar saat resize ─────────────────────────
   window.addEventListener('resize', function() {
     if (!isMobile()) {
       closeMobileSidebar();
-      // Pulihkan state desktop dari storage
-      if (localStorage.getItem(STORAGE_KEY) === '1') {
+      if (!isTablet() && localStorage.getItem(STORAGE_KEY) === '1') {
+        // Desktop: restore collapsed dari localStorage
         collapseSidebar();
+      } else if (isTablet()) {
+        // Tablet: CSS handles collapse, reset JS classes agar tidak konflik
+        sidebar.classList.remove('collapsed');
+        appWrapper?.classList.remove('sidebar-collapsed');
       }
     } else {
-      // Di mobile, jangan ada collapsed state visual
+      // Mobile: jangan ada collapsed state visual
       appWrapper?.classList.remove('sidebar-collapsed');
     }
   });
