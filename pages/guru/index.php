@@ -7,6 +7,7 @@ require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
 // â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// Export XLSX -- kolom sesuai template import guru.
 if (isset($_GET['export'])) {
     $rows = db_query(
         "SELECT u.nama_lengkap, u.username, u.email, g.nip, g.status, g.bidang_studi
@@ -15,13 +16,28 @@ if (isset($_GET['export'])) {
          WHERE u.role IN ('guru','wali_kelas') AND u.is_active = 1
          ORDER BY u.nama_lengkap"
     );
-    $headers = ['nama_lengkap','username','email','nip','status','bidang_studi'];
-    $out = [];
-    foreach ($rows as $r) {
-        $out[] = [$r['nama_lengkap'],$r['username'],$r['email'],
-                  $r['nip'],$r['status'],$r['bidang_studi']];
-    }
-    csv_download('export_guru_' . date('Ymd') . '.csv', $headers, $out);
+    xlsx_template('export_guru_' . date('Ymd') . '.xlsx', [
+        'title'    => 'Export Data Guru -- Raportku',
+        'subtitle' => 'Kolom merah = wajib saat re-import | Password dikosongkan demi keamanan -- isi saat import',
+        'columns'  => [
+            ['header'=>'Nama Lengkap', 'field'=>'nama_lengkap',  'width'=>30,'required'=>true,  'type'=>'text','format'=>'@'],
+            ['header'=>'Username',     'field'=>'username',      'width'=>20,'required'=>true,  'type'=>'text','format'=>'@',
+             'note'=>'Username login, harus unik, tanpa spasi'],
+            ['header'=>'Password',     'field'=>'password',      'width'=>18,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Dikosongkan demi keamanan. Kosong = default "password" saat import.'],
+            ['header'=>'Email',        'field'=>'email',         'width'=>26,'required'=>false, 'type'=>'text','format'=>'@'],
+            ['header'=>'NIP',          'field'=>'nip',           'width'=>22,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Nomor Induk Pegawai (18 digit)'],
+            ['header'=>'Status',       'field'=>'status',        'width'=>16,'required'=>true,  'type'=>'dropdown',
+             'dropdown'=>['guru','wali_kelas','koordinator'],
+             'note'=>'Pilih: guru / wali_kelas / koordinator'],
+            ['header'=>'Bidang Studi', 'field'=>'bidang_studi',  'width'=>24,'required'=>false, 'type'=>'text','format'=>'@'],
+        ],
+        'examples' => array_map(fn($r) => [
+            $r['nama_lengkap'], $r['username'], '',  // password dikosongkan
+            $r['email'], $r['nip'], $r['status'], $r['bidang_studi'],
+        ], $rows),
+    ]);
 }
 
 

@@ -895,6 +895,42 @@ table.data-table {
   }
 }
 
+/* ── Tablet utility overrides (Tailwind-safe) ──────────────────
+   Tailwind CDN generates !important on its classes; we must use
+   a more-specific selector to win (or also use !important).       */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Filter bar 5-col → 3-col (nilai, absensi, etc.) */
+  .grid.md\:grid-cols-5,
+  div.grid.md\:grid-cols-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  /* 4-col → 2-col */
+  .grid.md\:grid-cols-4,
+  div.grid.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* 3-col → 2-col (already in main block, belt-and-suspenders) */
+  .grid.md\:grid-cols-3,
+  div.grid.md\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* Page header action buttons: wrap + shrink */
+  .page-header .flex.gap-2,
+  .page-header > div:last-child {
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+  }
+  .page-header .flex.gap-2 > a,
+  .page-header .flex.gap-2 > button {
+    flex-shrink: 0;
+  }
+  /* Table scroll */
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* ── Tablet: 769px – 1024px ────────────────────────────────────
    Sidebar di-collapse otomatis (icon-only 64px) agar konten
    punya ruang cukup tanpa harus scroll horizontal.
@@ -937,12 +973,30 @@ table.data-table {
   }
   .sidebar .sidebar-nav a:hover .sidebar-tooltip { opacity: 1; }
 
-  /* Main content sesuai sidebar 64px */
-  .main-content { margin-left: 64px !important; }
+  /* Main content sesuai sidebar 64px — min-width:0 wajib di flex child
+     agar tidak meluber melewati viewport (flexbox shrink fix)          */
+  .main-content {
+    margin-left: 64px !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 64px) !important;
+    overflow-x: hidden !important;
+  }
   .app-wrapper.sidebar-collapsed .main-content { margin-left: 64px !important; }
 
-  /* Page padding lebih kecil di tablet */
-  .page-content { padding: 16px 18px; }
+  /* page-content: cegah overflow, tabel scroll via table-container */
+  .page-content {
+    padding: 16px 18px;
+    min-width: 0;
+    overflow-x: clip; /* clip lebih baik dari hidden: tidak potong sticky */
+  }
+  /* table-container tetap bisa scroll horizontal */
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* card tidak overflow */
+  .card { min-width: 0; overflow: visible; }
+  .card.overflow-hidden { overflow: hidden !important; }
 
   /* Topbar */
   .topbar { padding: 0 16px; }
@@ -1312,3 +1366,289 @@ table.data-table {
 }
 /* Highlight nilai sempurna */
 #tblNilai input[value="100"] { color: #ea580c; font-weight: 700; }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE TABLES — stacked card pattern
+   Pada layar ≤ 640px, setiap baris tabel berubah menjadi "kartu"
+   sehingga semua kolom tetap terbaca tanpa scroll horizontal.
+   data-label di-inject otomatis oleh script.js.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Tabel khusus bulk input & absensi: TIDAK di-stack (tetap scroll horizontal) ── */
+#tblNilai,
+.tbl-no-stack { display: table !important; }
+#tblNilai thead,
+.tbl-no-stack thead { display: table-header-group !important; }
+#tblNilai tbody,
+.tbl-no-stack tbody { display: table-row-group !important; }
+/* Hanya baris biasa yang di-force table-row — bukan baris deskripsi (id^="deskRow_") */
+#tblNilai tr:not([id^="deskRow_"]),
+.tbl-no-stack tr:not([id^="deskRow_"]) { display: table-row !important; border: none !important; }
+#tblNilai td,
+#tblNilai th,
+.tbl-no-stack td,
+.tbl-no-stack th    { display: table-cell !important; }
+#tblNilai td::before,
+.tbl-no-stack td::before { display: none !important; }
+
+@media (max-width: 640px) {
+
+  /* ── Responsive stacked table ──────────────────────────────── */
+  table.data-table,
+  table.data-table thead,
+  table.data-table tbody,
+  table.data-table th,
+  table.data-table td,
+  table.data-table tr {
+    display: block;
+  }
+
+  /* Sembunyikan baris thead — label ditampilkan via ::before */
+  table.data-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  /* Setiap baris tbody menjadi kartu */
+  table.data-table tbody tr {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    position: relative;
+  }
+  table.data-table tbody tr:hover td {
+    background: transparent;
+  }
+  table.data-table tbody tr:last-child { margin-bottom: 0; }
+
+  /* Setiap sel: grid 2 kolom — label kiri tetap, nilai kanan fleksibel */
+  table.data-table tbody td {
+    display: grid;
+    grid-template-columns: minmax(80px, max-content) 1fr;
+    align-items: start;
+    gap: 4px 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.82rem;
+  }
+  table.data-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label kolom kiri (::before) */
+  table.data-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    padding-top: 3px;
+    grid-column: 1;
+    align-self: start;
+  }
+
+  /* Semua child langsung masuk kolom kanan */
+  table.data-table tbody td > * {
+    grid-column: 2;
+    text-align: right;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  /* Multi-div cells (nama + email stacked): setiap div tetap di kolom kanan */
+  table.data-table tbody td > div {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  table.data-table tbody td > div > * {
+    text-align: right;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  /* Badge/span dalam sel: tidak stretch */
+  table.data-table tbody td > span.badge {
+    justify-self: end;
+    display: inline-flex;
+  }
+
+  /* Sel nomor "#": sembunyikan label, nilai kecil */
+  table.data-table tbody td[data-label="#"] {
+    grid-template-columns: 1fr;
+  }
+  table.data-table tbody td[data-label="#"]::before {
+    display: none;
+  }
+  table.data-table tbody td[data-label="#"] > * {
+    grid-column: 1;
+    text-align: right;
+    color: #9ca3af;
+    font-size: 0.72rem;
+  }
+
+  /* Sel Aksi: full width, tombol rata kanan */
+  table.data-table tbody td[data-label="Aksi"] {
+    grid-template-columns: 1fr;
+  }
+  table.data-table tbody td[data-label="Aksi"]::before {
+    display: none;
+  }
+  table.data-table tbody td[data-label="Aksi"] > div,
+  table.data-table tbody td[data-label="Aksi"] > * {
+    grid-column: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  /* Kolom pesan kosong (colspan) — full width centered */
+  table.data-table tbody td[colspan] {
+    display: flex;
+    justify-content: center;
+    border-bottom: none;
+    padding: 24px 0;
+    grid-template-columns: unset;
+  }
+  table.data-table tbody td[colspan]::before {
+    display: none;
+  }
+
+  /* ── Pagination mobile ──────────────────────────────────────── */
+  .pagination-wrap {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Filter bar: stack vertikal ─────────────────────────────── */
+  .filter-bar { flex-direction: column; gap: 8px; }
+  .filter-bar .form-control { width: 100%; }
+
+  /* ── Card header: wrap dengan proper spacing ─────────────────── */
+  .card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+
+  /* ── Stat cards: 2 kolom tetap, kurangi padding ──────────────── */
+  .stat-card { padding: 14px 12px; gap: 10px; }
+  .stat-icon  { width: 40px; height: 40px; }
+  .stat-value { font-size: 1.3rem; }
+  .stat-label { font-size: 0.72rem; }
+
+  /* ── Page header tombol aksi: wrap & full width ──────────────── */
+  .page-header > div:last-child,
+  .page-header > .flex {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow: visible;
+  }
+  .page-header .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 7px 10px;
+    white-space: normal;
+    overflow: visible;
+    text-align: center;
+  }
+  /* Tombol primary (orange) di page-header: full width ────────── */
+  .page-header .btn-primary {
+    flex: 1 1 100%;
+  }
+
+  /* ── Nilai panjang dalam sel tabel: bisa wrap ─────────────────── */
+  table.data-table tbody td {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* ── Modal full-screen on mobile ─────────────────────────────── */
+  .modal {
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    margin: auto auto 0;
+    align-self: flex-end;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  /* ── Form grid: 1 kolom di mobile ─────────────────────────────── */
+  .grid.grid-cols-2,
+  .grid.md\:grid-cols-2,
+  .grid.md\:grid-cols-3,
+  .grid.md\:grid-cols-5 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Quick links (dashboard): 2 kolom ─────────────────────────── */
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Topbar: user info lebih ringkas ─────────────────────────── */
+  .topbar-user span.text-sm,
+  .topbar-user span.text-xs,
+  .topbar-user .text-right {
+    display: none;
+  }
+
+  /* ── Table-container: no horizontal scroll, handled by stacked rows ── */
+  .table-container {
+    overflow-x: visible;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  /* ── Margin antara kartu tabel dan card wrapper ─────────────────── */
+  .card > .table-container {
+    padding: 10px 12px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-100);
+  }
+
+  /* ── tbl-no-stack: tetap scrollable horizontal di mobile ──────── */
+  .table-container:has(.tbl-no-stack) {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  /* ── Sel dengan input/select tetap tampil full ────────────────── */
+  table.data-table tbody td > input,
+  table.data-table tbody td > select {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  /* ── Kolom "No" / "#": lebih kecil, tidak perlu label ────────── */
+  table.data-table tbody td:first-child {
+    font-size: 0.72rem;
+    color: #9ca3af;
+  }
+}
+
+/* ── Mobile: page-content padding sedikit lebih kecil ─── */
+@media (max-width: 480px) {
+  .page-content { padding: 12px; }
+  .card { border-radius: 10px; }
+}

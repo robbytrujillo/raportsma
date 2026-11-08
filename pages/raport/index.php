@@ -149,8 +149,11 @@ if ($role === 'siswa') {
     <!-- Pemberitahuan raport belum rilis -->
     <?php if ($ada_belum_rilis): ?>
     <div class="alert alert-info mb-4">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+            style="flex-shrink:0">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
         <span>Ada raport yang belum dirilis. Silakan tunggu pengumuman dari sekolah.</span>
     </div>
@@ -162,11 +165,12 @@ if ($role === 'siswa') {
         <div class="card-body empty-state">
             <?php if ($ada_belum_rilis): ?>
             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
             <p style="font-weight:600;font-size:1.1rem;margin-bottom:4px">Raport Belum Dirilis</p>
-            <p style="color:#6b7280">Raport Anda sedang dalam proses penerbitan oleh sekolah.<br>Silakan cek kembali nanti.</p>
+            <p style="color:#6b7280">Raport Anda sedang dalam proses penerbitan oleh sekolah.<br>Silakan cek kembali
+                nanti.</p>
             <?php else: ?>
             <p>Belum ada nilai yang tersedia.</p>
             <?php endif; ?>
@@ -189,7 +193,8 @@ if ($role === 'siswa') {
                 <div class="flex items-start justify-between mb-2">
                     <div>
                         <div class="font-bold text-gray-800"><?= e($r['ta_nama']) ?></div>
-                        <div class="text-xs text-gray-500">Semester <?= $r['semester'] == 1 ? 'Ganjil' : 'Genap' ?></div>
+                        <div class="text-xs text-gray-500">Semester <?= $r['semester'] == 1 ? 'Ganjil' : 'Genap' ?>
+                        </div>
                     </div>
                     <span class="badge <?= $rjBadge ?>">
                         <?= $rjLabel ?>
@@ -214,19 +219,22 @@ if ($role === 'siswa') {
                 <?php endif; ?>
                 <div class="flex gap-2 mt-3">
                     <a href="index.php?page=raport.view&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
-                        class="btn btn-secondary btn-sm flex-1 justify-center">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                        class="btn btn-secondary btn-sm flex-1 justify-center" style="border-radius: 30px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                         </svg>
                         Lihat
                     </a>
                     <a href="index.php?page=raport.print&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
-                        target="_blank" class="btn btn-primary btn-sm flex-1 justify-center">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <polyline points="6 9 6 2 18 2 18 9"/>
-                            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-                            <rect x="6" y="14" width="12" height="8"/>
+                        target="_blank" class="btn btn-primary btn-sm flex-1 justify-center"
+                        style="border-radius: 30px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <polyline points="6 9 6 2 18 2 18 9" />
+                            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                            <rect x="6" y="14" width="12" height="8" />
                         </svg>
                         Cetak
                     </a>
@@ -357,7 +365,8 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     <label class="form-label">Jenis Raport</label>
                     <select name="jenis" class="form-control" onchange="this.form.submit()">
                         <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS &mdash; Tengah Semester</option>
+                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS &mdash; Tengah Semester
+                        </option>
                         <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester (SAS)</option>
                     </select>
                 </div>
@@ -390,13 +399,14 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <?php if (is_admin_or_super()): ?>
                 <div class="flex items-center gap-2" style="margin-left:4px">
                     <span class="text-sm font-medium text-gray-600">Terbitkan ke Siswa:</span>
-                    <label class="toggle-switch" title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan raport ini ke siswa' ?>">
-                        <input type="checkbox" id="togglePublikasi"
-                            <?= $is_published ? 'checked' : '' ?>
+                    <label class="toggle-switch"
+                        title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan raport ini ke siswa' ?>">
+                        <input type="checkbox" id="togglePublikasi" <?= $is_published ? 'checked' : '' ?>
                             <?= (!$kelas_id || !$ta_id) ? 'disabled' : '' ?>>
                         <span class="toggle-slider"></span>
                     </label>
-                    <span id="pubLabel" class="text-sm font-semibold <?= $is_published ? 'text-green-600' : 'text-gray-400' ?>">
+                    <span id="pubLabel"
+                        class="text-sm font-semibold <?= $is_published ? 'text-green-600' : 'text-gray-400' ?>">
                         <?= $is_published ? 'Sudah Rilis' : 'Belum Rilis' ?>
                     </span>
                 </div>
@@ -408,18 +418,17 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     target="_blank" class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
                     style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <path d="M3 9h18M3 15h18M9 3v18"/>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M3 15h18M9 3v18" />
                     </svg>
                     Leger
                 </a>
                 <?php else: ?>
                 <button type="button" onclick="document.getElementById('modalLegerDitolak').style.display='flex'"
-                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
-                    style="border-radius:30px">
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini" style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <path d="M3 9h18M3 15h18M9 3v18"/>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M3 15h18M9 3v18" />
                     </svg>
                     Leger
                 </button>
@@ -428,9 +437,9 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
                     style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
                     </svg>
                     Cetak Semua (<?= count($siswa_raport) ?> Siswa)
                 </a>
@@ -446,10 +455,15 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
              color:<?= $is_published ? '#166534' : '#9a3412' ?>;
              display:flex;align-items:center;gap:6px">
             <?php if ($is_published): ?>
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5" />
+            </svg>
             Raport ini <strong>sudah diterbitkan</strong> &mdash; siswa dapat melihat dan mencetak raport mereka.
             <?php else: ?>
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
             Raport ini <strong>belum diterbitkan</strong> &mdash; siswa tidak dapat melihat raport mereka.
             <?php endif; ?>
         </div>
@@ -488,7 +502,8 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                         <td class="text-center"><?= $s['jml_mapel'] ?></td>
                         <td class="font-bold text-orange-600"><?= number_format($s['avg_nilai'] ?? 0, 2) ?></td>
                         <td>
-                            <span class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
+                            <span
+                                class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
                                 <?= $pred ?>
                             </span>
                         </td>
@@ -516,8 +531,8 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
     <div class="card">
         <div class="card-body empty-state">
             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
             </svg>
             <p>Pilih kelas dan jenis raport untuk menampilkan data.</p>
         </div>
@@ -539,21 +554,18 @@ $modal_pesan = ($role === 'wali_kelas')
     : 'Halaman <strong>Leger Raport</strong> hanya dapat diakses oleh<br><strong>Super Admin, Admin, Kepala Sekolah,</strong> dan <strong>Wali Kelas</strong>.<br><br>Akun Anda sebagai <strong>Guru</strong> tidak memiliki izin untuk membuka halaman ini.';
 ?>
 <!-- Modal peringatan leger -->
-<div id="modalLegerDitolak"
-     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
-            align-items:center;justify-content:center"
-     onclick="if(event.target===this)this.style.display='none'">
+<div id="modalLegerDitolak" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
+            align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:440px;width:90%;
                 text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative">
-        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'"
-                style="position:absolute;top:12px;right:14px;background:none;border:none;
+        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;
                        font-size:1.3rem;color:#9ca3af;cursor:pointer;line-height:1">&times;</button>
         <div style="width:60px;height:60px;background:#fff3e0;border-radius:50%;
                     display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
             <svg width="30" height="30" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <circle cx="12" cy="16" r=".6" fill="#f97316"/>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <circle cx="12" cy="16" r=".6" fill="#f97316" />
             </svg>
         </div>
         <div style="font-size:1.05rem;font-weight:700;color:#1f2328;margin-bottom:8px">
@@ -562,8 +574,7 @@ $modal_pesan = ($role === 'wali_kelas')
         <div style="font-size:.87rem;color:#57606a;line-height:1.65;margin-bottom:22px">
             <?= $modal_pesan ?>
         </div>
-        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'"
-                style="background:#f97316;color:#fff;border:none;border-radius:30px;
+        <button onclick="document.getElementById('modalLegerDitolak').style.display='none'" style="background:#f97316;color:#fff;border:none;border-radius:30px;
                        padding:10px 28px;font-size:.88rem;font-weight:700;cursor:pointer">
             Mengerti
         </button>
@@ -574,8 +585,8 @@ $modal_pesan = ($role === 'wali_kelas')
 <?php if (is_admin_or_super() && $kelas_id): ?>
 <script>
 (function() {
-    const toggle   = document.getElementById('togglePublikasi');
-    const label    = document.getElementById('pubLabel');
+    const toggle = document.getElementById('togglePublikasi');
+    const label = document.getElementById('pubLabel');
     const statusBar = document.getElementById('pubStatusBar');
     if (!toggle) return;
 
@@ -584,44 +595,56 @@ $modal_pesan = ($role === 'wali_kelas')
         toggle.disabled = true;
 
         fetch('index.php?page=raport', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: new URLSearchParams({
-                action:       'toggle_publikasi',
-                _token:       '<?= csrf_token() ?>',
-                kelas_id:     '<?= $kelas_id ?>',
-                ta_id:        '<?= $ta_id ?>',
-                jenis:        '<?= e($jenis) ?>',
-                bulan:        '<?= $bulan ?>',
-                is_published: newVal
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'toggle_publikasi',
+                    _token: '<?= csrf_token() ?>',
+                    kelas_id: '<?= $kelas_id ?>',
+                    ta_id: '<?= $ta_id ?>',
+                    jenis: '<?= e($jenis) ?>',
+                    bulan: '<?= $bulan ?>',
+                    is_published: newVal
+                })
             })
-        })
-        .then(r => r.json())
-        .then(data => {
-            toggle.disabled = false;
-            if (!data.ok) { alert('Gagal: ' + data.msg); toggle.checked = !toggle.checked; return; }
+            .then(r => r.json())
+            .then(data => {
+                toggle.disabled = false;
+                if (!data.ok) {
+                    alert('Gagal: ' + data.msg);
+                    toggle.checked = !toggle.checked;
+                    return;
+                }
 
-            if (newVal === 1) {
-                label.textContent = 'Sudah Rilis';
-                label.className   = 'text-sm font-semibold text-green-600';
-                if (statusBar) {
-                    statusBar.style.background  = '#f0fdf4';
-                    statusBar.style.borderColor = '#bbf7d0';
-                    statusBar.style.color       = '#166534';
-                    statusBar.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Raport ini <strong>sudah diterbitkan</strong> &mdash; siswa dapat melihat dan mencetak raport mereka.';
+                if (newVal === 1) {
+                    label.textContent = 'Sudah Rilis';
+                    label.className = 'text-sm font-semibold text-green-600';
+                    if (statusBar) {
+                        statusBar.style.background = '#f0fdf4';
+                        statusBar.style.borderColor = '#bbf7d0';
+                        statusBar.style.color = '#166534';
+                        statusBar.innerHTML =
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Raport ini <strong>sudah diterbitkan</strong> &mdash; siswa dapat melihat dan mencetak raport mereka.';
+                    }
+                } else {
+                    label.textContent = 'Belum Rilis';
+                    label.className = 'text-sm font-semibold text-gray-400';
+                    if (statusBar) {
+                        statusBar.style.background = '#fff7ed';
+                        statusBar.style.borderColor = '#fed7aa';
+                        statusBar.style.color = '#9a3412';
+                        statusBar.innerHTML =
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Raport ini <strong>belum diterbitkan</strong> &mdash; siswa tidak dapat melihat raport mereka.';
+                    }
                 }
-            } else {
-                label.textContent = 'Belum Rilis';
-                label.className   = 'text-sm font-semibold text-gray-400';
-                if (statusBar) {
-                    statusBar.style.background  = '#fff7ed';
-                    statusBar.style.borderColor = '#fed7aa';
-                    statusBar.style.color       = '#9a3412';
-                    statusBar.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Raport ini <strong>belum diterbitkan</strong> &mdash; siswa tidak dapat melihat raport mereka.';
-                }
-            }
-        })
-        .catch(() => { toggle.disabled = false; toggle.checked = !toggle.checked; alert('Terjadi kesalahan koneksi.'); });
+            })
+            .catch(() => {
+                toggle.disabled = false;
+                toggle.checked = !toggle.checked;
+                alert('Terjadi kesalahan koneksi.');
+            });
     });
 })();
 </script>

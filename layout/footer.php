@@ -53,3 +53,23 @@
     </div>
 
 </footer>
+
+<script>
+// ── Bersihkan preview-raport-mode jika halaman ini bukan raport.view ───
+// Melindungi dari bfcache yang merestorasi class dari halaman sebelumnya.
+(function () {
+  var page = new URLSearchParams(window.location.search).get('page') || '';
+  if (page !== 'raport.view') {
+    document.body.classList.remove('preview-raport-mode');
+  }
+  // Juga tangani bfcache pageshow di halaman non-preview
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      var p = new URLSearchParams(window.location.search).get('page') || '';
+      if (p !== 'raport.view') {
+        document.body.classList.remove('preview-raport-mode');
+      }
+    }
+  });
+})();
+</script>

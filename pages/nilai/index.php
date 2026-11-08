@@ -120,30 +120,79 @@ if ($jenis) {
 $whereStr = implode(' AND ', $where);
 
 // â"€â"€ Export CSV (filter-aware, ambil SEMUA tanpa LIMIT) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// Export XLSX — kolom sesuai template import agar bisa di-re-import langsung.
+// Kolom [dalam kurung] di akhir hanya referensi, tidak dibaca saat import.
 if (isset($_GET['export'])) {
     $exp_all = db_query(
-        "SELECT n.*, u.nama_lengkap as nama_siswa, m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru
+        "SELECT n.*, u.nama_lengkap as nama_siswa, s.nis as siswa_nis,
+                m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru
          FROM nilai n
          LEFT JOIN users u ON u.id = n.siswa_user_id
+         LEFT JOIN siswa s ON s.user_id = n.siswa_user_id
          LEFT JOIN mapel m ON m.id = n.mapel_id
          LEFT JOIN kelas k ON k.id = n.kelas_id
          LEFT JOIN users g ON g.id = n.guru_user_id
          WHERE $whereStr ORDER BY u.nama_lengkap, m.nama_mapel, n.bulan",
         $params
     );
-    $exp_headers = ['nama_siswa','kelas','mapel','jenis_raport','bulan',
-                    'nh1','nh2','nh3','tugas','sts','sas','nilai_akhir','predikat','catatan'];
-    $exp_rows = [];
-    foreach ($exp_all as $n) {
-        $exp_rows[] = [
-            $n['nama_siswa'], $n['nama_kelas'], $n['nama_mapel'],
-            $n['jenis_raport'], $n['bulan'],
-            $n['nilai_harian_1'], $n['nilai_harian_2'], $n['nilai_harian_3'],
-            $n['nilai_tugas'], $n['nilai_sts'], $n['nilai_sas'],
-            $n['nilai_akhir'], $n['predikat'], $n['catatan'],
-        ];
-    }
-    csv_download('export_nilai_' . date('Ymd') . '.csv', $exp_headers, $exp_rows);
+    require_once __DIR__ . '/../../excel.php';
+    xlsx_template('export_nilai_' . date('Ymd') . '.xlsx', [
+        'title'    => 'Export Data Nilai -- Raportku',
+        'subtitle' => 'Kolom merah = wajib saat re-import | Kolom [dalam kurung] = referensi saja, tidak dibaca saat import',
+        'columns'  => [
+            ['header'=>'NIS Siswa',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text',  'format'=>'@',
+             'note'=>'NIS siswa -- wajib saat re-import ke halaman Import Nilai'],
+            ['header'=>'Nama Mapel',      'field'=>'mapel_nama',      'width'=>26,'required'=>true,  'type'=>'text',  'format'=>'@',
+             'note'=>'Nama mapel harus persis sama (case-insensitive)'],
+            ['header'=>'Nama Kelas',      'field'=>'kelas_nama',      'width'=>16,'required'=>true,  'type'=>'text',  'format'=>'@',
+             'note'=>'Nama kelas harus persis sama dengan database'],
+            ['header'=>'Tahun Ajaran ID', 'field'=>'tahun_ajaran_id', 'width'=>16,'required'=>true,  'type'=>'number',
+             'note'=>'ID tahun ajaran'],
+            ['header'=>'Jenis Raport',    'field'=>'jenis_raport',    'width'=>14,'required'=>true,  'type'=>'dropdown',
+             'dropdown'=>['bulanan','sts','semester'],
+             'note'=>'Pilih: bulanan / sts / semester'],
+            ['header'=>'Bulan',           'field'=>'bulan',           'width'=>8, 'required'=>false, 'type'=>'number',
+             'note'=>'1-12, wajib untuk jenis bulanan/sts. Kosongkan untuk semester.'],
+            ['header'=>'NH1',             'field'=>'nh1',             'width'=>10,'required'=>false, 'type'=>'number',
+             'note'=>'Nilai Harian 1 (bulanan). Nilai 0 = tidak terisi.'],
+            ['header'=>'NH2',             'field'=>'nh2',             'width'=>10,'required'=>false, 'type'=>'number'],
+            ['header'=>'NH3',             'field'=>'nh3',             'width'=>10,'required'=>false, 'type'=>'number'],
+            ['header'=>'Tugas',           'field'=>'tugas',           'width'=>10,'required'=>false, 'type'=>'number'],
+            ['header'=>'STS',             'field'=>'sts',             'width'=>10,'required'=>false, 'type'=>'number',
+             'note'=>'Nilai STS (untuk jenis=sts)'],
+            ['header'=>'SAS',             'field'=>'sas',             'width'=>10,'required'=>false, 'type'=>'number',
+             'note'=>'Nilai SAS (untuk jenis=semester)'],
+            ['header'=>'Catatan',         'field'=>'catatan',         'width'=>28,'required'=>false, 'type'=>'text',  'format'=>'@'],
+            // Kolom referensi -- tidak dibaca saat import
+            ['header'=>'[Nama Siswa]',    'field'=>'nama_siswa',      'width'=>26,'required'=>false, 'type'=>'text',  'format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
+            ['header'=>'[Nilai Akhir]',   'field'=>'nilai_akhir',     'width'=>13,'required'=>false, 'type'=>'number',
+             'note'=>'Referensi saja -- dihitung ulang otomatis saat import'],
+            ['header'=>'[Predikat]',      'field'=>'predikat',        'width'=>10,'required'=>false, 'type'=>'text',  'format'=>'@',
+             'note'=>'Referensi saja -- dihitung ulang otomatis saat import'],
+            ['header'=>'[Nama Guru]',     'field'=>'nama_guru',       'width'=>24,'required'=>false, 'type'=>'text',  'format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
+        ],
+        'examples' => array_map(fn($n) => [
+            $n['siswa_nis'] ?? '',
+            $n['nama_mapel'],
+            $n['nama_kelas'],
+            $n['tahun_ajaran_id'],
+            $n['jenis_raport'],
+            $n['bulan'] ?? '',
+            $n['nilai_harian_1'],
+            $n['nilai_harian_2'],
+            $n['nilai_harian_3'],
+            $n['nilai_tugas'],
+            $n['nilai_sts'],
+            $n['nilai_sas'],
+            $n['catatan'] ?? '',
+            $n['nama_siswa'],
+            $n['nilai_akhir'],
+            $n['predikat'],
+            $n['nama_guru'] ?? '',
+        ], $exp_all),
+    ]);
 }
 
 // â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€

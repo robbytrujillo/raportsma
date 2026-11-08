@@ -9,13 +9,16 @@ require_once __DIR__ . '/../../db.php';
 // Parameter sudah di-set oleh halaman pemanggil
 // $siswa_uid, $ta_id, $jenis, $bulan
 
+// Ambil data siswa & cari kelas yang sesuai tahun ajaran yang diminta.
+// Prioritas: (1) kelas dari nilai yang ada di ta_id ini, (2) kelas siswa sekarang.
+// Ini memastikan raport lama tetap tampil dengan nama kelas yang benar
+// meskipun siswa sudah naik kelas / pindah kelas.
 $siswa = db_row(
-    'SELECT u.*, s.nis, s.nisn, s.kelas_id, s.tanggal_lahir, s.tempat_lahir, s.alamat,
-            s.nama_ayah, s.nama_ibu, k.nama_kelas, k.wali_kelas_id,
+    'SELECT u.*, s.nis, s.nisn, s.kelas_id as kelas_id_sekarang,
+            s.tanggal_lahir, s.tempat_lahir, s.alamat, s.nama_ayah, s.nama_ibu,
             ta.nama as ta_nama, ta.semester
      FROM users u
      INNER JOIN siswa s ON s.user_id = u.id
-     INNER JOIN kelas k ON k.id = s.kelas_id
      INNER JOIN tahun_ajaran ta ON ta.id = :ta_id
      WHERE u.id = :uid',
     [':uid' => $siswa_uid, ':ta_id' => $ta_id]
@@ -23,8 +26,23 @@ $siswa = db_row(
 
 if (!$siswa) return;
 
-$ta     = db_row('SELECT * FROM tahun_ajaran WHERE id = :id', [':id' => $ta_id]);
-$kelas  = db_row('SELECT * FROM kelas WHERE id = :id', [':id' => $siswa['kelas_id']]);
+$ta = db_row('SELECT * FROM tahun_ajaran WHERE id = :id', [':id' => $ta_id]);
+
+// Cari kelas historis: ambil kelas_id dari nilai siswa di tahun ajaran ini.
+// Jika belum ada nilai (raport kosong), fallback ke kelas siswa sekarang.
+$kelas_id_historis = db_row(
+    'SELECT kelas_id FROM nilai
+     WHERE siswa_user_id = :uid AND tahun_ajaran_id = :ta
+     LIMIT 1',
+    [':uid' => $siswa_uid, ':ta' => $ta_id]
+)['kelas_id'] ?? $siswa['kelas_id_sekarang'];
+
+$kelas = db_row('SELECT * FROM kelas WHERE id = :id', [':id' => $kelas_id_historis]);
+
+// Tambahkan kelas_id dan nama_kelas ke array $siswa agar kompatibel dengan template raport
+$siswa['kelas_id']   = $kelas_id_historis;
+$siswa['nama_kelas'] = $kelas['nama_kelas'] ?? '-';
+$siswa['wali_kelas_id'] = $kelas['wali_kelas_id'] ?? null;
 
 // Nilai berdasarkan jenis raport
 $nilai_params = [':uid'=>$siswa_uid, ':ta'=>$ta_id, ':jenis'=>$jenis];
@@ -61,13 +79,14 @@ $wali_kelas = $kelas['wali_kelas_id']
 // Kepala sekolah
 $kepsek = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');
 
-// Peringkat kelas
+// Peringkat kelas — gunakan n.kelas_id (historis, bukan siswa.kelas_id sekarang)
+// agar peringkat tetap akurat meski siswa sudah naik kelas.
 $rank_data = db_query(
-    'SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg
-     FROM siswa sv INNER JOIN nilai n ON n.siswa_user_id = sv.user_id
-     WHERE sv.kelas_id = :kid AND n.tahun_ajaran_id = :ta AND n.jenis_raport = :jenis
-     GROUP BY sv.user_id ORDER BY avg DESC',
-    [':kid'=>$siswa['kelas_id'], ':ta'=>$ta_id, ':jenis'=>$jenis]
+    'SELECT n.siswa_user_id as user_id, ROUND(AVG(n.nilai_akhir),2) as avg
+     FROM nilai n
+     WHERE n.kelas_id = :kid AND n.tahun_ajaran_id = :ta AND n.jenis_raport = :jenis
+     GROUP BY n.siswa_user_id ORDER BY avg DESC',
+    [':kid'=>$kelas_id_historis, ':ta'=>$ta_id, ':jenis'=>$jenis]
 );
 
 $peringkat         = '-';

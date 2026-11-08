@@ -47,8 +47,8 @@ if (isset($_GET['download_template'])) {
     }
 
     xlsx_template('template_nilai.xlsx', [
-        'title'    => 'Template Import Nilai &mdash; Raportku',
-        'subtitle' => '★ = wajib  |  Lihat sheet "Referensi" untuk nama mapel, kelas, dan ID tahun ajaran yang valid',
+        'title'    => 'Template Import Nilai - Raportku',
+        'subtitle' => 'Kolom merah = wajib  |  Lihat sheet "Referensi" untuk nama mapel, kelas, dan ID tahun ajaran yang valid',
         'columns'  => [
             ['header'=>'NIS Siswa',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text','format'=>'@',
              'example'=>$nis_ex, 'note'=>'Nomor Induk Siswa (NIS)'],

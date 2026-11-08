@@ -443,6 +443,38 @@ function initUserDropdown() {
 }
 
 /* ============================================================
+   15. Responsive Table — auto inject data-label ke setiap <td>
+       Berlaku untuk semua .data-table KECUALI #tblNilai (bulk input).
+       Label diambil dari teks <th> di baris pertama thead.
+   ============================================================ */
+function initResponsiveTables() {
+  document.querySelectorAll('table.data-table').forEach(function(table) {
+    // Lewati tabel bulk nilai dan tabel dengan kelas tbl-no-stack
+    if (table.closest('#tblNilai') || table.id === 'tblNilai') return;
+    if (table.classList.contains('tbl-no-stack')) return;
+
+    // Ambil semua header teks dari thead row pertama
+    const headers = [];
+    const headerRow = table.querySelector('thead tr');
+    if (headerRow) {
+      headerRow.querySelectorAll('th').forEach(function(th) {
+        headers.push(th.textContent.trim());
+      });
+    }
+
+    // Inject data-label ke setiap td yang tidak punya colspan
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+      if (row.querySelector('td[colspan]')) return; // skip empty-state rows
+      row.querySelectorAll('td').forEach(function(td, i) {
+        if (!td.hasAttribute('data-label')) {
+          td.setAttribute('data-label', headers[i] || '');
+        }
+      });
+    });
+  });
+}
+
+/* ============================================================
    INIT — jalankan semua saat DOM siap
    ============================================================ */
 ready(function () {
@@ -453,6 +485,7 @@ ready(function () {
   initJenisRaportToggle();
   initSignaturePreview();
   initUserDropdown();
+  initResponsiveTables();
 
   // Table search (jika ada)
   initTableSearch('tableSearch', 'dataTable');

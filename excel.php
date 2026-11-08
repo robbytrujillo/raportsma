@@ -62,7 +62,7 @@ function xlsx_template(string $filename, array $config): void {
     $spreadsheet->getProperties()
         ->setCreator('Raportku')
         ->setTitle($config['title'] ?? 'Template Import')
-        ->setDescription('Template import data &mdash; dibuat otomatis oleh Raportku');
+        ->setDescription('Template import data - dibuat otomatis oleh Raportku');
 
     // ── Sheet utama ────────────────────────────────────────────
     $sheet = $spreadsheet->getActiveSheet();

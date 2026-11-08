@@ -101,16 +101,19 @@ $pw_px = round(210 * $mm2px);
           #previewWrap .no-print { display: none !important; }
           @media print { #previewOuter, #previewWrap { all: unset; } }
 
-          /* ── Preview mode: sembunyikan sidebar, beri full width ─ */
-          body.preview-raport-mode .sidebar {
-            display: none !important;
-          }
-          body.preview-raport-mode .main-content {
-            margin-left: 0 !important;
-          }
-          /* Perkecil padding page-content di preview mode */
-          body.preview-raport-mode .page-content {
-            padding: 16px 12px !important;
+          /* ── Preview mode: hanya di tablet/mobile ─────────────── */
+          /* Desktop (>1024px): sidebar tetap tampil, tidak perlu hide */
+          @media (max-width: 1024px) {
+            body.preview-raport-mode .sidebar {
+              display: none !important;
+            }
+            body.preview-raport-mode .main-content {
+              margin-left: 0 !important;
+              max-width: 100vw !important;
+            }
+            body.preview-raport-mode .page-content {
+              padding: 16px 12px !important;
+            }
           }
           /* Tombol aksi di preview header lebih rapi */
           .preview-raport-header {
@@ -144,11 +147,36 @@ $pw_px = round(210 * $mm2px);
 
 <script>
 (function () {
-  // ── 1. Aktifkan preview mode: sembunyikan sidebar ─────────────
-  document.body.classList.add('preview-raport-mode');
-
   var NATURAL_W = <?= $pw_px ?>; // 210mm @ 96 dpi
 
+  // ── 1. Preview mode: sembunyikan sidebar HANYA di tablet/mobile ──
+  // Di desktop (>1024px) sidebar tetap, CSS pun tidak menyembunyikannya.
+  function applyPreviewMode() {
+    document.body.classList.add('preview-raport-mode');
+  }
+  function removePreviewMode() {
+    document.body.classList.remove('preview-raport-mode');
+  }
+
+  // Aktifkan saat halaman ini tampil
+  applyPreviewMode();
+
+  // Hapus saat navigasi keluar (mencegah class tertinggal di halaman lain via bfcache)
+  window.addEventListener('pagehide', function () {
+    removePreviewMode();
+  });
+
+  // Jika halaman ini di-restore dari bfcache (tombol Back/Forward browser)
+  // maka aktifkan kembali
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      // Halaman di-restore dari bfcache: kita benar-benar di halaman preview
+      applyPreviewMode();
+      scalePreview();
+    }
+  });
+
+  // ── 2. Scale raport agar muat di layar ───────────────────────────
   function scalePreview() {
     var outer  = document.getElementById('previewOuter');
     var wrap   = document.getElementById('previewWrap');

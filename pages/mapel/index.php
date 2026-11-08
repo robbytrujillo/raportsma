@@ -7,15 +7,31 @@ require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
 // â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// Export XLSX -- kolom sesuai template import mapel.
 if (isset($_GET['export'])) {
     $rows = db_query('SELECT nama_mapel, kode_mapel, kelompok, parent_id, sub_label, urutan FROM mapel ORDER BY kelompok, urutan, nama_mapel');
-    $headers = ['nama_mapel','kode_mapel','kelompok','parent_id','sub_label','urutan'];
-    $out = [];
-    foreach ($rows as $r) {
-        $out[] = [$r['nama_mapel'],$r['kode_mapel'],$r['kelompok'],
-                  $r['parent_id'],$r['sub_label'],$r['urutan']];
-    }
-    csv_download('export_mapel_' . date('Ymd') . '.csv', $headers, $out);
+    xlsx_template('export_mapel_' . date('Ymd') . '.xlsx', [
+        'title'    => 'Export Mata Pelajaran -- Raportku',
+        'subtitle' => 'Kolom merah = wajib saat re-import | Import mapel induk dulu, baru sub-mapel',
+        'columns'  => [
+            ['header'=>'Nama Mapel', 'field'=>'nama_mapel', 'width'=>32,'required'=>true,  'type'=>'text','format'=>'@'],
+            ['header'=>'Kode Mapel', 'field'=>'kode_mapel', 'width'=>12,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Kode singkat, misal: MTK, BIND, PAI'],
+            ['header'=>'Kelompok',   'field'=>'kelompok',   'width'=>18,'required'=>true,  'type'=>'dropdown',
+             'dropdown'=>['A','B','C','C Pilihan','D','Muatan Lokal'],
+             'note'=>'Pilih: A / B / C / C Pilihan / D / Muatan Lokal'],
+            ['header'=>'Parent ID',  'field'=>'parent_id',  'width'=>12,'required'=>false, 'type'=>'number',
+             'note'=>'ID mapel induk jika sub-mapel. Kosongkan jika mapel mandiri.'],
+            ['header'=>'Sub Label',  'field'=>'sub_label',  'width'=>10,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Label huruf: a, b, c (untuk sub-mapel)'],
+            ['header'=>'Urutan',     'field'=>'urutan',     'width'=>10,'required'=>false, 'type'=>'number',
+             'note'=>'Angka urutan di raport'],
+        ],
+        'examples' => array_map(fn($r) => [
+            $r['nama_mapel'], $r['kode_mapel'], $r['kelompok'],
+            $r['parent_id'], $r['sub_label'], $r['urutan'],
+        ], $rows),
+    ]);
 }
 
 // â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€

@@ -139,8 +139,8 @@ if ($kelas_id) {
             <input type="hidden" name="siswa_ids[]" value="<?= $s['id'] ?>">
             <?php endforeach; ?>
 
-            <div class="table-container">
-                <table class="data-table">
+            <div class="table-container" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                <table class="data-table tbl-no-stack">
                     <thead>
                         <tr>
                             <th>#</th>

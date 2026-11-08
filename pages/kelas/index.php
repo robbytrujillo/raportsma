@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
@@ -6,6 +6,7 @@ require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
 // â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// Export XLSX -- kolom sesuai template import kelas.
 if (isset($_GET['export'])) {
     $rows = db_query(
         'SELECT k.nama_kelas, k.tingkat, k.tahun_ajaran_id, k.wali_kelas_id,
@@ -15,13 +16,29 @@ if (isset($_GET['export'])) {
          LEFT JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
          ORDER BY ta.id DESC, k.tingkat, k.nama_kelas'
     );
-    $headers = ['nama_kelas','tingkat','tahun_ajaran_id','wali_kelas_id','nama_wali','tahun_ajaran'];
-    $out = [];
-    foreach ($rows as $r) {
-        $out[] = [$r['nama_kelas'],$r['tingkat'],$r['tahun_ajaran_id'],
-                  $r['wali_kelas_id'],$r['nama_wali'],$r['ta_nama']];
-    }
-    csv_download('export_kelas_' . date('Ymd') . '.csv', $headers, $out);
+    xlsx_template('export_kelas_' . date('Ymd') . '.xlsx', [
+        'title'    => 'Export Data Kelas -- Raportku',
+        'subtitle' => 'Kolom merah = wajib saat re-import | Kolom [dalam kurung] = referensi saja',
+        'columns'  => [
+            ['header'=>'Nama Kelas',      'field'=>'nama_kelas',      'width'=>20,'required'=>true,  'type'=>'text','format'=>'@'],
+            ['header'=>'Tingkat',         'field'=>'tingkat',         'width'=>12,'required'=>true,  'type'=>'dropdown',
+             'dropdown'=>['VII','VIII','IX','X','XI','XII'],
+             'note'=>'Pilih: VII / VIII / IX / X / XI / XII'],
+            ['header'=>'Tahun Ajaran ID', 'field'=>'tahun_ajaran_id', 'width'=>16,'required'=>true,  'type'=>'number',
+             'note'=>'ID tahun ajaran -- lihat kolom [Tahun Ajaran] di kanan'],
+            ['header'=>'Wali Kelas ID',   'field'=>'wali_kelas_id',   'width'=>14,'required'=>false, 'type'=>'number',
+             'note'=>'ID guru/wali kelas. Kosongkan jika belum ditentukan.'],
+            // Kolom referensi
+            ['header'=>'[Nama Wali Kelas]','field'=>'nama_wali',      'width'=>24,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
+            ['header'=>'[Tahun Ajaran]',  'field'=>'ta_nama',         'width'=>18,'required'=>false, 'type'=>'text','format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
+        ],
+        'examples' => array_map(fn($r) => [
+            $r['nama_kelas'], $r['tingkat'], $r['tahun_ajaran_id'], $r['wali_kelas_id'],
+            $r['nama_wali'], $r['ta_nama'],
+        ], $rows),
+    ]);
 }
 
 // â"€â"€ Handle ALL POST actions BEFORE any output â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€

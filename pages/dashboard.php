@@ -37,25 +37,50 @@ if (in_array($role, ['admin','super_admin'])) {
         [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
 
 } elseif ($role === 'siswa') {
+    // ── Filter dashboard siswa ────────────────────────────────
+    // Daftar semua tahun ajaran untuk dropdown
+    $ta_list_siswa = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
+
+    // TA yang dipilih (default: TA aktif)
+    $filter_ta_id = (int)($_GET['f_ta'] ?? ($ta_aktif['id'] ?? 0));
+    // Pastikan TA yang dipilih valid
+    $filter_ta    = db_row('SELECT * FROM tahun_ajaran WHERE id = :id', [':id' => $filter_ta_id])
+                    ?? $ta_aktif;
+    $filter_ta_id = (int)($filter_ta['id'] ?? 0);
+
+    // Filter jenis_raport: semua | bulanan | sts | semester
+    $filter_jenis_opts = ['semua' => 'Semua Jenis', 'bulanan' => 'Bulanan', 'sts' => 'STS', 'semester' => 'Semester'];
+    $filter_jenis = isset($_GET['f_jenis']) && array_key_exists($_GET['f_jenis'], $filter_jenis_opts)
+                    ? $_GET['f_jenis'] : 'semua';
+
+    // Kondisi SQL untuk jenis_raport
+    $jenis_cond  = $filter_jenis !== 'semua' ? 'AND n.jenis_raport = :jenis' : '';
+    $jenis_param = $filter_jenis !== 'semua' ? [':jenis' => $filter_jenis] : [];
+
     // Nilai siswa ini
     $siswa_data = db_row('SELECT s.*, k.nama_kelas FROM siswa s LEFT JOIN kelas k ON k.id = s.kelas_id WHERE s.user_id = :uid', [':uid' => $user['id']]);
-    $total_nilai = db_row('SELECT COUNT(*) as n FROM nilai WHERE siswa_user_id = :uid AND tahun_ajaran_id = :ta',
-        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
+    $total_nilai = db_row(
+        "SELECT COUNT(*) as n FROM nilai n WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta $jenis_cond",
+        array_merge([':uid' => $user['id'], ':ta' => $filter_ta_id], $jenis_param)
+    )['n'] ?? 0;
 
-    // Rata-rata nilai akhir siswa
-    $avg_nilai = db_row('SELECT ROUND(AVG(nilai_akhir),2) as avg FROM nilai WHERE siswa_user_id = :uid AND tahun_ajaran_id = :ta',
-        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0])['avg'] ?? 0;
+    // Rata-rata nilai akhir siswa (dengan filter)
+    $avg_nilai = db_row(
+        "SELECT ROUND(AVG(n.nilai_akhir),2) as avg FROM nilai n
+         WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta $jenis_cond",
+        array_merge([':uid' => $user['id'], ':ta' => $filter_ta_id], $jenis_param)
+    )['avg'] ?? 0;
 
-    // Peringkat di kelas
+    // Peringkat di kelas (filter TA + jenis, kelas otomatis dari data siswa)
     if ($siswa_data) {
         $rank_data = db_query(
-            'SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
+            "SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
              FROM siswa sv
              INNER JOIN nilai n ON n.siswa_user_id = sv.user_id
-             WHERE sv.kelas_id = :kelas AND n.tahun_ajaran_id = :ta
+             WHERE sv.kelas_id = :kelas AND n.tahun_ajaran_id = :ta $jenis_cond
              GROUP BY sv.user_id
-             ORDER BY avg_nilai DESC',
-            [':kelas' => $siswa_data['kelas_id'], ':ta' => $ta_aktif['id'] ?? 0]
+             ORDER BY avg_nilai DESC",
+            array_merge([':kelas' => $siswa_data['kelas_id'], ':ta' => $filter_ta_id], $jenis_param)
         );
         $peringkat = 1;
         foreach ($rank_data as $i => $r) {
@@ -68,7 +93,7 @@ if (in_array($role, ['admin','super_admin'])) {
     }
 
     // ── Data grafik: nilai per mapel per bulan (bulanan) ────────
-    // Ambil semua mapel yang punya nilai bulanan untuk siswa ini di TA aktif
+    // Chart donut: selalu hanya bulanan (tampilan per-bulan memang hanya relevan untuk bulanan)
     $chart_rows = db_query(
         'SELECT n.bulan, m.nama_mapel, n.nilai_akhir
          FROM nilai n
@@ -79,7 +104,7 @@ if (in_array($role, ['admin','super_admin'])) {
            AND n.bulan IS NOT NULL
            AND n.nilai_akhir > 0
          ORDER BY n.bulan ASC, m.urutan ASC, m.nama_mapel ASC',
-        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0]
+        [':uid' => $user['id'], ':ta' => $filter_ta_id]
     );
 
     // Susun data: $chart_data[nama_mapel][bulan] = nilai_akhir
@@ -95,17 +120,18 @@ if (in_array($role, ['admin','super_admin'])) {
     }
     sort($chart_bulan_list);
 
-    // Juga ambil nilai leger (semua jenis) per mapel — untuk bar chart per mapel terbaru
+    // Bar chart: rata-rata per mapel (mengikuti filter jenis)
     $leger_rows = db_query(
-        'SELECT m.nama_mapel, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
+        "SELECT m.nama_mapel, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
          FROM nilai n
          INNER JOIN mapel m ON m.id = n.mapel_id
          WHERE n.siswa_user_id = :uid
            AND n.tahun_ajaran_id = :ta
            AND n.nilai_akhir > 0
+           $jenis_cond
          GROUP BY n.mapel_id
-         ORDER BY m.urutan ASC, m.nama_mapel ASC',
-        [':uid' => $user['id'], ':ta' => $ta_aktif['id'] ?? 0]
+         ORDER BY m.urutan ASC, m.nama_mapel ASC",
+        array_merge([':uid' => $user['id'], ':ta' => $filter_ta_id], $jenis_param)
     );
 }
 
@@ -141,6 +167,138 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
     </div>
     <span class="badge badge-orange text-sm"><?= str_replace('_',' ', ucfirst($role)) ?></span>
   </div>
+
+  <!-- ── FILTER DASHBOARD SISWA ───────────────────────────── -->
+  <?php if ($role === 'siswa'): ?>
+  <?php
+    $filter_ta_nama    = e($filter_ta['nama'] ?? '');
+    $filter_sem_label  = ($filter_ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
+    $filter_kelas_nama = e($siswa_data['nama_kelas'] ?? '-');
+    $is_filter_active  = ($filter_jenis !== 'semua' || $filter_ta_id !== ($ta_aktif['id'] ?? 0));
+    // Simpan state buka/tutup di sessionStorage via JS; default tertutup
+  ?>
+  <!-- Tombol toggle filter -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+    <button type="button" id="btnToggleFilter"
+            onclick="toggleFilterSiswa()"
+            style="display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid <?= $is_filter_active ? '#f97316' : '#e5e7eb' ?>;border-radius:30px;padding:6px 16px 6px 12px;font-size:.82rem;font-weight:600;color:<?= $is_filter_active ? '#f97316' : '#6b7280' ?>;cursor:pointer;transition:all .18s;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+      <!-- Funnel icon -->
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filter Grafik
+      <?php if ($is_filter_active): ?>
+      <span style="background:#f97316;color:#fff;border-radius:20px;font-size:.68rem;font-weight:700;padding:1px 7px;margin-left:2px">Aktif</span>
+      <?php endif; ?>
+      <!-- Chevron -->
+      <svg id="filterChevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+           style="margin-left:2px;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <!-- Pill ringkasan filter aktif -->
+    <?php if ($is_filter_active): ?>
+    <span style="display:inline-flex;align-items:center;gap:6px;background:#fff7ed;border:1px solid #fed7aa;border-radius:20px;padding:4px 12px;font-size:.78rem;color:#c2410c">
+      <svg width="11" height="11" fill="none" stroke="#f97316" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <?= $filter_jenis !== 'semua' ? $filter_jenis_opts[$filter_jenis] : '' ?>
+      <?= $filter_jenis !== 'semua' && $filter_ta_id !== ($ta_aktif['id'] ?? 0) ? ' &bull; ' : '' ?>
+      <?= $filter_ta_id !== ($ta_aktif['id'] ?? 0) ? 'TA '.$filter_ta_nama : '' ?>
+      &nbsp;&mdash;&nbsp;
+      <a href="index.php?page=dashboard" style="color:#f97316;text-decoration:none;font-weight:700">✕ Reset</a>
+    </span>
+    <?php endif; ?>
+  </div>
+
+  <!-- Panel filter (collapsible) -->
+  <div id="panelFilterSiswa" style="overflow:hidden;transition:max-height .28s cubic-bezier(.4,0,.2,1),opacity .22s;max-height:0;opacity:0;margin-bottom:0">
+    <form method="GET" action="index.php" id="filterSiswaDashboard"
+          style="background:linear-gradient(135deg,#fff7ed 0%,#f8fafc 100%);border:1.5px solid #fed7aa;border-radius:14px;padding:16px 20px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+      <input type="hidden" name="page" value="dashboard">
+
+      <!-- Tahun Ajaran -->
+      <div style="flex:1;min-width:160px">
+        <label style="font-size:.74rem;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:4px;margin-bottom:5px">
+          <svg width="11" height="11" fill="none" stroke="#f97316" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Tahun Ajaran
+        </label>
+        <select name="f_ta" class="form-control" style="font-size:.85rem;border-color:#fed7aa" onchange="this.form.submit()">
+          <?php foreach ($ta_list_siswa as $trow): ?>
+          <option value="<?= $trow['id'] ?>" <?= $trow['id'] == $filter_ta_id ? 'selected' : '' ?>>
+            <?= e($trow['nama']) ?> &mdash; Sem. <?= $trow['semester'] == 1 ? 'Ganjil' : 'Genap' ?>
+          </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <!-- Jenis Raport -->
+      <div style="flex:1;min-width:140px">
+        <label style="font-size:.74rem;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:4px;margin-bottom:5px">
+          <svg width="11" height="11" fill="none" stroke="#f97316" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Jenis Raport
+        </label>
+        <select name="f_jenis" class="form-control" style="font-size:.85rem;border-color:#fed7aa" onchange="this.form.submit()">
+          <?php foreach ($filter_jenis_opts as $fk => $fv): ?>
+          <option value="<?= $fk ?>" <?= $fk === $filter_jenis ? 'selected' : '' ?>><?= $fv ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <!-- Info Kelas (read-only) -->
+      <div style="flex:0 0 auto;min-width:110px">
+        <label style="font-size:.74rem;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:4px;margin-bottom:5px">
+          <svg width="11" height="11" fill="none" stroke="#f97316" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          Kelas
+        </label>
+        <div style="background:#fff3e8;border:1.5px solid #fed7aa;border-radius:8px;padding:7px 12px;font-size:.85rem;color:#9a3412;font-weight:600">
+          <?= $filter_kelas_nama ?>
+        </div>
+      </div>
+
+      <!-- Semester (read-only) -->
+      <div style="flex:0 0 auto;min-width:100px">
+        <label style="font-size:.74rem;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:4px;margin-bottom:5px">
+          <svg width="11" height="11" fill="none" stroke="#f97316" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Semester
+        </label>
+        <div style="background:#fff3e8;border:1.5px solid #fed7aa;border-radius:8px;padding:7px 12px;font-size:.85rem;color:#9a3412;font-weight:600">
+          <?= $filter_sem_label ?>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+  (function(){
+    var panel   = document.getElementById('panelFilterSiswa');
+    var chevron = document.getElementById('filterChevron');
+    var KEY     = 'dashFilterOpen';
+    var isOpen  = sessionStorage.getItem(KEY) === '1'
+                  <?= $is_filter_active ? '|| true' : '' ?>; // paksa buka jika filter aktif
+
+    function applyState(open, animate) {
+      if (open) {
+        panel.style.maxHeight = panel.scrollHeight + 40 + 'px';
+        panel.style.opacity   = '1';
+        panel.style.marginBottom = '0';
+        chevron.style.transform  = 'rotate(180deg)';
+      } else {
+        panel.style.maxHeight = '0';
+        panel.style.opacity   = '0';
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Init tanpa animasi
+    applyState(isOpen, false);
+
+    window.toggleFilterSiswa = function() {
+      isOpen = !isOpen;
+      sessionStorage.setItem(KEY, isOpen ? '1' : '0');
+      applyState(isOpen, true);
+    };
+  })();
+  </script>
+  <?php endif; ?>
 
   <!-- ── STAT CARDS ──────────────────────────────────────── -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -305,7 +463,11 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
         </span>
         <div>
           <div style="font-weight:700;font-size:.95rem;color:#1f2937">Rata-rata Nilai per Mata Pelajaran</div>
-          <div style="font-size:.75rem;color:#9ca3af">Semua jenis raport &bull; TA <?= e($ta_aktif['nama'] ?? '') ?></div>
+          <div style="font-size:.75rem;color:#9ca3af">
+            <?= $filter_jenis_opts[$filter_jenis] ?> &bull;
+            TA <?= e($filter_ta['nama'] ?? '') ?> &mdash; Sem. <?= $filter_sem_label ?> &bull;
+            Kelas <?= $filter_kelas_nama ?>
+          </div>
         </div>
       </div>
     </div>
@@ -414,7 +576,11 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
           </span>
           <div>
             <div style="font-weight:700;font-size:.95rem;color:#1f2937">Perbandingan Nilai Bulanan per Mapel</div>
-            <div style="font-size:.75rem;color:#9ca3af">Raport Bulanan &bull; TA <?= e($ta_aktif['nama'] ?? '') ?></div>
+            <div style="font-size:.75rem;color:#9ca3af">
+              Raport Bulanan &bull;
+              TA <?= e($filter_ta['nama'] ?? '') ?> &mdash; Sem. <?= $filter_sem_label ?> &bull;
+              Kelas <?= $filter_kelas_nama ?>
+            </div>
           </div>
         </div>
         <!-- Combobox pilih mapel -->
