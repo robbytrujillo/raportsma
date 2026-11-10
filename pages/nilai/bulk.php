@@ -304,7 +304,9 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 Export Excel
             </a>
             <?php endif; ?>
-            <a href="index.php?page=nilai.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="index.php?page=nilai.import&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&mapel=<?= $mapel_id ?>&jenis=<?= e($jenis) ?>&bulan=<?= $bulan ?>"
+               class="btn btn-secondary" style="border-radius: 30px"
+               title="Download template dengan daftar siswa sudah terisi, lalu upload kembali">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -1098,6 +1100,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ── Key localStorage unik per konteks penilaian ──────────────────
         const LS_KEY = 'kolom_aktif_<?= (int)$ta_id ?>_<?= (int)$kelas_id ?>_<?= (int)$mapel_id ?>_<?= e($jenis) ?>_<?= (int)$bulan ?>';
+
+        // ── Jika redirect dari import, override localStorage dengan state template
+        <?php
+        $imp_nh1   = isset($_GET['aktif_nh1'])   ? (int)$_GET['aktif_nh1']   : -1;
+        $imp_nh2   = isset($_GET['aktif_nh2'])   ? (int)$_GET['aktif_nh2']   : -1;
+        $imp_nh3   = isset($_GET['aktif_nh3'])   ? (int)$_GET['aktif_nh3']   : -1;
+        $imp_tugas = isset($_GET['aktif_tugas']) ? (int)$_GET['aktif_tugas'] : -1;
+        if ($imp_nh1 >= 0): ?>
+        (function() {
+            const importState = {
+                nh1:   <?= $imp_nh1 ? 'true' : 'false' ?>,
+                nh2:   <?= $imp_nh2 ? 'true' : 'false' ?>,
+                nh3:   <?= $imp_nh3 ? 'true' : 'false' ?>,
+                tugas: <?= $imp_tugas ? 'true' : 'false' ?>
+            };
+            try { localStorage.setItem(LS_KEY, JSON.stringify(importState)); } catch(e) {}
+        })();
+        <?php endif; ?>
 
         /** Simpan state checkbox saat ini ke localStorage */
         function simpanStateKolom() {

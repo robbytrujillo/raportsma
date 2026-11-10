@@ -562,8 +562,8 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
     $bar_max    = 100;
     $bar_w_per  = max(40, min(64, (int)floor(820 / max($bar_count,1))));
     $bar_gap    = 14;
-    $svg_w      = max(560, $bar_count * ($bar_w_per + $bar_gap) + 80);
-    $pad_left   = 52; $pad_top = 40;
+    $svg_w      = max(560, $bar_count * ($bar_w_per + $bar_gap) + 80) + 76;
+    $pad_left   = 52; $pad_top = 52;
     $chart_h    = 200;
     $svg_h      = $pad_top + $chart_h + 28; // 28 = ruang nomor X
   ?>
@@ -601,11 +601,27 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
                     fill="#9ca3af"><?= $gy_val ?></text>
                 <?php endfor; ?>
                 <!-- KKM line -->
-                <?php $kkm_y = $pad_top + $chart_h*(1-$krit_c_val/$bar_max); ?>
-                <line x1="<?= $pad_left ?>" y1="<?= $kkm_y ?>" x2="<?= $svg_w-16 ?>" y2="<?= $kkm_y ?>" stroke="#ef4444"
-                    stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5" />
-                <text x="<?= $pad_left+8 ?>" y="<?= $kkm_y-5 ?>" text-anchor="start" font-size="10" fill="#ef4444"
-                    opacity="0.65">KKM <?= $krit_c_val ?></text>
+                <?php
+                  $kkm_y   = $pad_top + $chart_h*(1-$krit_c_val/$bar_max);
+                  $pill_w  = 66; $pill_h = 20;
+                  // pill di kanan, di luar area chart
+                  $pill_x  = $svg_w - $pill_w - 2;
+                  $pill_y  = $kkm_y - $pill_h/2;
+                  // garis dari pad_left sampai sebelum pill
+                  $line_x1 = $pad_left;
+                  $line_x2 = $pill_x - 4;
+                ?>
+                <!-- halo putih supaya garis kontras di atas bar -->
+                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>"
+                    stroke="#fff" stroke-width="4" stroke-dasharray="8,5" />
+                <!-- garis KKM merah tegas -->
+                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>"
+                    stroke="#ef4444" stroke-width="2.5" stroke-dasharray="8,5" />
+                <!-- pill label KKM di kanan -->
+                <rect x="<?= $pill_x ?>" y="<?= $pill_y ?>" width="<?= $pill_w ?>" height="<?= $pill_h ?>"
+                    rx="10" fill="#ef4444" />
+                <text x="<?= $pill_x + $pill_w/2 ?>" y="<?= $kkm_y + 5 ?>" text-anchor="middle"
+                    font-size="10.5" font-weight="700" fill="#fff" letter-spacing="0.4">KKM <?= (int)$krit_c_val ?></text>
                 <!-- Bars -->
                 <?php foreach ($bar_data as $bi => $br):
           $bval  = (float)$br['avg_nilai'];

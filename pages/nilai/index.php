@@ -1,4 +1,4 @@
-<?php
+﻿﻿<?php
 /**
  * pages/nilai/index.php
  * Daftar & input nilai â€" akses berdasarkan status guru di tabel guru:
@@ -308,7 +308,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary w-full">Filter</button>
+                    <button type="submit" class="btn btn-primary w-full" style="border-radius: 30px">Filter</button>
                 </div>
             </div>
         </div>
@@ -319,26 +319,27 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
             <span>Daftar Nilai</span>
             <span class="text-sm text-gray-500"><?= $total ?> data</span>
         </div>
-        <div class="table-container">
-            <table class="data-table" id="dataTable">
+        <div class="table-container" style="overflow-x:auto">
+            <table class="data-table tbl-no-stack" id="dataTable" style="min-width:960px">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Siswa</th>
-                        <th>Kelas</th>
-                        <th>Mata Pelajaran</th>
-                        <th>Jenis</th>
-                        <th>Bln</th>
-                        <th>NH1</th>
-                        <th>NH2</th>
-                        <th>NH3</th>
-                        <th>Tugas</th>
-                        <th>STS</th>
-                        <th>SAS</th>
-                        <th>Nilai Akhir</th>
-                        <th>Pred.</th>
-                        <?php if (in_array($role, ['admin','super_admin'])): ?><th>Guru</th><?php endif; ?>
-                        <th>Aksi</th>
+                        <th style="width:36px">#</th>
+                        <th style="min-width:140px">Siswa</th>
+                        <th style="min-width:80px">Kelas</th>
+                        <th style="min-width:130px">Mata Pelajaran</th>
+                        <th style="width:90px">Jenis</th>
+                        <th style="width:46px;text-align:center">Bln</th>
+                        <th style="width:56px;text-align:center">NH1</th>
+                        <th style="width:56px;text-align:center">NH2</th>
+                        <th style="width:56px;text-align:center">NH3</th>
+                        <th style="width:58px;text-align:center">Tugas</th>
+                        <th style="width:56px;text-align:center">STS</th>
+                        <th style="width:56px;text-align:center">SAS</th>
+                        <th style="width:96px;text-align:center">Nilai Akhir</th>
+                        <th style="width:56px;text-align:center">Pred.</th>
+                        <?php if (in_array($role, ['admin','super_admin'])): ?><th style="min-width:110px">Guru</th>
+                        <?php endif; ?>
+                        <th style="width:100px;text-align:center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -350,9 +351,9 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                     <?php foreach ($nilai_list as $i => $n): ?>
                     <?php $pred = $n['predikat'] ?? get_predikat((float)$n['nilai_akhir']); ?>
                     <tr>
-                        <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
-                        <td class="font-semibold whitespace-nowrap"><?= e($n['nama_siswa']) ?></td>
-                        <td><?= e($n['nama_kelas']) ?></td>
+                        <td class="text-gray-400 text-xs" style="text-align:center"><?= $offset + $i + 1 ?></td>
+                        <td class="font-semibold" style="white-space:nowrap"><?= e($n['nama_siswa']) ?></td>
+                        <td style="white-space:nowrap"><?= e($n['nama_kelas']) ?></td>
                         <td><?= e($n['nama_mapel']) ?></td>
                         <td>
                             <?php
@@ -362,37 +363,40 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
               ?>
                             <span class="badge <?= $jBadge ?>"><?= $jLabel ?></span>
                         </td>
-                        <td><?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : 'â€"' ?></td>
-                        <td><?= $n['nilai_harian_1'] ?></td>
-                        <td><?= $n['nilai_harian_2'] ?></td>
-                        <td><?= $n['nilai_harian_3'] ?></td>
-                        <td><?= $n['nilai_tugas'] ?></td>
-                        <td><?= $n['nilai_sts'] ?></td>
-                        <td><?= $n['nilai_sas'] ?></td>
-                        <td class="font-bold text-orange-600"><?= number_format($n['nilai_akhir'],2) ?></td>
-                        <td>
+                        <td style="text-align:center">
+                            <?= $n['bulan'] ? date('M', mktime(0,0,0,$n['bulan'],1)) : 'â€"' ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_harian_1'],2) ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_harian_2'],2) ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_harian_3'],2) ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_tugas'],   2) ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_sts'],     2) ?></td>
+                        <td style="text-align:center"><?= number_format((float)$n['nilai_sas'],     2) ?></td>
+                        <td class="font-bold text-orange-600" style="text-align:center">
+                            <?= number_format($n['nilai_akhir'],2) ?></td>
+                        <td style="text-align:center">
                             <span
                                 class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
                                 <?= $pred ?>
                             </span>
                         </td>
                         <?php if (in_array($role, ['admin','super_admin'])): ?>
-                        <td class="text-xs text-gray-500"><?= e($n['nama_guru']) ?></td>
+                        <td class="text-xs text-gray-500" style="white-space:nowrap"><?= e($n['nama_guru']) ?></td>
                         <?php endif; ?>
-                        <td>
-                            <div class="flex gap-1">
+                        <td style="text-align:center">
+                            <div class="flex gap-1" style="justify-content:center">
                                 <?php if ($role !== 'kepala_sekolah'): ?>
-                                <a href="index.php?page=nilai.input&id=<?= $n['id'] ?>"
-                                    class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="index.php?page=nilai.input&id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary"
+                                    style="border-radius: 30px;">Edit</a>
                                 <form method="POST" action="index.php?page=nilai" style="display:inline"
                                     onsubmit="return confirm('Hapus nilai ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $n['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">Ã&mdash;</button>
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        style="border-radius: 30px;">Hapus</button>
                                 </form>
                                 <?php else: ?>
-                                <span class="text-xs text-gray-400">â€"</span>
+                                <span class="text-xs text-gray-400">-</span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -413,13 +417,13 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                         <?php
           $start = max(1, $page_n - 3); $end = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_n ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">…</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_n ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages):
-            if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($end < $pages - 1): ?><span class="page-link disabled">…</span><?php endif;
             ?><a href="?<?= $qstr_n ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>

@@ -453,6 +453,19 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </div>
   </div>
 
+  <!-- ── Tema Switcher ────────────────────────────────────── -->
+  <div class="flex items-center gap-2 mr-1" id="themeSwitcher" title="Pilih Tema Warna">
+    <button class="theme-dot" data-theme="orange"
+            style="background:#f97316"
+            aria-label="Tema Orange" title="Orange"></button>
+    <button class="theme-dot" data-theme="green"
+            style="background:#A8C93C"
+            aria-label="Tema Hijau" title="Hijau"></button>
+    <button class="theme-dot" data-theme="purple"
+            style="background:#9C27B0"
+            aria-label="Tema Ungu" title="Pink-Ungu"></button>
+  </div>
+
   <div class="relative">
     <button id="userMenuBtn" class="topbar-user">
       <div class="avatar">

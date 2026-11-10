@@ -60,15 +60,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $wali   = ($_POST['wali_kelas_id'] ?? '') ?: null;
         $ta_id  = (int)($_POST['tahun_ajaran_id'] ?? 0);
         $kid    = (int)($_POST['id'] ?? 0);
+        $unit   = in_array($_POST['unit'] ?? '', ['putra','putri','campuran']) ? $_POST['unit'] : 'campuran';
 
         if ($nama && $tingkat && $ta_id) {
             if ($kid) {
-                db_execute('UPDATE kelas SET nama_kelas=:n, tingkat=:t, wali_kelas_id=:w, tahun_ajaran_id=:ta WHERE id=:id',
-                    [':n'=>$nama,':t'=>$tingkat,':w'=>$wali,':ta'=>$ta_id,':id'=>$kid]);
+                db_execute('UPDATE kelas SET nama_kelas=:n, tingkat=:t, wali_kelas_id=:w, tahun_ajaran_id=:ta, unit=:u WHERE id=:id',
+                    [':n'=>$nama,':t'=>$tingkat,':w'=>$wali,':ta'=>$ta_id,':u'=>$unit,':id'=>$kid]);
                 flash('success','Kelas berhasil diperbarui.');
             } else {
-                db_execute('INSERT INTO kelas (nama_kelas, tingkat, wali_kelas_id, tahun_ajaran_id) VALUES (:n,:t,:w,:ta)',
-                    [':n'=>$nama,':t'=>$tingkat,':w'=>$wali,':ta'=>$ta_id]);
+                db_execute('INSERT INTO kelas (nama_kelas, tingkat, wali_kelas_id, tahun_ajaran_id, unit) VALUES (:n,:t,:w,:ta,:u)',
+                    [':n'=>$nama,':t'=>$tingkat,':w'=>$wali,':ta'=>$ta_id,':u'=>$unit]);
                 flash('success','Kelas berhasil ditambahkan.');
             }
         } else {
@@ -178,6 +179,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                         <th>#</th>
                         <th>Nama Kelas</th>
                         <th>Tingkat</th>
+                        <th>Unit</th>
                         <th>Wali Kelas</th>
                         <th>Tahun Ajaran</th>
                         <th>Aksi</th>
@@ -186,15 +188,23 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 <tbody>
                     <?php if (empty($kelas_list)): ?>
                     <tr>
-                        <td colspan="6" class="text-center py-8 text-gray-400">Belum ada kelas untuk tahun ajaran ini.
+                        <td colspan="7" class="text-center py-8 text-gray-400">Belum ada kelas untuk tahun ajaran ini.
                         </td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($kelas_list as $i => $k): ?>
+                    <?php
+                        $unit_badge = match($k['unit'] ?? 'campuran') {
+                            'putra'    => ['Putra',    'badge-blue'],
+                            'putri'    => ['Putri',    'badge-orange'],
+                            default    => ['Campuran', 'badge-gray'],
+                        };
+                    ?>
                     <tr>
                         <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
                         <td class="font-semibold"><?= e($k['nama_kelas']) ?></td>
                         <td><span class="badge badge-blue"><?= e($k['tingkat']) ?></span></td>
+                        <td><span class="badge <?= $unit_badge[1] ?>"><?= $unit_badge[0] ?></span></td>
                         <td><?= e($k['nama_wali'] ?: '-') ?></td>
                         <td class="text-gray-500 text-sm"><?= e($k['ta_nama']) ?> Sem.<?= $k['semester'] ?></td>
                         <td>
@@ -276,6 +286,14 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Unit</label>
+                    <select name="unit" id="kelasUnit" class="form-control">
+                        <option value="campuran">Campuran (Putra &amp; Putri)</option>
+                        <option value="putra">Putra</option>
+                        <option value="putri">Putri</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Wali Kelas</label>
                     <select name="wali_kelas_id" id="kelasWali" class="form-control">
                         <option value="">-- Pilih Wali Kelas --</option>
@@ -310,6 +328,7 @@ function editKelas(data) {
     document.getElementById('kelasId').value = data.id;
     document.getElementById('kelasNama').value = data.nama_kelas;
     document.getElementById('kelasTingkat').value = data.tingkat;
+    document.getElementById('kelasUnit').value = data.unit || 'campuran';
     document.getElementById('kelasWali').value = data.wali_kelas_id || '';
     document.getElementById('kelasTa').value = data.tahun_ajaran_id;
     Modal.open('modalKelas');

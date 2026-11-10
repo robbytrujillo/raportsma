@@ -188,8 +188,29 @@ $krit_a = (float)($sekolah['kriteria_a_min'] ?? 92);
 $krit_b = (float)($sekolah['kriteria_b_min'] ?? 83);
 $krit_c = (float)($sekolah['kriteria_c_min'] ?? 76);
 
-// Kepala sekolah beserta tanda tangan
-$kepsek = db_row('SELECT nama_lengkap, tanda_tangan FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+// Kepala sekolah beserta tanda tangan — pilih berdasarkan unit kelas
+$kelas_unit_lg = $kelas['unit'] ?? 'campuran';
+if ($kelas_unit_lg === 'putri') {
+    $sekolah_si_lg = db_row('SELECT kepala_sekolah_putri, nip_kepala_putri FROM sekolah_info ORDER BY id LIMIT 1');
+    $kepsek_putri_nm = $sekolah_si_lg['kepala_sekolah_putri'] ?? null;
+    if ($kepsek_putri_nm) {
+        $kepsek = db_row('SELECT nama_lengkap, tanda_tangan FROM users WHERE role = "kepala_sekolah" AND nama_lengkap = :nm LIMIT 1',
+            [':nm' => $kepsek_putri_nm]);
+        if (!$kepsek) {
+            $kepsek = ['nama_lengkap' => $kepsek_putri_nm, 'tanda_tangan' => null];
+        }
+    } else {
+        $kepsek = db_row('SELECT nama_lengkap, tanda_tangan FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+    }
+} else {
+    $kepsek = db_row('SELECT nama_lengkap, tanda_tangan FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+    if (!$kepsek) {
+        $sekolah_si_lg = db_row('SELECT kepala_sekolah, nip_kepala FROM sekolah_info ORDER BY id LIMIT 1');
+        if (!empty($sekolah_si_lg['kepala_sekolah'])) {
+            $kepsek = ['nama_lengkap' => $sekolah_si_lg['kepala_sekolah'], 'tanda_tangan' => null];
+        }
+    }
+}
 
 // Tanggal cetak
 $bulan_id_map = [

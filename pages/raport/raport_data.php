@@ -76,8 +76,40 @@ $wali_kelas = $kelas['wali_kelas_id']
     ? db_row('SELECT * FROM users WHERE id = :id', [':id'=>$kelas['wali_kelas_id']])
     : null;
 
-// Kepala sekolah
-$kepsek = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+// Kepala sekolah — pilih berdasarkan unit kelas
+// Untuk kelas putri: cari user kepsek putri, atau gunakan info dari sekolah_info
+$kelas_unit = $kelas['unit'] ?? 'campuran';
+if ($kelas_unit === 'putri') {
+    // Coba cari user dengan nama yang sesuai kepala_sekolah_putri di sekolah_info
+    $sekolah_si = db_row('SELECT * FROM sekolah_info ORDER BY id LIMIT 1');
+    $kepsek_putri_nama = $sekolah_si['kepala_sekolah_putri'] ?? null;
+    if ($kepsek_putri_nama) {
+        // Cari user dengan nama itu (role kepsek) — fallback ke kepsek utama jika tidak ketemu
+        $kepsek = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" AND nama_lengkap = :nm LIMIT 1',
+            [':nm' => $kepsek_putri_nama]);
+        if (!$kepsek) {
+            // Buat pseudo-array dengan nama saja (tanpa TTD user)
+            $kepsek = [
+                'nama_lengkap'  => $kepsek_putri_nama,
+                'nip'           => $sekolah_si['nip_kepala_putri'] ?? '',
+                'tanda_tangan'  => null,
+            ];
+        }
+    } else {
+        $kepsek = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+    }
+} else {
+    $kepsek = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');
+    // Jika sekolah_info punya kepala_sekolah (nama teks), override nama jika user belum diisi
+    $sekolah_si = db_row('SELECT kepala_sekolah, nip_kepala FROM sekolah_info ORDER BY id LIMIT 1');
+    if (!$kepsek && !empty($sekolah_si['kepala_sekolah'])) {
+        $kepsek = [
+            'nama_lengkap' => $sekolah_si['kepala_sekolah'],
+            'nip'          => $sekolah_si['nip_kepala'] ?? '',
+            'tanda_tangan' => null,
+        ];
+    }
+}
 
 // Peringkat kelas — gunakan n.kelas_id (historis, bukan siswa.kelas_id sekarang)
 // agar peringkat tetap akurat meski siswa sudah naik kelas.

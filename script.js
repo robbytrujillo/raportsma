@@ -475,6 +475,46 @@ function initResponsiveTables() {
 }
 
 /* ============================================================
+   16. Theme Switcher
+   ============================================================ */
+const THEME_KEY = 'raportku_theme';
+const THEMES    = ['orange', 'green', 'purple'];
+
+function applyTheme(theme) {
+  if (!THEMES.includes(theme)) theme = 'orange';
+  // Remove all theme classes then add the chosen one
+  document.documentElement.classList.remove(...THEMES.map(t => 'theme-' + t));
+  document.documentElement.classList.add('theme-' + theme);
+  // Mark active dot
+  document.querySelectorAll('.theme-dot').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+}
+
+function initThemeSwitcher() {
+  // Apply saved theme immediately (also called on DOMContentLoaded)
+  const saved = localStorage.getItem(THEME_KEY) || 'orange';
+  applyTheme(saved);
+
+  // Bind dot buttons
+  document.querySelectorAll('.theme-dot').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const t = this.dataset.theme;
+      localStorage.setItem(THEME_KEY, t);
+      applyTheme(t);
+    });
+  });
+}
+
+// Apply theme ASAP to avoid FOUC — before DOMContentLoaded
+(function () {
+  var t = (typeof localStorage !== 'undefined' && localStorage.getItem(THEME_KEY)) || 'orange';
+  if (THEMES.includes(t)) {
+    document.documentElement.classList.add('theme-' + t);
+  }
+})();
+
+/* ============================================================
    INIT — jalankan semua saat DOM siap
    ============================================================ */
 ready(function () {
@@ -486,6 +526,7 @@ ready(function () {
   initSignaturePreview();
   initUserDropdown();
   initResponsiveTables();
+  initThemeSwitcher();
 
   // Table search (jika ada)
   initTableSearch('tableSearch', 'dataTable');

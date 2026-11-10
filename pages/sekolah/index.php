@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/sekolah/index.php
  * Pengaturan Informasi Sekolah â€" admin
@@ -12,17 +12,21 @@ $sekolah = sekolah_info();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
-        $nama_yayasan = trim($_POST['nama_yayasan'] ?? '');
-        $nama_sekolah = trim($_POST['nama_sekolah'] ?? '');
-        $alamat       = trim($_POST['alamat'] ?? '');
-        $telp         = trim($_POST['telp'] ?? '');
-        $website      = trim($_POST['website'] ?? '');
-        $email        = trim($_POST['email'] ?? '');
-        $npsn         = trim($_POST['npsn'] ?? '');
-        $kota         = trim($_POST['kota'] ?? '');
-        $krit_a       = max(0, min(100, (float)($_POST['kriteria_a_min'] ?? 92)));
-        $krit_b       = max(0, min(100, (float)($_POST['kriteria_b_min'] ?? 83)));
-        $krit_c       = max(0, min(100, (float)($_POST['kriteria_c_min'] ?? 76)));
+        $nama_yayasan       = trim($_POST['nama_yayasan'] ?? '');
+        $nama_sekolah       = trim($_POST['nama_sekolah'] ?? '');
+        $alamat             = trim($_POST['alamat'] ?? '');
+        $telp               = trim($_POST['telp'] ?? '');
+        $website            = trim($_POST['website'] ?? '');
+        $email              = trim($_POST['email'] ?? '');
+        $npsn               = trim($_POST['npsn'] ?? '');
+        $kota               = trim($_POST['kota'] ?? '');
+        $krit_a             = max(0, min(100, (float)($_POST['kriteria_a_min'] ?? 92)));
+        $krit_b             = max(0, min(100, (float)($_POST['kriteria_b_min'] ?? 83)));
+        $krit_c             = max(0, min(100, (float)($_POST['kriteria_c_min'] ?? 76)));
+        $kepsek             = trim($_POST['kepala_sekolah'] ?? '');
+        $nip_kepsek         = trim($_POST['nip_kepala'] ?? '');
+        $kepsek_putri       = trim($_POST['kepala_sekolah_putri'] ?? '');
+        $nip_kepsek_putri   = trim($_POST['nip_kepala_putri'] ?? '');
 
         if (!$nama_sekolah) $errors[] = 'Nama sekolah wajib diisi.';
 
@@ -54,20 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':tp'=>$telp, ':wb'=>$website, ':em'=>$email, ':np'=>$npsn,
                 ':ko'=>$kota, ':ka'=>$krit_a, ':kb'=>$krit_b, ':kc'=>$krit_c,
                 ':lg'=>$logo_path,
+                ':ks'=>$kepsek ?: null, ':nk'=>$nip_kepsek ?: null,
+                ':kp'=>$kepsek_putri ?: null, ':np2'=>$nip_kepsek_putri ?: null,
             ];
             if ($exists) {
                 db_execute(
                     'UPDATE sekolah_info SET nama_yayasan=:ny, nama_sekolah=:ns, alamat=:al,
                      telp=:tp, website=:wb, email=:em, npsn=:np, kota=:ko,
-                     kriteria_a_min=:ka, kriteria_b_min=:kb, kriteria_c_min=:kc, logo=:lg
+                     kriteria_a_min=:ka, kriteria_b_min=:kb, kriteria_c_min=:kc, logo=:lg,
+                     kepala_sekolah=:ks, nip_kepala=:nk,
+                     kepala_sekolah_putri=:kp, nip_kepala_putri=:np2
                      WHERE id=' . (int)$exists['id'],
                     $p
                 );
             } else {
                 db_execute(
                     'INSERT INTO sekolah_info (nama_yayasan,nama_sekolah,alamat,telp,website,email,npsn,kota,
-                     kriteria_a_min,kriteria_b_min,kriteria_c_min,logo)
-                     VALUES (:ny,:ns,:al,:tp,:wb,:em,:np,:ko,:ka,:kb,:kc,:lg)',
+                     kriteria_a_min,kriteria_b_min,kriteria_c_min,logo,
+                     kepala_sekolah,nip_kepala,kepala_sekolah_putri,nip_kepala_putri)
+                     VALUES (:ny,:ns,:al,:tp,:wb,:em,:np,:ko,:ka,:kb,:kc,:lg,:ks,:nk,:kp,:np2)',
                     $p
                 );
             }
@@ -144,6 +153,31 @@ $s = $sekolah;
                         <label class="form-label">NPSN</label>
                         <input type="text" name="npsn" class="form-control" value="<?= e($s['npsn'] ?? '') ?>"
                             placeholder="00000000">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kepala Sekolah Putra (utama)</label>
+                        <input type="text" name="kepala_sekolah" class="form-control"
+                            value="<?= e($s['kepala_sekolah'] ?? '') ?>" placeholder="Nama Kepala Sekolah Putra">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">NIP Kepala Sekolah Putra</label>
+                        <input type="text" name="nip_kepala" class="form-control"
+                            value="<?= e($s['nip_kepala'] ?? '') ?>" placeholder="NIP (opsional)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kepala Sekolah Putri</label>
+                        <input type="text" name="kepala_sekolah_putri" class="form-control"
+                            value="<?= e($s['kepala_sekolah_putri'] ?? '') ?>" placeholder="Nama Kepala Sekolah Putri">
+                        <p class="text-xs text-gray-400 mt-1">Kosongkan jika sama dengan Kepala Sekolah Putra.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">NIP Kepala Sekolah Putri</label>
+                        <input type="text" name="nip_kepala_putri" class="form-control"
+                            value="<?= e($s['nip_kepala_putri'] ?? '') ?>" placeholder="NIP (opsional)">
                     </div>
 
                     <!-- Logo -->

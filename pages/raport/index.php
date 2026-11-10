@@ -317,6 +317,15 @@ if (in_array($role, ['super_admin','admin','kepala_sekolah'])) {
     $leger_boleh = false;
 }
 
+// Cek apakah sudah ada nilai yang diinput untuk kelas+filter yang dipilih
+// Dipakai sebagai penjaga tombol Leger agar tidak membuka halaman kosong
+$ada_nilai = false;
+if ($kelas_id && !empty($siswa_raport)) {
+    foreach ($siswa_raport as $sr) {
+        if ((int)($sr['jml_mapel'] ?? 0) > 0) { $ada_nilai = true; break; }
+    }
+}
+
 // Status publikasi raport saat ini (untuk kelas+ta+jenis+bulan yang dipilih)
 $pub_status = null;
 if ($kelas_id && $ta_id && $jenis) {
@@ -414,15 +423,19 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
 
                 <?php if (!in_array($role, ['siswa'])): ?>
                 <?php if ($leger_boleh): ?>
-                <a href="index.php?page=raport.leger&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
-                    target="_blank" class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
+                <?php
+                    $leger_url = 'index.php?page=raport.leger&ta='.$ta_id.'&kelas='.$kelas_id.'&jenis='.$jenis.'&bulan='.$bulan;
+                ?>
+                <button type="button"
+                    onclick="<?= $ada_nilai ? "window.open('".htmlspecialchars($leger_url)."','_blank')" : "document.getElementById('modalLegerBelumNilai').style.display='flex'" ?>"
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
                     style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M3 15h18M9 3v18" />
                     </svg>
                     Leger
-                </a>
+                </button>
                 <?php else: ?>
                 <button type="button" onclick="document.getElementById('modalLegerDitolak').style.display='flex'"
                     class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini" style="border-radius:30px">
@@ -578,6 +591,62 @@ $modal_pesan = ($role === 'wali_kelas')
                        padding:10px 28px;font-size:.88rem;font-weight:700;cursor:pointer">
             Mengerti
         </button>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Modal: belum ada nilai — tampil untuk semua role yang boleh akses leger -->
+<?php if ($leger_boleh && !$ada_nilai && $kelas_id): ?>
+<?php
+    $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS (Tengah Semester)','semester'=>'Semester (SAS)'];
+    $kelas_nama_leger = db_row('SELECT nama_kelas FROM kelas WHERE id = :id', [':id' => $kelas_id])['nama_kelas'] ?? '';
+    $input_nilai_url  = 'index.php?page=nilai';
+?>
+<div id="modalLegerBelumNilai" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
+            align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:460px;width:90%;
+                text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative">
+        <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'"
+                style="position:absolute;top:12px;right:14px;background:none;border:none;
+                       font-size:1.3rem;color:#9ca3af;cursor:pointer;line-height:1">&times;</button>
+        <!-- Ikon -->
+        <div style="width:64px;height:64px;background:#fef3c7;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <svg width="32" height="32" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+        <!-- Judul -->
+        <div style="font-size:1.08rem;font-weight:700;color:#1f2328;margin-bottom:8px">
+            Nilai Belum Diinput
+        </div>
+        <!-- Pesan -->
+        <div style="font-size:.87rem;color:#57606a;line-height:1.7;margin-bottom:24px">
+            Leger tidak dapat ditampilkan karena <strong>belum ada nilai</strong> yang diinput
+            untuk kelas <strong><?= htmlspecialchars($kelas_nama_leger) ?></strong>
+            jenis raport <strong><?= htmlspecialchars($jenis_label[$jenis] ?? $jenis) ?></strong>.<br><br>
+            Silakan input nilai terlebih dahulu melalui menu <strong>Input Nilai</strong>,
+            kemudian buka kembali halaman Leger.
+        </div>
+        <!-- Aksi -->
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'"
+                    style="background:#f3f4f6;color:#374151;border:none;border-radius:30px;
+                           padding:10px 22px;font-size:.88rem;font-weight:600;cursor:pointer">
+                Tutup
+            </button>
+            <a href="<?= $input_nilai_url ?>"
+               style="background:#f97316;color:#fff;border:none;border-radius:30px;
+                      padding:10px 22px;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Input Nilai Sekarang
+            </a>
+        </div>
     </div>
 </div>
 <?php endif; ?>

@@ -132,6 +132,27 @@ function run_auto_migrations(): void {
         $pdo->exec("ALTER TABLE jenis_raport ADD COLUMN tipe_basis ENUM('bulanan','uts','semester') NOT NULL DEFAULT 'bulanan' AFTER tipe");
     }
 
+    // v7: tambah kolom unit ke tabel kelas (putra/putri/campuran)
+    $cols_kelas = $pdo->query("SHOW COLUMNS FROM kelas")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('unit', $cols_kelas)) {
+        $pdo->exec("ALTER TABLE kelas ADD COLUMN unit ENUM('putra','putri','campuran') NOT NULL DEFAULT 'campuran' AFTER nama_kelas");
+    }
+
+    // v7: tambah kolom kepala sekolah ke sekolah_info jika belum ada
+    $cols_si = $pdo->query("SHOW COLUMNS FROM sekolah_info")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('kepala_sekolah', $cols_si)) {
+        $pdo->exec("ALTER TABLE sekolah_info ADD COLUMN kepala_sekolah VARCHAR(100) DEFAULT NULL");
+    }
+    if (!in_array('nip_kepala', $cols_si)) {
+        $pdo->exec("ALTER TABLE sekolah_info ADD COLUMN nip_kepala VARCHAR(50) DEFAULT NULL");
+    }
+    if (!in_array('kepala_sekolah_putri', $cols_si)) {
+        $pdo->exec("ALTER TABLE sekolah_info ADD COLUMN kepala_sekolah_putri VARCHAR(100) DEFAULT NULL");
+    }
+    if (!in_array('nip_kepala_putri', $cols_si)) {
+        $pdo->exec("ALTER TABLE sekolah_info ADD COLUMN nip_kepala_putri VARCHAR(50) DEFAULT NULL");
+    }
+
     // v6: seed data awal jenis_raport jika masih kosong
     $cnt = (int)$pdo->query('SELECT COUNT(*) FROM jenis_raport')->fetchColumn();
     if ($cnt === 0) {

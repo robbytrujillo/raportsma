@@ -45,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
 }
 
 $sekolah_l = sekolah_info();
-$thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -79,7 +78,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         background: #f8f4ef;
     }
 
-    /* LEFT PANEL — thumbnail as full bg + orange gradient overlay */
+    /* LEFT PANEL — thumbnail bg + gradient overlay */
     .login-left {
         flex: 1.1;
         position: relative;
@@ -88,129 +87,76 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        background-image: var(--thumb-bg);
-        background-size: cover;
-        background-position: center bottom;
-        background-repeat: no-repeat;
-        background-color: #ea580c;
+        background-color: var(--theme-dark, #ea580c);
         min-height: 100vh;
         height: 100vh;
     }
 
-    /* Orange gradient overlay — gelap di atas, transparan di bawah */
-    .login-left::before {
-        content: '';
+    /* Background thumbnail, penuh panel */
+    .ll-bg {
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg,
-                rgba(194, 65, 12, 0.82) 0%,
-                rgba(234, 88, 12, 0.68) 30%,
-                rgba(249, 115, 22, 0.45) 60%,
-                rgba(249, 115, 22, 0.10) 100%);
-        pointer-events: none;
+        background-image: var(--ll-thumb-url);
+        background-size: cover;
+        background-position: center top;
+        z-index: 0;
+    }
+
+    /* Overlay warna tema pekat — foto menerawang samar di baliknya */
+    .ll-overlay {
+        position: absolute;
+        inset: 0;
+        /* Warna tema solid pekat dari kiri-atas ke kanan-bawah,
+           sedikit memudar di sudut kanan bawah agar ada dimensi */
+        background: linear-gradient(135deg,
+                var(--theme-dark, #ea580c) 0%,
+                var(--theme, #f97316) 55%,
+                var(--theme-dark, #ea580c) 100%);
+        opacity: 0.50;
         z-index: 1;
     }
 
-    /* Decorative dots pattern */
-    .login-left-dots {
+    /* Bayangan gelap di bawah untuk keterbacaan teks caption */
+    .ll-overlay::after {
+        content: '';
         position: absolute;
         inset: 0;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 45%);
+        opacity: 1;
     }
 
-    .login-left-dots span {
+    /* Caption di bawah layar */
+    .ll-caption {
         position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.06);
-    }
-
-    .login-left-content {
-        position: relative;
+        bottom: 72px;
+        left: 0;
+        right: 0;
         z-index: 3;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 32px;
-        flex-shrink: 0;
-        max-height: none;
-        overflow: visible;
+        text-align: center;
+        padding: 0 32px;
     }
 
-    .login-left-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.18);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        color: #fff;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        padding: 5px 14px;
-        border-radius: 50px;
-        margin-bottom: 20px;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .login-left-title {
-        font-size: clamp(1.6rem, 3vw, 2.4rem);
+    .ll-caption h2 {
+        font-size: clamp(1.4rem, 2.5vw, 2rem);
         font-weight: 800;
         color: #fff;
-        text-align: center;
-        line-height: 1.2;
-        letter-spacing: -0.5px;
+        line-height: 1.25;
+        letter-spacing: -0.4px;
         margin-bottom: 10px;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
     }
 
-    .login-left-title span {
+    .ll-caption h2 span {
         color: #fde68a;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
-    .login-left-subtitle {
+    .ll-caption p {
         font-size: 0.88rem;
-        color: rgba(255, 255, 255, 0.88);
-        text-align: center;
-        max-width: 340px;
+        color: rgba(255, 255, 255, 0.9);
         line-height: 1.6;
-        margin-bottom: 32px;
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
-    }
-
-    /* Feature pills */
-    .login-features {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        margin-bottom: 36px;
-    }
-
-    .login-feature-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 0.73rem;
-        font-weight: 600;
-        padding: 5px 12px;
-        border-radius: 50px;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .login-feature-pill svg {
-        opacity: 0.75;
-    }
-
-    /* Thumbnail wrap — hidden, gambar dipakai sebagai CSS bg via JS */
-    .login-thumb-wrap {
-        display: none;
+        max-width: 320px;
+        margin: 0 auto;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
     }
 
     /* RIGHT PANEL — form */
@@ -245,12 +191,12 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #f97316, #c2410c);
+        background: linear-gradient(135deg, var(--theme, #f97316), var(--theme-dark, #ea580c));
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .login-brand-text {
@@ -282,7 +228,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         height: 44px;
         object-fit: cover;
         border-radius: 12px;
-        border: 2px solid #fed7aa;
+        border: 2px solid var(--theme-light, #fed7aa);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
@@ -343,9 +289,9 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
     }
 
     .lf-input:focus {
-        border-color: #f97316;
+        border-color: var(--theme, #f97316);
         background: #fff;
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
     }
 
     .lf-input::placeholder {
@@ -368,7 +314,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
     }
 
     .lf-eye-btn:hover {
-        color: #f97316;
+        color: var(--theme, #f97316);
     }
 
     /* Error alert */
@@ -394,11 +340,11 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         margin-top: 1px;
     }
 
-    /* Submit button */
+    /* Submit button — uses CSS theme vars */
     .lf-submit {
         width: 100%;
         padding: 12px;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background: linear-gradient(135deg, var(--theme, #f97316) 0%, var(--theme-dark, #ea580c) 100%);
         color: #fff;
         border: none;
         border-radius: 30px;
@@ -408,7 +354,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         cursor: pointer;
         letter-spacing: 0.2px;
         transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -419,7 +365,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
     .lf-submit:hover:not(:disabled) {
         opacity: 0.92;
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
 
     .lf-submit:active:not(:disabled) {
@@ -441,7 +387,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         border-top: 1px solid #f3f4f6;
     }
 
-    /* Divider strip on top of right panel — softer */
+    /* Divider strip on top of right panel — follows theme */
     .login-right::before {
         content: '';
         position: absolute;
@@ -449,8 +395,58 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, transparent 0%, #f97316 30%, #fb923c 50%, #f97316 70%, transparent 100%);
+        background: linear-gradient(90deg,
+                transparent 0%,
+                var(--theme, #f97316) 30%,
+                var(--theme-light, #fed7aa) 50%,
+                var(--theme, #f97316) 70%,
+                transparent 100%);
         opacity: 0.55;
+    }
+
+    /* ── Color picker (pojok kanan bawah panel kiri) ─── */
+    .ll-theme-picker {
+        position: absolute;
+        bottom: 24px;
+        right: 20px;
+        z-index: 10;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .ll-theme-btn {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        cursor: pointer;
+        transition: transform 0.18s, border-color 0.18s;
+        padding: 0;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+
+    .ll-theme-btn:hover {
+        transform: scale(1.2);
+    }
+
+    .ll-theme-btn.active {
+        border-color: #fff;
+        transform: scale(1.18);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ll-theme-btn[data-theme="orange"] {
+        background: #f97316;
+    }
+
+    .ll-theme-btn[data-theme="green"] {
+        background: #95c134;
+    }
+
+    .ll-theme-btn[data-theme="purple"] {
+        background: #9C27B0;
     }
 
     /* ── Responsive ──────────────────────────────────────── */
@@ -483,70 +479,26 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
 
     <div class="login-split">
 
-        <!-- ══ LEFT PANEL ══════════════════════════════════════════ -->
-        <div class="login-left" style="--thumb-bg: url('<?= $thumb_url ?>')">
+        <!-- ══ LEFT PANEL — Thumbnail + Gradient Overlay ════════════ -->
+        <div class="login-left" style="--ll-thumb-url: url('<?= UPLOAD_URL ?>photos/thumbnail.png')">
 
-            <!-- Decorative blobs -->
-            <div class="login-left-dots" aria-hidden="true">
-                <span style="width:260px;height:260px;top:-80px;left:-80px;"></span>
-                <span style="width:160px;height:160px;bottom:200px;right:-40px;"></span>
-                <span style="width:80px;height:80px;top:40%;left:10%;"></span>
+            <!-- Background foto -->
+            <div class="ll-bg"></div>
+
+            <!-- Gradient overlay warna tema -->
+            <div class="ll-overlay"></div>
+
+            <!-- Caption teks (di atas overlay) -->
+            <div class="ll-caption">
+                <h2>Kelola Raport<br><span>Lebih Mudah</span> &amp; Efisien</h2>
+                <p>Manajemen nilai, data siswa, dan cetak raport secara digital dari mana saja.</p>
             </div>
 
-            <!-- Branding content -->
-            <div class="login-left-content">
-
-                <div class="login-left-badge">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                        <circle cx="5" cy="5" r="5" />
-                    </svg>
-                    Sistem Raport Digital
-                </div>
-
-                <h1 class="login-left-title">
-                    Kelola Raport<br><span>Lebih Mudah</span> &amp; Efisien
-                </h1>
-
-                <p class="login-left-subtitle">
-                    Manajemen nilai, data siswa, dan cetak raport secara digital.
-                </p>
-
-                <div class="login-features">
-                    <span class="login-feature-pill">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
-                            viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Input Nilai Mudah
-                    </span>
-                    <span class="login-feature-pill">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
-                            viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Cetak Raport PDF
-                    </span>
-                    <span class="login-feature-pill">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
-                            viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Multi Pengguna
-                    </span>
-                    <span class="login-feature-pill">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
-                            viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Data Aman &amp; Terenkripsi
-                    </span>
-                </div>
-
-            </div><!-- /login-left-content -->
-
-            <!-- Thumbnail — bottom-flush -->
-            <div class="login-thumb-wrap">
-                <img src="<?= $thumb_url ?>" alt="Ilustrasi Raport Digital">
+            <!-- Color picker -->
+            <div class="ll-theme-picker" aria-label="Pilih tema warna">
+                <button class="ll-theme-btn" data-theme="orange" aria-label="Tema Orange" title="Orange"></button>
+                <button class="ll-theme-btn" data-theme="green" aria-label="Tema Hijau" title="Hijau"></button>
+                <button class="ll-theme-btn" data-theme="purple" aria-label="Tema Ungu" title="Ungu"></button>
             </div>
 
         </div><!-- /login-left -->
@@ -678,7 +630,37 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
     <script src="<?= BASE_URL ?>/script.js"></script>
     <script>
     (function() {
-        // Toggle show/hide password
+        var validThemes = ['orange', 'green', 'purple'];
+
+        // ── Apply saved theme ──────────────────────────────────────
+        var savedTheme = (typeof localStorage !== 'undefined' && localStorage.getItem('raportku_theme')) ||
+        'orange';
+        if (validThemes.indexOf(savedTheme) === -1) savedTheme = 'orange';
+        document.documentElement.classList.add('theme-' + savedTheme);
+
+        // ── Color picker ───────────────────────────────────────────
+        function applyTheme(theme) {
+            validThemes.forEach(function(t) {
+                document.documentElement.classList.remove('theme-' + t);
+            });
+            document.documentElement.classList.add('theme-' + theme);
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('raportku_theme', theme);
+            }
+            document.querySelectorAll('.ll-theme-btn').forEach(function(b) {
+                b.classList.toggle('active', b.getAttribute('data-theme') === theme);
+            });
+        }
+
+        // Mark active button on load
+        document.querySelectorAll('.ll-theme-btn').forEach(function(btn) {
+            if (btn.getAttribute('data-theme') === savedTheme) btn.classList.add('active');
+            btn.addEventListener('click', function() {
+                applyTheme(btn.getAttribute('data-theme'));
+            });
+        });
+
+        // ── Toggle show/hide password ──────────────────────────────
         var pwd = document.getElementById('password');
         var btn = document.getElementById('togglePwd');
         var iconOn = document.getElementById('eyeIconShow');
@@ -694,7 +676,7 @@ $thumb_url  = UPLOAD_URL . 'photos/thumbnail.png';
             });
         }
 
-        // Disable submit button while submitting to prevent double-click
+        // ── Disable submit while submitting ───────────────────────
         var form = document.getElementById('loginForm');
         var submitBtn = document.getElementById('btnSubmit');
         if (form && submitBtn) {
