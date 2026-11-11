@@ -612,16 +612,16 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
                   $line_x2 = $pill_x - 4;
                 ?>
                 <!-- halo putih supaya garis kontras di atas bar -->
-                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>"
-                    stroke="#fff" stroke-width="4" stroke-dasharray="8,5" />
+                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>" stroke="#fff"
+                    stroke-width="4" stroke-dasharray="8,5" />
                 <!-- garis KKM merah tegas -->
-                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>"
-                    stroke="#ef4444" stroke-width="2.5" stroke-dasharray="8,5" />
+                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>" stroke="#ef4444"
+                    stroke-width="2.5" stroke-dasharray="8,5" />
                 <!-- pill label KKM di kanan -->
-                <rect x="<?= $pill_x ?>" y="<?= $pill_y ?>" width="<?= $pill_w ?>" height="<?= $pill_h ?>"
-                    rx="10" fill="#ef4444" />
-                <text x="<?= $pill_x + $pill_w/2 ?>" y="<?= $kkm_y + 5 ?>" text-anchor="middle"
-                    font-size="10.5" font-weight="700" fill="#fff" letter-spacing="0.4">KKM <?= (int)$krit_c_val ?></text>
+                <rect x="<?= $pill_x ?>" y="<?= $pill_y ?>" width="<?= $pill_w ?>" height="<?= $pill_h ?>" rx="10"
+                    fill="#ef4444" />
+                <text x="<?= $pill_x + $pill_w/2 ?>" y="<?= $kkm_y + 5 ?>" text-anchor="middle" font-size="10.5"
+                    font-weight="700" fill="#fff" letter-spacing="0.4">KKM <?= (int)$krit_c_val ?></text>
                 <!-- Bars -->
                 <?php foreach ($bar_data as $bi => $br):
           $bval  = (float)$br['avg_nilai'];
@@ -1108,7 +1108,7 @@ if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
     <div class="card">
         <div class="card-header">
             <span>Aktivitas Nilai Terbaru</span>
-            <a href="index.php?page=nilai" class="btn btn-sm btn-secondary">Lihat Semua</a>
+            <a href="index.php?page=nilai" class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat Semua</a>
         </div>
         <div class="table-container">
             <table class="data-table">

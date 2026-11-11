@@ -317,6 +317,21 @@ if (in_array($role, ['super_admin','admin','kepala_sekolah'])) {
     $leger_boleh = false;
 }
 
+// Cek apakah user boleh cetak semua raport kelas
+// - super_admin, admin, kepala_sekolah: selalu boleh
+// - wali_kelas: hanya jika dia wali_kelas dari kelas yang dipilih (gunakan $kelas_row bila sudah ada)
+// - guru biasa (status 'guru'): TIDAK boleh
+if (in_array($role, ['super_admin','admin','kepala_sekolah'])) {
+    $cetak_boleh = true;
+} elseif ($kelas_id && ($guru_status === 'wali_kelas' || $role === 'wali_kelas')) {
+    if (!isset($kelas_row)) {
+        $kelas_row = db_row('SELECT wali_kelas_id FROM kelas WHERE id = :id', [':id' => $kelas_id]);
+    }
+    $cetak_boleh = ($kelas_row && (int)$kelas_row['wali_kelas_id'] === (int)$user['id']);
+} else {
+    $cetak_boleh = false;
+}
+
 // Cek apakah sudah ada nilai yang diinput untuk kelas+filter yang dipilih
 // Dipakai sebagai penjaga tombol Leger agar tidak membuka halaman kosong
 $ada_nilai = false;
@@ -428,8 +443,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 ?>
                 <button type="button"
                     onclick="<?= $ada_nilai ? "window.open('".htmlspecialchars($leger_url)."','_blank')" : "document.getElementById('modalLegerBelumNilai').style.display='flex'" ?>"
-                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini"
-                    style="border-radius:30px">
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini" style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M3 15h18M9 3v18" />
@@ -446,6 +460,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     Leger
                 </button>
                 <?php endif; ?>
+                <?php if ($cetak_boleh): ?>
                 <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                     target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
                     style="border-radius:30px">
@@ -456,6 +471,18 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     </svg>
                     Cetak Semua (<?= count($siswa_raport) ?> Siswa)
                 </a>
+                <?php else: ?>
+                <button type="button" onclick="document.getElementById('modalCetakDitolak').style.display='flex'"
+                    class="btn btn-sm btn-primary" title="Cetak semua raport kelas ini"
+                    style="border-radius:30px;opacity:.75">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    Cetak Semua (<?= count($siswa_raport) ?> Siswa)
+                </button>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -595,6 +622,60 @@ $modal_pesan = ($role === 'wali_kelas')
 </div>
 <?php endif; ?>
 
+<!-- Modal peringatan cetak semua — tampil untuk guru yang bukan walas kelas ini -->
+<?php if (!$cetak_boleh && $role !== 'siswa' && $kelas_id): ?>
+<?php
+$kelas_cetak_nama = '';
+if ($kelas_id) {
+    $kelas_cetak_row  = db_row('SELECT k.nama_kelas, u.nama_lengkap as walas_nama
+                                 FROM kelas k
+                                 LEFT JOIN users u ON u.id = k.wali_kelas_id
+                                 WHERE k.id = :id', [':id' => $kelas_id]);
+    $kelas_cetak_nama = $kelas_cetak_row['nama_kelas'] ?? '';
+    $walas_nama_cetak = $kelas_cetak_row['walas_nama'] ?? '';
+}
+?>
+<div id="modalCetakDitolak" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
+            align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:460px;width:90%;
+                text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative">
+        <button onclick="document.getElementById('modalCetakDitolak').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;
+                       font-size:1.3rem;color:#9ca3af;cursor:pointer;line-height:1">&times;</button>
+        <!-- Ikon -->
+        <div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <svg width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+        </div>
+        <!-- Judul -->
+        <div style="font-size:1.08rem;font-weight:700;color:#1f2328;margin-bottom:8px">
+            Akses Tidak Diizinkan
+        </div>
+        <!-- Pesan -->
+        <div style="font-size:.87rem;color:#57606a;line-height:1.7;margin-bottom:24px">
+            <?php if ($guru_status === 'wali_kelas'): ?>
+            Maaf, Anda tidak berhak mencetak semua raport kelas
+            <strong><?= htmlspecialchars($kelas_cetak_nama) ?></strong>.<br><br>
+            Cetak semua raport hanya dapat dilakukan oleh <strong>Wali Kelas</strong> dari kelas yang
+            bersangkutan<?= $walas_nama_cetak ? ', yaitu <strong> Ust. '.htmlspecialchars($walas_nama_cetak).'</strong>' : '' ?>.
+            <?php else: ?>
+            Maaf, Anda tidak berhak mencetak semua raport kelas
+            <strong><?= htmlspecialchars($kelas_cetak_nama) ?></strong>.<br><br>
+            Fitur cetak semua raport hanya dapat digunakan oleh <strong>Wali Kelas</strong> terkait, serta
+            <strong>Admin</strong> dan <strong>Kepala Sekolah</strong>.
+            <?php endif; ?>
+        </div>
+        <!-- Aksi -->
+        <button onclick="document.getElementById('modalCetakDitolak').style.display='none'" style="background:#ef4444;color:#fff;border:none;border-radius:30px;
+                       padding:10px 28px;font-size:.88rem;font-weight:700;cursor:pointer">
+            Mengerti
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Modal: belum ada nilai — tampil untuk semua role yang boleh akses leger -->
 <?php if ($leger_boleh && !$ada_nilai && $kelas_id): ?>
 <?php
@@ -606,16 +687,15 @@ $modal_pesan = ($role === 'wali_kelas')
             align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:460px;width:90%;
                 text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative">
-        <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'"
-                style="position:absolute;top:12px;right:14px;background:none;border:none;
+        <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;
                        font-size:1.3rem;color:#9ca3af;cursor:pointer;line-height:1">&times;</button>
         <!-- Ikon -->
         <div style="width:64px;height:64px;background:#fef3c7;border-radius:50%;
                     display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
             <svg width="32" height="32" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
         </div>
         <!-- Judul -->
@@ -632,17 +712,16 @@ $modal_pesan = ($role === 'wali_kelas')
         </div>
         <!-- Aksi -->
         <div style="display:flex;gap:10px;justify-content:center">
-            <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'"
-                    style="background:#f3f4f6;color:#374151;border:none;border-radius:30px;
+            <button onclick="document.getElementById('modalLegerBelumNilai').style.display='none'" style="background:#f3f4f6;color:#374151;border:none;border-radius:30px;
                            padding:10px 22px;font-size:.88rem;font-weight:600;cursor:pointer">
                 Tutup
             </button>
             <a href="<?= $input_nilai_url ?>"
-               style="background:#f97316;color:#fff;border:none;border-radius:30px;
+                style="background:#f97316;color:#fff;border:none;border-radius:30px;
                       padding:10px 22px;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
                 Input Nilai Sekarang
             </a>
