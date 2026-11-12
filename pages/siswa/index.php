@@ -5,6 +5,13 @@
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
+$user = current_user();
+$_exp_uf   = get_user_unit_filter($user);
+$_exp_usql_siswa = '';
+if ($_exp_uf['units']) {
+    $u_in = implode("','", $_exp_uf['units']);
+    $_exp_usql_siswa = "AND k.unit IN ('$u_in')";
+}
 
 // ── Export Excel ──────────────────────────────────────────────────────────────
 if (isset($_GET['export'])) {
@@ -15,7 +22,7 @@ if (isset($_GET['export'])) {
          FROM users u
          INNER JOIN siswa s ON s.user_id = u.id
          LEFT  JOIN kelas k ON k.id = s.kelas_id
-         WHERE u.role = 'siswa' AND u.is_active = 1
+         WHERE u.role = 'siswa' AND u.is_active = 1 {$_exp_usql_siswa}
          ORDER BY s.kelas_id, u.nama_lengkap"
     );
     xlsx_template('export_siswa_' . date('Ymd') . '.xlsx', [

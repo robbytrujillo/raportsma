@@ -56,6 +56,12 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 // â"€â"€ Build where untuk filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $where_p  = 'gmk.tahun_ajaran_id = :ta';
 $params_p = [':ta' => $ta_id];
+
+// Filter unit: daftar penugasan difilter berdasarkan unit kelas
+if ($_unit_sql !== '') {
+    $where_p .= ' ' . $_unit_sql;
+}
+
 if ($search_p) {
     $where_p           .= ' AND (u.nama_lengkap LIKE :q1 OR m.nama_mapel LIKE :q2 OR k.nama_kelas LIKE :q3)';
     $params_p[':q1']    = "%$search_p%";

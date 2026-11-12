@@ -5,6 +5,9 @@
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
+$user = current_user();
+$_exp_uf   = get_user_unit_filter($user, 'g');
+$_exp_usql = $_exp_uf['sql']; // mis. "AND g.unit = 'putri'" atau ""
 
 // â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 // Export XLSX -- kolom sesuai template import guru.
@@ -13,7 +16,7 @@ if (isset($_GET['export'])) {
         "SELECT u.nama_lengkap, u.username, u.email, g.nip, g.status, g.bidang_studi
          FROM users u
          LEFT JOIN guru g ON g.user_id = u.id
-         WHERE u.role IN ('guru','wali_kelas') AND u.is_active = 1
+         WHERE u.role IN ('guru','wali_kelas') AND u.is_active = 1 {$_exp_usql}
          ORDER BY u.nama_lengkap"
     );
     xlsx_template('export_guru_' . date('Ymd') . '.xlsx', [

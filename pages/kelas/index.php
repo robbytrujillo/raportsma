@@ -1,20 +1,24 @@
-﻿<?php
+<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
+$user = current_user();
+$_exp_uf   = get_user_unit_filter($user);
+$_exp_usql = $_exp_uf['sql']; // mis. "AND k.unit = 'putri'" atau ""
 
 // â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 // Export XLSX -- kolom sesuai template import kelas.
 if (isset($_GET['export'])) {
     $rows = db_query(
-        'SELECT k.nama_kelas, k.tingkat, k.tahun_ajaran_id, k.wali_kelas_id,
+        "SELECT k.nama_kelas, k.tingkat, k.tahun_ajaran_id, k.wali_kelas_id,
                 u.nama_lengkap as nama_wali, ta.nama as ta_nama
          FROM kelas k
          LEFT JOIN users u ON u.id = k.wali_kelas_id
          LEFT JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
-         ORDER BY ta.id DESC, k.tingkat, k.nama_kelas'
+         WHERE 1=1 {$_exp_usql}
+         ORDER BY ta.id DESC, k.tingkat, k.nama_kelas"
     );
     xlsx_template('export_kelas_' . date('Ymd') . '.xlsx', [
         'title'    => 'Export Data Kelas -- Raportku',
