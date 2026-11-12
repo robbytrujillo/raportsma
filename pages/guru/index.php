@@ -41,6 +41,20 @@ if (isset($_GET['export'])) {
 }
 
 
+// ── Handle TOGGLE UNIT (super_admin only) ──────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_unit') {
+    if (!is_super_admin()) { flash('error','Hanya super admin yang dapat mengubah unit guru.'); }
+    elseif (verify_csrf()) {
+        $tid      = (int)($_POST['id'] ?? 0);
+        $cur_unit = db_row('SELECT unit FROM guru WHERE user_id=:id', [':id'=>$tid])['unit'] ?? 'putra';
+        $new_unit = ($cur_unit === 'putra') ? 'putri' : 'putra';
+        db_execute('UPDATE guru SET unit=:u WHERE user_id=:id', [':u'=>$new_unit, ':id'=>$tid]);
+        flash('success', 'Unit guru diubah ke ' . ucfirst($new_unit) . '.');
+    }
+    $back = http_build_query(['page'=>'guru','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
+    header("Location: index.php?$back"); exit;
+}
+
 // ── Handle TOGGLE AKTIF ────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
     if (verify_csrf()) {
@@ -77,6 +91,11 @@ if ($search) {
     $params[':q2'] = "%$search%";
     $params[':q3'] = "%$search%";
 }
+// Filter unit — admin putri hanya lihat guru unit putri/campuran, dst.
+$_gunit_f   = get_user_unit_filter($user, 'g');
+if ($_gunit_f['sql'] !== '') {
+    $where .= ' ' . $_gunit_f['sql'];
+}
 
 // â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
@@ -94,7 +113,7 @@ $offset = ($page_n - 1) * $per;
 
 $guru_list = db_query(
     "SELECT u.id, u.nama_lengkap, u.username, u.email, u.is_active, u.tanda_tangan,
-            g.id as guru_id, g.nip, g.status, g.bidang_studi
+            g.id as guru_id, g.nip, g.status, g.bidang_studi, g.unit
      FROM users u
      LEFT JOIN guru g ON g.user_id = u.id
      WHERE $where ORDER BY u.nama_lengkap
@@ -174,6 +193,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         <th>Bidang Studi</th>
                         <th>Username</th>
                         <th>Jabatan</th>
+                        <th>Unit</th>
                         <th>Status</th>
                         <th>TTD</th>
                         <th>Aksi</th>
@@ -182,7 +202,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 <tbody>
                     <?php if (empty($guru_list)): ?>
                     <tr>
-                        <td colspan="9" class="text-center py-8 text-gray-400">Belum ada data guru.</td>
+                        <td colspan="10" class="text-center py-8 text-gray-400">Belum ada data guru.</td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($guru_list as $i => $g): ?>
@@ -198,6 +218,30 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         <td>
                             <?php [$lbl,$cls] = $status_map[$g['status'] ?? 'guru'] ?? ['Guru','badge-blue']; ?>
                             <span class="badge <?= $cls ?>"><?= $lbl ?></span>
+                        </td>
+                        <td>
+                            <?php $g_unit = $g['unit'] ?? 'putra'; ?>
+                            <?php if (is_super_admin()): ?>
+                            <form method="POST" action="index.php?page=guru" style="display:inline">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="action" value="toggle_unit">
+                                <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                                <input type="hidden" name="q" value="<?= e($search) ?>">
+                                <input type="hidden" name="per" value="<?= $per ?>">
+                                <button type="submit"
+                                    title="Klik untuk ganti unit"
+                                    style="border:none;background:none;cursor:pointer;padding:0">
+                                    <span class="badge <?= $g_unit==='putri'?'badge-purple':'badge-blue' ?>"
+                                        style="cursor:pointer;user-select:none">
+                                        <?= $g_unit==='putri'?'Putri':'Putra' ?>
+                                    </span>
+                                </button>
+                            </form>
+                            <?php else: ?>
+                            <span class="badge <?= $g_unit==='putri'?'badge-purple':'badge-blue' ?>">
+                                <?= $g_unit==='putri'?'Putri':'Putra' ?>
+                            </span>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <span class="badge <?= ($g['is_active'] ?? 1) ? 'badge-green' : 'badge-red' ?>">

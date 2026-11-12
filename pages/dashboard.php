@@ -9,17 +9,35 @@ $role = $user['role'];
 // ── Ambil data statistik sesuai role ─────────────────────────
 $ta_aktif = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 
+// Unit filter untuk admin/kepsek yang punya unit spesifik
+$_uf     = get_user_unit_filter($user);
+$_usql   = $_uf['sql']; // mis. "AND k.unit = 'putri'" atau ""
+// Filter unit untuk siswa (join via kelas)
+$_usql_siswa = '';
+if ($_uf['units']) {
+    $u_in = implode("','", $_uf['units']);
+    $_usql_siswa = "AND s.kelas_id IN (SELECT id FROM kelas WHERE unit IN ('$u_in'))";
+}
+// Filter unit untuk guru (join via tabel guru)
+$_usql_guru = '';
+if ($_uf['units']) {
+    $u_in = implode("','", $_uf['units']);
+    $_usql_guru = "AND u.id IN (SELECT user_id FROM guru WHERE unit IN ('$u_in'))";
+}
+
 if (in_array($role, ['admin','super_admin'])) {
-    $total_siswa   = db_row('SELECT COUNT(*) as n FROM users WHERE role = "siswa" AND is_active = 1')['n'] ?? 0;
-    $total_guru    = db_row('SELECT COUNT(*) as n FROM users WHERE role IN ("guru","wali_kelas") AND is_active = 1')['n'] ?? 0;
-    $total_kelas   = db_row('SELECT COUNT(*) as n FROM kelas WHERE tahun_ajaran_id = :ta', [':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
-    $total_mapel   = db_row('SELECT COUNT(*) as n FROM mapel')['n'] ?? 0;
-    $total_nilai   = db_row('SELECT COUNT(*) as n FROM nilai WHERE tahun_ajaran_id = :ta', [':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
+    $ta_id_dash = $ta_aktif['id'] ?? 0;
+    $total_siswa = db_row("SELECT COUNT(*) as n FROM users u INNER JOIN siswa s ON s.user_id = u.id WHERE u.role = 'siswa' AND u.is_active = 1 {$_usql_siswa}")['n'] ?? 0;
+    $total_guru  = db_row("SELECT COUNT(*) as n FROM users u WHERE u.role IN ('guru','wali_kelas') AND u.is_active = 1 {$_usql_guru}")['n'] ?? 0;
+    $total_kelas = db_row("SELECT COUNT(*) as n FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_usql}", [':ta' => $ta_id_dash])['n'] ?? 0;
+    $total_mapel = db_row('SELECT COUNT(*) as n FROM mapel')['n'] ?? 0;
+    $total_nilai = db_row("SELECT COUNT(*) as n FROM nilai n INNER JOIN kelas k ON k.id = n.kelas_id WHERE n.tahun_ajaran_id = :ta {$_usql}", [':ta' => $ta_id_dash])['n'] ?? 0;
 
 } elseif ($role === 'kepala_sekolah') {
-    $total_siswa   = db_row('SELECT COUNT(*) as n FROM users WHERE role = "siswa" AND is_active = 1')['n'] ?? 0;
-    $total_kelas   = db_row('SELECT COUNT(*) as n FROM kelas WHERE tahun_ajaran_id = :ta', [':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
-    $total_nilai   = db_row('SELECT COUNT(*) as n FROM nilai WHERE tahun_ajaran_id = :ta', [':ta' => $ta_aktif['id'] ?? 0])['n'] ?? 0;
+    $ta_id_dash  = $ta_aktif['id'] ?? 0;
+    $total_siswa = db_row("SELECT COUNT(*) as n FROM users u INNER JOIN siswa s ON s.user_id = u.id WHERE u.role = 'siswa' AND u.is_active = 1 {$_usql_siswa}")['n'] ?? 0;
+    $total_kelas = db_row("SELECT COUNT(*) as n FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_usql}", [':ta' => $ta_id_dash])['n'] ?? 0;
+    $total_nilai = db_row("SELECT COUNT(*) as n FROM nilai n INNER JOIN kelas k ON k.id = n.kelas_id WHERE n.tahun_ajaran_id = :ta {$_usql}", [':ta' => $ta_id_dash])['n'] ?? 0;
 
 } elseif (in_array($role, ['guru','wali_kelas'])) {
     // Kelas & mapel yang diajar guru ini
@@ -179,17 +197,21 @@ if (in_array($role, ['admin','super_admin'])) {
     );
 }
 
-// Aktivitas nilai terbaru (admin/guru/walas)
+// Aktivitas nilai terbaru (admin/guru/walas) — difilter per unit
 $recent_nilai = [];
-if (in_array($role, ['admin', 'super_admin', 'guru', 'wali_kelas'])) {
-    $uid_filter = (in_array($role, ['admin','super_admin'])) ? '' : 'AND n.guru_user_id = ' . (int)$user['id'];
+if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kelas'])) {
+    if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
+        $uid_filter = '';
+    } else {
+        $uid_filter = 'AND n.guru_user_id = ' . (int)$user['id'];
+    }
     $recent_nilai = db_query(
         "SELECT n.*, u.nama_lengkap as nama_siswa, m.nama_mapel, k.nama_kelas
          FROM nilai n
          LEFT JOIN users u ON u.id = n.siswa_user_id
          LEFT JOIN mapel m ON m.id = n.mapel_id
          LEFT JOIN kelas k ON k.id = n.kelas_id
-         WHERE n.tahun_ajaran_id = :ta $uid_filter
+         WHERE n.tahun_ajaran_id = :ta {$_usql} $uid_filter
          ORDER BY n.updated_at DESC LIMIT 5",
         [':ta' => $ta_aktif['id'] ?? 0]
     );

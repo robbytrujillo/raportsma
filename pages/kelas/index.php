@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
@@ -91,8 +91,11 @@ $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
 $offset   = ($page_n - 1) * $per;
 
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+
 $total = (int)(db_row(
-    'SELECT COUNT(*) as n FROM kelas k WHERE k.tahun_ajaran_id = :ta',
+    "SELECT COUNT(*) as n FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql}",
     [':ta' => $ta_filter]
 )['n'] ?? 0);
 $pages = max(1, (int)ceil($total / $per));
@@ -100,12 +103,12 @@ if ($page_n > $pages) $page_n = $pages;
 $offset = ($page_n - 1) * $per;
 
 $kelas_list = db_query(
-    'SELECT k.*, u.nama_lengkap as nama_wali, ta.nama as ta_nama, ta.semester
+    "SELECT k.*, u.nama_lengkap as nama_wali, ta.nama as ta_nama, ta.semester
      FROM kelas k
      LEFT JOIN users u ON u.id = k.wali_kelas_id
      LEFT JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
-     WHERE k.tahun_ajaran_id = :ta ORDER BY k.tingkat, k.nama_kelas
-     LIMIT ' . $per . ' OFFSET ' . $offset,
+     WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.tingkat, k.nama_kelas
+     LIMIT $per OFFSET $offset",
     [':ta' => $ta_filter]
 );
 $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);

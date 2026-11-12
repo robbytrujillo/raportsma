@@ -176,22 +176,24 @@ $krit_b    = (float)($sekolah['kriteria_b_min'] ?? 83);
 $krit_c    = (float)($sekolah['kriteria_c_min'] ?? 76);
 
 // Kelas sesuai hak akses
-if (in_array($role, ['admin','super_admin'])) {
-    $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id=:ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
+    $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id=:ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 } elseif ($guru_status === 'wali_kelas') {
     // :uid2 = nilai sama dengan :uid â€" PDO tidak boleh pakai named param duplikat
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id=k.id AND gmk.guru_user_id=:uid
-         WHERE k.tahun_ajaran_id=:ta AND (k.wali_kelas_id=:uid2 OR gmk.id IS NOT NULL)
-         ORDER BY k.nama_kelas',
+         WHERE k.tahun_ajaran_id=:ta AND (k.wali_kelas_id=:uid2 OR gmk.id IS NOT NULL) {$_unit_sql}
+         ORDER BY k.nama_kelas",
         [':uid'=>$user['id'],':uid2'=>$user['id'],':ta'=>$ta_id]
     );
 } else {
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          INNER JOIN guru_mapel_kelas gmk ON gmk.kelas_id=k.id
-         WHERE gmk.guru_user_id=:uid AND gmk.tahun_ajaran_id=:ta ORDER BY k.nama_kelas',
+         WHERE gmk.guru_user_id=:uid AND gmk.tahun_ajaran_id=:ta {$_unit_sql} ORDER BY k.nama_kelas",
         [':uid'=>$user['id'],':ta'=>$ta_id]
     );
 }

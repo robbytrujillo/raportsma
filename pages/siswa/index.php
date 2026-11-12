@@ -114,17 +114,26 @@ $kelas_id = (int)($_GET['kelas'] ?? 0);
 $search   = trim($_GET['q'] ?? '');
 
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
-$kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
-// Semua kelas dari semua tahun ajaran (untuk target pindah kelas)
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+$kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
+// Semua kelas dari semua tahun ajaran (untuk target pindah kelas) — difilter unit
 $semua_kelas = db_query(
-    'SELECT k.id, k.nama_kelas, k.tingkat, ta.nama as ta_nama, ta.semester
+    "SELECT k.id, k.nama_kelas, k.tingkat, ta.nama as ta_nama, ta.semester
      FROM kelas k
      JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
-     ORDER BY ta.id DESC, k.tingkat, k.nama_kelas'
+     WHERE 1=1 {$_unit_sql}
+     ORDER BY ta.id DESC, k.tingkat, k.nama_kelas"
 );
 
 $where  = ['u.role = "siswa"'];
 $params = [];
+
+// Selalu terapkan filter unit ke query siswa (join kelas k sudah ada)
+if ($_unit_f['units']) {
+    $unit_in = implode("','", $_unit_f['units']);
+    $where[] = "k.unit IN ('$unit_in')";
+}
 
 if ($kelas_id) {
     $where[] = 's.kelas_id = :kid';

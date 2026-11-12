@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/penugasan/index.php
  * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
@@ -40,9 +40,17 @@ $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_id      = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 $search_p   = trim($_GET['q'] ?? '');
 
-$guru_list  = db_query("SELECT u.id, u.nama_lengkap FROM users u WHERE u.role IN ('guru','wali_kelas') ORDER BY u.nama_lengkap");
+$user       = current_user();
+$_unit_f    = get_user_unit_filter($user);
+$_unit_sql  = $_unit_f['sql'];
+$_gunit_f   = get_user_unit_filter($user, 'g');
+
+// Guru: filter per unit (admin putri hanya lihat guru unit putri/campuran)
+$_guru_where = "u.role IN ('guru','wali_kelas')";
+if ($_gunit_f['sql'] !== '') { $_guru_where .= ' ' . $_gunit_f['sql']; }
+$guru_list  = db_query("SELECT u.id, u.nama_lengkap FROM users u LEFT JOIN guru g ON g.user_id = u.id WHERE {$_guru_where} ORDER BY u.nama_lengkap");
 $mapel_list = db_query('SELECT * FROM mapel ORDER BY nama_mapel');
-$kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
+$kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
 // â"€â"€ Build where untuk filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -200,13 +208,13 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                         <?php
           $start = max(1, $page_n - 3); $end = min($pages_p, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr_p ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">...</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?><a href="?<?= $qstr_p ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a><?php
           endfor;
           if ($end < $pages_p):
-            if ($end < $pages_p - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
+            if ($end < $pages_p - 1): ?><span class="page-link disabled">...</span><?php endif;
             ?><a href="?<?= $qstr_p ?>&p=<?= $pages_p ?>" class="page-link"><?= $pages_p ?></a><?php
           endif;
         ?>

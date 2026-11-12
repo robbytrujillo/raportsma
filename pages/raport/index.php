@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/raport/index.php
  * Daftar raport &mdash; tampilan sesuai role.
@@ -253,26 +253,31 @@ if ($role === 'siswa') {
 $guru_detail = db_row('SELECT * FROM guru WHERE user_id = :uid', [':uid' => $user['id']]);
 $guru_status = $guru_detail['status'] ?? 'guru';
 
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+
 if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     $kelas_list = db_query(
-        'SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas',
+        "SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas",
         [':ta' => $ta_id]
     );
 } elseif ($guru_status === 'wali_kelas') {
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id AND gmk.guru_user_id = :uid
          WHERE k.tahun_ajaran_id = :ta
            AND (k.wali_kelas_id = :uid2 OR gmk.id IS NOT NULL)
-         ORDER BY k.nama_kelas',
+           {$_unit_sql}
+         ORDER BY k.nama_kelas",
         [':uid' => $user['id'], ':uid2' => $user['id'], ':ta' => $ta_id]
     );
 } else {
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          INNER JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id
          WHERE gmk.guru_user_id = :uid AND gmk.tahun_ajaran_id = :ta
-         ORDER BY k.nama_kelas',
+           {$_unit_sql}
+         ORDER BY k.nama_kelas",
         [':uid' => $user['id'], ':ta' => $ta_id]
     );
 }

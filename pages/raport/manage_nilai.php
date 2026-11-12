@@ -11,11 +11,14 @@
  *   - Hapus semua nilai satu siswa untuk periode yang dipilih
  */
 require_login();
-if (!in_array(current_user()['role'], ['admin', 'super_admin'])) {
+$_mn_user = current_user();
+if (!in_array($_mn_user['role'], ['admin', 'super_admin'])) {
     http_response_code(403);
     echo '<div class="page-content"><div class="alert alert-danger">Hanya Admin yang dapat mengakses halaman ini.</div></div>';
     return;
 }
+$_mn_uf   = get_user_unit_filter($_mn_user);
+$_mn_usql = $_mn_uf['sql']; // mis. "AND k.unit = 'putri'" atau ""
 
 $ta_aktif  = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_list   = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
@@ -82,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     header("Location: index.php?$qs"); exit;
 }
 
-// ── Kelas berdasarkan TA ────────────────────────────────────────
+// ── Kelas berdasarkan TA (difilter per unit) ────────────────────
 $kelas_list = $ta_id
-    ? db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta' => $ta_id])
+    ? db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_mn_usql} ORDER BY k.nama_kelas", [':ta' => $ta_id])
     : [];
 
 // ── Siswa berdasarkan Kelas ─────────────────────────────────────

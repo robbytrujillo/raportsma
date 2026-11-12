@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/guru/form.php
  * Form tambah / edit guru â€" admin
@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nip          = trim($_POST['nip'] ?? '');
         $status       = $_POST['status'] ?? 'guru';
         $bidang_studi = trim($_POST['bidang_studi'] ?? '');
+        $unit_val     = in_array($_POST['unit'] ?? '', ['putra','putri','campuran']) ? $_POST['unit'] : 'campuran';
         $password     = $_POST['password'] ?? '';
         $role_val     = ($status === 'wali_kelas') ? 'wali_kelas' : 'guru';
 
@@ -52,13 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Update atau insert guru
                 if ($guru_data) {
                     db_execute(
-                        'UPDATE guru SET nip=:nip, status=:s, bidang_studi=:bs WHERE user_id=:uid',
-                        [':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi, ':uid'=>$id]
+                        'UPDATE guru SET nip=:nip, status=:s, bidang_studi=:bs, unit=:u WHERE user_id=:uid',
+                        [':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi, ':u'=>$unit_val, ':uid'=>$id]
                     );
                 } else {
                     db_execute(
-                        'INSERT INTO guru (user_id, nip, status, bidang_studi) VALUES (:uid,:nip,:s,:bs)',
-                        [':uid'=>$id, ':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi]
+                        'INSERT INTO guru (user_id, nip, status, bidang_studi, unit) VALUES (:uid,:nip,:s,:bs,:u)',
+                        [':uid'=>$id, ':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi, ':u'=>$unit_val]
                     );
                 }
                 flash('success', 'Data guru berhasil diperbarui.');
@@ -69,8 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      ':pw'=>password_hash($password, PASSWORD_BCRYPT)]
                 );
                 db_execute(
-                    'INSERT INTO guru (user_id, nip, status, bidang_studi) VALUES (:uid,:nip,:s,:bs)',
-                    [':uid'=>$uid, ':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi]
+                    'INSERT INTO guru (user_id, nip, status, bidang_studi, unit) VALUES (:uid,:nip,:s,:bs,:u)',
+                    [':uid'=>$uid, ':nip'=>$nip, ':s'=>$status, ':bs'=>$bidang_studi, ':u'=>$unit_val]
                 );
                 flash('success', 'Guru baru berhasil ditambahkan.');
             }
@@ -142,6 +143,16 @@ $dg = $guru_data ?? [];
                             <option value="koordinator" <?= ($dg['status']??'')==='koordinator'?'selected':'' ?>>
                                 Koordinator</option>
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Unit</label>
+                        <select name="unit" class="form-control">
+                            <option value="campuran" <?= ($dg['unit']??'campuran')==='campuran'?'selected':'' ?>>Campuran (Akses Semua)</option>
+                            <option value="putra"    <?= ($dg['unit']??'')==='putra'   ?'selected':'' ?>>SMA Putra</option>
+                            <option value="putri"    <?= ($dg['unit']??'')==='putri'   ?'selected':'' ?>>SMA Putri</option>
+                        </select>
+                        <small class="text-gray-400">Menentukan unit kelas yang bisa diakses guru ini.</small>
                     </div>
 
                     <div class="form-group md:col-span-2">

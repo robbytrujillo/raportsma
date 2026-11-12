@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/absensi/index.php
  * Data absensi siswa per kelas &mdash; input oleh wali kelas/admin
@@ -44,18 +44,21 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $kelas_id   = (int)($_GET['kelas'] ?? 0);
 
 // Kelas yang bisa diakses
-if (in_array($role, ['admin','super_admin'])) {
-    $kelas_list = db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta'=>$ta_id]);
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+
+if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
+    $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 } else {
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          INNER JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id
-         WHERE gmk.guru_user_id = :uid AND gmk.tahun_ajaran_id = :ta ORDER BY k.nama_kelas',
+         WHERE gmk.guru_user_id = :uid AND gmk.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas",
         [':uid'=>$user['id'], ':ta'=>$ta_id]
     );
     // Juga kelas yang jadi walinya
     if ($role === 'wali_kelas') {
-        $wali_kelas = db_query('SELECT * FROM kelas WHERE wali_kelas_id = :uid AND tahun_ajaran_id = :ta',
+        $wali_kelas = db_query("SELECT * FROM kelas k WHERE k.wali_kelas_id = :uid AND k.tahun_ajaran_id = :ta {$_unit_sql}",
             [':uid'=>$user['id'], ':ta'=>$ta_id]);
         // Merge unik
         $existing_ids = array_column($kelas_list, 'id');

@@ -59,30 +59,35 @@ $jenis    = $_GET['jenis'] ?? '';
 $ta_list  = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
 // â"€â"€ Kelas yang bisa dipilih â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+$_unit_f   = get_user_unit_filter($user);
+$_unit_sql = $_unit_f['sql'];
+
 if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
-    // Admin & kepala sekolah: semua kelas
+    // Admin & kepala sekolah: semua kelas (dibatasi unit sesuai profil)
     $kelas_list = db_query(
-        'SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas',
+        "SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas",
         [':ta' => $ta_id]
     );
 } elseif ($guru_status === 'wali_kelas') {
-    // Wali kelas: kelas yang dipimpin + kelas yang diajar
+    // Wali kelas: kelas yang dipimpin + kelas yang diajar (dalam unitnya)
     // :uid2 = nilai sama dengan :uid â€" PDO tidak boleh pakai named param duplikat
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          LEFT JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id AND gmk.guru_user_id = :uid
          WHERE k.tahun_ajaran_id = :ta
            AND (k.wali_kelas_id = :uid2 OR gmk.id IS NOT NULL)
-         ORDER BY k.nama_kelas',
+           {$_unit_sql}
+         ORDER BY k.nama_kelas",
         [':uid' => $user['id'], ':uid2' => $user['id'], ':ta' => $ta_id]
     );
 } else {
     // Guru biasa: hanya kelas yang diajar
     $kelas_list = db_query(
-        'SELECT DISTINCT k.* FROM kelas k
+        "SELECT DISTINCT k.* FROM kelas k
          INNER JOIN guru_mapel_kelas gmk ON gmk.kelas_id = k.id
          WHERE gmk.guru_user_id = :uid AND gmk.tahun_ajaran_id = :ta
-         ORDER BY k.nama_kelas',
+           {$_unit_sql}
+         ORDER BY k.nama_kelas",
         [':uid' => $user['id'], ':ta' => $ta_id]
     );
 }
