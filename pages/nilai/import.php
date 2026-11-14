@@ -386,6 +386,12 @@ $successes = 0;
 $siswa_cache = [];
 $mapel_cache = [];
 $kelas_cache = [];
+// PRG: restore hasil import dari session jika redirect dari POST
+if (isset($_GET['imported']) && isset($_SESSION['_import_result'])) {
+    $r = $_SESSION['_import_result'];
+    $results = $r['results']; $errors = $r['errors']; $successes = $r['successes'];
+    unset($_SESSION['_import_result']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
     if (!verify_csrf()) {
@@ -703,6 +709,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             }
         }
     }
+    // PRG: redirect juga saat tidak ada sukses (error/skip saja) agar refresh aman
+    $_SESSION['_import_result'] = compact('results','errors','successes');
+    $redir_base = '/raportku23102026/nilai.import?' . http_build_query([
+        'imported'=>1,'f_ta'=>$f_ta_id,'f_kelas'=>$f_kelas,
+        'f_mapel'=>$f_mapel,'f_jenis'=>$f_jenis,'f_bulan'=>$f_bulan,
+        'aktif_nh1'=>$f_aktif_nh1,'aktif_nh2'=>$f_aktif_nh2,
+        'aktif_nh3'=>$f_aktif_nh3,'aktif_tugas'=>$f_aktif_tugas,
+    ]);
+    header('Location: ' . $redir_base); exit;
 }
 
 // ── Info untuk tampilan ──────────────────────────────────────────

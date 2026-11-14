@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/penugasan/import.php
  * Template Excel (.xlsx) & import penugasan guru
@@ -198,6 +198,11 @@ if (isset($_GET['download_template'])) {
 $results   = [];
 $errors    = [];
 $successes = 0;
+// PRG: restore hasil import dari session jika redirect dari POST
+if (isset($_GET['imported']) && isset($_SESSION['_import_result'])) {
+    ['results'=>$results,'errors'=>$errors,'successes'=>$successes] = $_SESSION['_import_result'];
+    unset($_SESSION['_import_result']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
     if (!verify_csrf()) {
@@ -267,6 +272,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             if ($successes > 0) flash('success', "$successes penugasan berhasil diimport.");
         }
     }
+    // PRG: simpan hasil ke session lalu redirect ke GET agar refresh tidak re-upload
+    $_SESSION['_import_result'] = compact('results','errors','successes');
+    header('Location: ' . page_url('penugasan.import') . '?imported=1'); exit;
 }
 ?>
 <div class="page-content" style="max-width:860px;margin:0 auto">
