@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/profil.php
  * Halaman profil pengguna &mdash; update data, foto, tanda tangan (upload atau draw)
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 db_execute($sql, $p);
                 $_SESSION['nama_lengkap'] = $nama;
                 flash('success', 'Profil berhasil diperbarui.');
-                header('Location: index.php?page=profil'); exit;
+                header('Location: /raportku23102026/profil'); exit;
             }
         }
 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['foto'] = $result['path'];
                 flash('success', 'Foto profil diperbarui.');
             } else { $errors[] = $result['message']; }
-            if (empty($errors)) { header('Location: index.php?page=profil'); exit; }
+            if (empty($errors)) { header('Location: /raportku23102026/profil'); exit; }
         }
 
         // ── Upload tanda tangan (file) ───────────────────────────
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['tanda_tangan'] = $result['path'];
                     flash('success', 'Tanda tangan berhasil diupload.');
                 } else { $errors[] = $result['message']; }
-                if (empty($errors)) { header('Location: index.php?page=profil'); exit; }
+                if (empty($errors)) { header('Location: /raportku23102026/profil'); exit; }
             }
         }
 
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             db_execute('UPDATE users SET tanda_tangan=:t WHERE id=:id', [':t'=>$filename, ':id'=>$uid]);
                             $_SESSION['tanda_tangan'] = $filename;
                             flash('success', 'Tanda tangan berhasil disimpan.');
-                            header('Location: index.php?page=profil'); exit;
+                            header('Location: /raportku23102026/profil'); exit;
                         } else {
                             $errors[] = 'Gagal menyimpan file tanda tangan.';
                         }
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['tanda_tangan'] = null;
                 flash('success', 'Tanda tangan dihapus.');
             }
-            header('Location: index.php?page=profil'); exit;
+            header('Location: /raportku23102026/profil'); exit;
         }
     }
     $full_user = db_row('SELECT * FROM users WHERE id = :id', [':id' => $uid]);
@@ -201,7 +201,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                     <div class="text-sm text-gray-400 mb-3">@<?= e($full_user['username']) ?></div>
 
                     <!-- Upload Foto -->
-                    <form method="POST" action="index.php?page=profil" enctype="multipart/form-data">
+                    <form method="POST" action="/raportku23102026/profil" enctype="multipart/form-data">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="upload_foto">
                         <label class="btn btn-secondary btn-sm w-full justify-center cursor-pointer">
@@ -280,7 +280,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 
                     <!-- Panel: Upload File -->
                     <div id="panelUpload">
-                        <form method="POST" action="index.php?page=profil" enctype="multipart/form-data"
+                        <form method="POST" action="/raportku23102026/profil" enctype="multipart/form-data"
                             id="formUploadTtd">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="upload_ttd">
@@ -331,7 +331,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                                 ✓ Simpan
                             </button>
                         </div>
-                        <form method="POST" action="index.php?page=profil" id="formCanvasTtd">
+                        <form method="POST" action="/raportku23102026/profil" id="formCanvasTtd">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="save_ttd_canvas">
                             <input type="hidden" name="canvas_data" id="canvasDataInput">
@@ -342,7 +342,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                     <!-- Tombol hapus (jika sudah ada TTD) -->
                     <?php if ($has_ttd): ?>
                     <div style="border-top:1px solid #f3f4f6;margin-top:12px;padding-top:10px">
-                        <form method="POST" action="index.php?page=profil" id="formDeleteTtd"
+                        <form method="POST" action="/raportku23102026/profil" id="formDeleteTtd"
                             onsubmit="return confirm('Hapus tanda tangan ini?')">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="delete_ttd">
@@ -372,7 +372,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
             <div class="card mb-4">
                 <div class="card-header">Edit Informasi Akun</div>
                 <div class="card-body">
-                    <form method="POST" action="index.php?page=profil">
+                    <form method="POST" action="/raportku23102026/profil">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="update_profil">
                         <div class="form-group">

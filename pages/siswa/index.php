@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/siswa/index.php
  * Daftar siswa – admin / super_admin
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete'
         db_execute('DELETE FROM users WHERE id = :id AND role = "siswa"', [':id'=>(int)$_POST['id']]);
         flash('success','Data siswa dihapus.');
     }
-    header('Location: index.php?page=siswa'); exit;
+    header('Location: /raportku23102026/siswa'); exit;
 }
 
 // ── Handle BULK PINDAH KELAS ──────────────────────────────────────────────────
@@ -195,7 +195,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             <p class="page-subtitle">Kelola data siswa sekolah</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-            <a href="index.php?page=siswa&export=1" class="btn btn-secondary" style="border-radius:30px">
+            <a href="/raportku23102026/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -203,7 +203,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </svg>
                 Export Excel
             </a>
-            <a href="index.php?page=siswa.import" class="btn btn-secondary" style="border-radius:30px">
+            <a href="/raportku23102026/siswa.import" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -211,7 +211,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </svg>
                 Import Excel
             </a>
-            <a href="index.php?page=siswa.create" class="btn btn-primary" style="border-radius:30px">
+            <a href="/raportku23102026/siswa.create" class="btn btn-primary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
@@ -338,9 +338,9 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="index.php?page=siswa.edit&id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/raportku23102026/siswa.edit?id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius:30px">Edit</a>
-                                <form method="POST" action="index.php?page=siswa" style="display:inline"
+                                <form method="POST" action="/raportku23102026/siswa" style="display:inline"
                                     onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_active">
@@ -355,7 +355,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                         <?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
                                     </button>
                                 </form>
-                                <form method="POST" action="index.php?page=siswa" style="display:inline"
+                                <form method="POST" action="/raportku23102026/siswa" style="display:inline"
                                     onsubmit="return confirm('Hapus siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -413,7 +413,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             </h3>
             <button type="button" onclick="tutupPindahKelas()" class="btn btn-sm btn-secondary" style="border-radius:50%;padding:4px 8px">&times;</button>
         </div>
-        <form method="POST" action="index.php?page=siswa" id="formPindahKelas">
+        <form method="POST" action="/raportku23102026/siswa" id="formPindahKelas">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="bulk_pindah_kelas">
             <input type="hidden" name="ta" value="<?= $ta_id ?>">

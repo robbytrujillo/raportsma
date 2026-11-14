@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/guru/index.php
  * Daftar Guru â€" admin saja
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         db_execute('DELETE FROM users WHERE id = :id AND role IN ("guru","wali_kelas")', [':id' => $id]);
         flash('success', 'Data guru berhasil dihapus.');
     }
-    header('Location: index.php?page=guru'); exit;
+    header('Location: /raportku23102026/guru'); exit;
 }
 
 $search = trim($_GET['q'] ?? '');
@@ -134,7 +134,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             <p class="page-subtitle">Kelola data guru dan wali kelas</p>
         </div>
         <div class="flex gap-2">
-            <a href="index.php?page=guru&export=1" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/guru?export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -142,7 +142,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=guru.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/guru.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -150,7 +150,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </svg>
                 Import CSV
             </a>
-            <a href="index.php?page=guru.create" class="btn btn-primary" style="border-radius: 30px;">
+            <a href="/raportku23102026/guru.create" class="btn btn-primary" style="border-radius: 30px;">
                 <svg width=" 16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -179,7 +179,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </div>
                 <div class="flex gap-2 items-end" style="padding-bottom:0">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px;">Cari</button>
-                    <?php if ($search || $per !== 10): ?><a href="index.php?page=guru"
+                    <?php if ($search || $per !== 10): ?><a href="/raportku23102026/guru"
                         class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
                 </div>
             </form>
@@ -225,7 +225,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         <td>
                             <?php $g_unit = $g['unit'] ?? 'putra'; ?>
                             <?php if (is_super_admin()): ?>
-                            <form method="POST" action="index.php?page=guru" style="display:inline">
+                            <form method="POST" action="/raportku23102026/guru" style="display:inline">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="toggle_unit">
                                 <input type="hidden" name="id" value="<?= $g['id'] ?>">
@@ -261,10 +261,10 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="index.php?page=guru.edit&id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/raportku23102026/guru.edit?id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
                                 <!-- Tombol Toggle Aktif/Nonaktif -->
-                                <form method="POST" action="index.php?page=guru" style="display:inline"
+                                <form method="POST" action="/raportku23102026/guru" style="display:inline"
                                     onsubmit="return confirm('<?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_active">
@@ -277,7 +277,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                                         <?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
                                     </button>
                                 </form>
-                                <form method="POST" action="index.php?page=guru" style="display:inline"
+                                <form method="POST" action="/raportku23102026/guru" style="display:inline"
                                     onsubmit="return confirm('Hapus guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">

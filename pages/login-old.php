@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/login.php
  * Halaman login
@@ -7,7 +7,7 @@ require_once __DIR__ . '/../auth.php';
 
 // Jika sudah login, redirect ke dashboard
 if (is_logged_in()) {
-    header('Location: index.php?page=dashboard');
+    header('Location: /raportku23102026/dashboard');
     exit;
 }
 
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $result = do_login($username, $password);
         if ($result['success']) {
-            header('Location: index.php?page=dashboard');
+            header('Location: /raportku23102026/dashboard');
             exit;
         } else {
             $error = $result['message'];
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <?php endif; ?>
 
-            <form method="POST" action="index.php?page=login" id="loginForm">
+            <form method="POST" action="/raportku23102026/login" id="loginForm">
                 <?= csrf_field() ?>
 
                 <div class="form-group">

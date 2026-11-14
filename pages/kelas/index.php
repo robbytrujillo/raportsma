@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/kelas/index.php + form.php combined â€" admin
  */
@@ -47,7 +47,7 @@ if (isset($_GET['export'])) {
 
 // â"€â"€ Handle ALL POST actions BEFORE any output â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=kelas'); exit; }
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /raportku23102026/kelas'); exit; }
 
     $action  = $_POST['action'] ?? '';
     $ta_back = (int)($_POST['tahun_ajaran_id'] ?? ($_GET['ta'] ?? 0));
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         db_execute('DELETE FROM kelas WHERE id = :id', [':id' => (int)$_POST['id']]);
         flash('success', 'Kelas berhasil dihapus.');
-        header('Location: index.php?page=kelas&ta=' . $ta_back); exit;
+        header('Location: /raportku23102026/kelas?ta=' . $ta_back); exit;
     }
 
     if ($action === 'save') {
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             flash('error','Nama kelas, tingkat, dan tahun ajaran wajib diisi.');
         }
-        header("Location: index.php?page=kelas&ta=$ta_id"); exit;
+        header("Location: /raportku23102026/kelas?ta=$ta_id"); exit;
     }
 }
 
@@ -124,7 +124,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
             <p class="page-subtitle">Kelola kelas per tahun ajaran</p>
         </div>
         <div class="flex gap-2">
-            <a href="index.php?page=kelas&export=1" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/kelas?export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -132,7 +132,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=kelas.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/kelas.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -154,7 +154,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
     <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
         <div class="flex gap-2 flex-wrap">
             <?php foreach ($ta_list as $ta): ?>
-            <a href="index.php?page=kelas&ta=<?= $ta['id'] ?>&per=<?= $per ?>"
+            <a href="/raportku23102026/kelas?ta=<?= $ta['id'] ?>&per=<?= $per ?>"
                 class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_filter ? 'badge-orange' : 'badge-gray' ?>"
                 style="text-decoration:none;cursor:pointer">
                 <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
@@ -218,7 +218,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                             <div class="flex gap-1">
                                 <button onclick='editKelas(<?= json_encode($k) ?>)' class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px">Edit</button>
-                                <form method="POST" action="index.php?page=kelas" style="display:inline"
+                                <form method="POST" action="/raportku23102026/kelas" style="display:inline"
                                     onsubmit="return confirm('Hapus kelas <?= e($k['nama_kelas']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -271,7 +271,7 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
             <button onclick="Modal.close('modalKelas')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
-        <form method="POST" action="index.php?page=kelas&ta=<?= $ta_filter ?>" id="formKelas">
+        <form method="POST" action="/raportku23102026/kelas?ta=<?= $ta_filter ?>" id="formKelas">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" id="kelasId" value="">

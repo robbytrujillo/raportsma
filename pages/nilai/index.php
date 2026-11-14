@@ -1,4 +1,4 @@
-﻿﻿<?php
+<?php
 /**
  * pages/nilai/index.php
  * Daftar & input nilai â€" akses berdasarkan status guru di tabel guru:
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete'
         }
         flash('success','Data nilai dihapus.');
     }
-    header('Location: index.php?page=nilai'); exit;
+    header('Location: /raportku23102026/nilai'); exit;
 }
 
 // â"€â"€ Filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -130,16 +130,20 @@ $whereStr = implode(' AND ', $where);
 if (isset($_GET['export'])) {
     $exp_all = db_query(
         "SELECT n.*, u.nama_lengkap as nama_siswa, s.nis as siswa_nis,
-                m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru
+                m.nama_mapel, k.nama_kelas, g.nama_lengkap as nama_guru,
+                ta.nama as ta_nama, ta.semester as ta_semester
          FROM nilai n
          LEFT JOIN users u ON u.id = n.siswa_user_id
          LEFT JOIN siswa s ON s.user_id = n.siswa_user_id
          LEFT JOIN mapel m ON m.id = n.mapel_id
          LEFT JOIN kelas k ON k.id = n.kelas_id
          LEFT JOIN users g ON g.id = n.guru_user_id
+         LEFT JOIN tahun_ajaran ta ON ta.id = n.tahun_ajaran_id
          WHERE $whereStr ORDER BY u.nama_lengkap, m.nama_mapel, n.bulan",
         $params
     );
+    $bulan_id = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',
+                 7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
     require_once __DIR__ . '/../../excel.php';
     xlsx_template('export_nilai_' . date('Ymd') . '.xlsx', [
         'title'    => 'Export Data Nilai -- Raportku',
@@ -152,12 +156,16 @@ if (isset($_GET['export'])) {
             ['header'=>'Nama Kelas',      'field'=>'kelas_nama',      'width'=>16,'required'=>true,  'type'=>'text',  'format'=>'@',
              'note'=>'Nama kelas harus persis sama dengan database'],
             ['header'=>'Tahun Ajaran ID', 'field'=>'tahun_ajaran_id', 'width'=>16,'required'=>true,  'type'=>'number',
-             'note'=>'ID tahun ajaran'],
+             'note'=>'ID tahun ajaran -- wajib saat re-import'],
+            ['header'=>'[Tahun Ajaran]',  'field'=>'ta_label',        'width'=>22,'required'=>false, 'type'=>'text',  'format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
             ['header'=>'Jenis Raport',    'field'=>'jenis_raport',    'width'=>14,'required'=>true,  'type'=>'dropdown',
              'dropdown'=>['bulanan','sts','semester'],
              'note'=>'Pilih: bulanan / sts / semester'],
             ['header'=>'Bulan',           'field'=>'bulan',           'width'=>8, 'required'=>false, 'type'=>'number',
              'note'=>'1-12, wajib untuk jenis bulanan/sts. Kosongkan untuk semester.'],
+            ['header'=>'[Nama Bulan]',    'field'=>'nama_bulan',      'width'=>14,'required'=>false, 'type'=>'text',  'format'=>'@',
+             'note'=>'Referensi saja -- tidak dibaca saat import'],
             ['header'=>'NH1',             'field'=>'nh1',             'width'=>10,'required'=>false, 'type'=>'number',
              'note'=>'Nilai Harian 1 (bulanan). Nilai 0 = tidak terisi.'],
             ['header'=>'NH2',             'field'=>'nh2',             'width'=>10,'required'=>false, 'type'=>'number'],
@@ -183,8 +191,10 @@ if (isset($_GET['export'])) {
             $n['nama_mapel'],
             $n['nama_kelas'],
             $n['tahun_ajaran_id'],
+            ($n['ta_nama'] ?? '') . ' Sem.' . ($n['ta_semester'] ?? ''),
             $n['jenis_raport'],
             $n['bulan'] ?? '',
+            $n['bulan'] ? ($bulan_id[(int)$n['bulan']] ?? '') : '',
             $n['nilai_harian_1'],
             $n['nilai_harian_2'],
             $n['nilai_harian_3'],
@@ -241,7 +251,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
             <p class="page-subtitle">Input dan kelola nilai siswa</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-            <a href="index.php?page=nilai&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
+            <a href="/raportku23102026/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
                 class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -250,7 +260,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=nilai.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/nilai.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -259,7 +269,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 Import CSV
             </a>
             <?php if ($role !== 'kepala_sekolah'): ?>
-            <a href="index.php?page=nilai.input" class="btn btn-primary" style="border-radius: 30px">
+            <a href="/raportku23102026/nilai.input" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -390,9 +400,9 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                         <td style="text-align:center">
                             <div class="flex gap-1" style="justify-content:center">
                                 <?php if ($role !== 'kepala_sekolah'): ?>
-                                <a href="index.php?page=nilai.input&id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/raportku23102026/nilai.input?id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
-                                <form method="POST" action="index.php?page=nilai" style="display:inline"
+                                <form method="POST" action="/raportku23102026/nilai" style="display:inline"
                                     onsubmit="return confirm('Hapus nilai ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">

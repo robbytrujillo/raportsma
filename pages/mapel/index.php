@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/mapel/index.php
  * Daftar Mata Pelajaran â€" admin
@@ -36,7 +36,7 @@ if (isset($_GET['export'])) {
 
 // â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=mapel'); exit; }
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /raportku23102026/mapel'); exit; }
 
     $action = $_POST['action'] ?? '';
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db_execute('DELETE FROM mapel WHERE id = :id', [':id'=>(int)$_POST['id']]);
         flash('success','Mata pelajaran dihapus.');
     }
-    header('Location: index.php?page=mapel'); exit;
+    header('Location: /raportku23102026/mapel'); exit;
 }
 
 // â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -102,7 +102,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
             <p class="page-subtitle">Kelola daftar mata pelajaran</p>
         </div>
         <div class="flex gap-2">
-            <a href="index.php?page=mapel&export=1" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/mapel?export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -110,7 +110,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="index.php?page=mapel.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/mapel.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -149,7 +149,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Cari</button>
                     <?php if ($search_m || $per !== 10): ?>
-                    <a href="index.php?page=mapel" class="btn btn-secondary btn-sm">Reset</a>
+                    <a href="/raportku23102026/mapel" class="btn btn-secondary btn-sm">Reset</a>
                     <?php endif; ?>
                 </div>
             </form>
@@ -211,7 +211,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                             <div class="flex gap-1">
                                 <button onclick='editMapel(<?= json_encode($m) ?>)' class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px">Edit</button>
-                                <form method="POST" action="index.php?page=mapel" style="display:inline"
+                                <form method="POST" action="/raportku23102026/mapel" style="display:inline"
                                     onsubmit="return confirm('Hapus mata pelajaran ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -267,7 +267,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
             <button onclick="Modal.close('modalMapel')" class="text-gray-400 hover:text-gray-700 text-2xl leading-none"
                 style="border-radius: 30px">&times;</button>
         </div>
-        <form method="POST" action="index.php?page=mapel">
+        <form method="POST" action="/raportku23102026/mapel">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" id="mapelId" value="">

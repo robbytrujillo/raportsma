@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     }
 
     flash('success', 'Nilai berhasil disimpan.');
-    header("Location: index.php?page=nilai.bulk&ta=$p_ta&kelas=$p_kelas&mapel=$p_mapel&jenis=$p_jenis&bulan=$p_bulan");
+    header("Location: /raportku23102026/nilai.bulk?ta=$p_ta&kelas=$p_kelas&mapel=$p_mapel&jenis=$p_jenis&bulan=$p_bulan");
     exit;
 }
 
@@ -296,19 +296,20 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
         <div class="flex gap-2 flex-wrap">
             <?php if ($ready): ?>
-            <a href="index.php?page=nilai&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
-               class="btn btn-secondary" style="border-radius:30px" title="Export data nilai kelas ini ke Excel">
+            <a href="/raportku23102026/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
+                class="btn btn-secondary" style="border-radius:30px" title="Export data nilai kelas ini ke Excel">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 Export Excel
             </a>
             <?php endif; ?>
-            <a href="index.php?page=nilai.import&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&mapel=<?= $mapel_id ?>&jenis=<?= e($jenis) ?>&bulan=<?= $bulan ?>"
-               class="btn btn-secondary" style="border-radius: 30px"
-               title="Download template dengan daftar siswa sudah terisi, lalu upload kembali">
+            <a id="linkImportExcel"
+                href="/raportku23102026/nilai.import?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&mapel=<?= $mapel_id ?>&jenis=<?= e($jenis) ?>&bulan=<?= $bulan ?>"
+                class="btn btn-secondary" style="border-radius: 30px"
+                title="Download template dengan daftar siswa sudah terisi, lalu upload kembali">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -316,7 +317,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 </svg>
                 Import Excel
             </a>
-            <a href="index.php?page=nilai" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/raportku23102026/nilai" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <polyline points="15 18 9 12 15 6" />
                 </svg>
@@ -454,7 +455,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
     </div>
 
     <!-- â"€â"€ STEP 2: FORM INPUT â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
-    <form method="POST" action="index.php?page=nilai.bulk" id="formBulk">
+    <form method="POST" action="/raportku23102026/nilai.bulk" id="formBulk">
         <?= csrf_field() ?>
         <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
         <input type="hidden" name="kelas_id" value="<?= $kelas_id ?>">
@@ -466,9 +467,9 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <?php endforeach; ?>
         <?php if ($jenis === 'bulanan'): ?>
         <!-- Kolom aktif diinjeksi JS sebelum submit; defaultnya semua aktif -->
-        <input type="hidden" id="hid_nh1"   name="aktif_nh1"   value="1">
-        <input type="hidden" id="hid_nh2"   name="aktif_nh2"   value="1">
-        <input type="hidden" id="hid_nh3"   name="aktif_nh3"   value="1">
+        <input type="hidden" id="hid_nh1" name="aktif_nh1" value="1">
+        <input type="hidden" id="hid_nh2" name="aktif_nh2" value="1">
+        <input type="hidden" id="hid_nh3" name="aktif_nh3" value="1">
         <input type="hidden" id="hid_tugas" name="aktif_tugas" value="1">
         <?php endif; ?>
 
@@ -515,18 +516,19 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                 <?php if ($jenis === 'bulanan'): ?>
                                 <!-- Baris checkbox pemilih kolom — hanya bulanan -->
                                 <tr style="background:#fff7ed">
-                                    <th colspan="2" style="text-align:right;font-size:.7rem;color:#9ca3af;font-weight:500;padding:4px 8px">
+                                    <th colspan="2"
+                                        style="text-align:right;font-size:.7rem;color:#9ca3af;font-weight:500;padding:4px 8px">
                                         Kolom aktif:
                                     </th>
                                     <?php foreach (['nh1'=>'NH1','nh2'=>'NH2','nh3'=>'NH3','tugas'=>'Tugas'] as $col=>$lbl): ?>
                                     <th style="text-align:center;padding:4px 2px">
-                                        <label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
-                                            <input type="checkbox" id="chk_<?= $col ?>"
-                                                class="kolom-aktif-chk"
-                                                data-col="<?= $col ?>"
-                                                checked
+                                        <label
+                                            style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
+                                            <input type="checkbox" id="chk_<?= $col ?>" class="kolom-aktif-chk"
+                                                data-col="<?= $col ?>" checked
                                                 style="width:14px;height:14px;cursor:pointer;accent-color:#f97316">
-                                            <span style="font-size:.65rem;color:#6b7280;font-weight:500"><?= $lbl ?></span>
+                                            <span
+                                                style="font-size:.65rem;color:#6b7280;font-weight:500"><?= $lbl ?></span>
                                         </label>
                                     </th>
                                     <?php endforeach; ?>
@@ -822,7 +824,12 @@ const DESK_KRIT = {
  * Kembalikan daftar field bulanan yang sedang AKTIF (checkbox dicentang)
  */
 function getKolomAktif() {
-    const map = { nh1: 'h1', nh2: 'h2', nh3: 'h3', tugas: 'tugas' };
+    const map = {
+        nh1: 'h1',
+        nh2: 'h2',
+        nh3: 'h3',
+        tugas: 'tugas'
+    };
     const aktif = [];
     document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
         if (chk.checked) aktif.push(map[chk.dataset.col]);
@@ -842,9 +849,9 @@ function hitungBaris(sid) {
             const el = document.querySelector(`[name="${f}_${sid}"]`);
             return el ? (parseFloat(el.value) || 0) : 0;
         });
-        na = kolomAktif.length > 0
-            ? nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length
-            : 0;
+        na = kolomAktif.length > 0 ?
+            nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length :
+            0;
     } else if (JENIS === 'sts') {
         na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
     } else {
@@ -899,7 +906,7 @@ function hitungRataKelas() {
         }
     });
     const rataEl = document.getElementById('rataKelas');
-    if (rataEl) rataEl.textContent = count > 0 ? (sum / count).toFixed(2) : 'â€"';
+    if (rataEl) rataEl.textContent = count > 0 ? (sum / count).toFixed(2) : '-';
 }
 
 /**
@@ -918,7 +925,7 @@ function toggleDeskSiswa(sid) {
     if (isHidden) {
         const ta = document.getElementById(`deskArea_${sid}`);
         const pred = document.getElementById(`pred_${sid}`)?.textContent.trim();
-        if (!ta || !pred || pred === 'â€"') return;
+        if (!ta || !pred || pred === '-') return;
 
         const current = ta.value.trim();
         if (current === '') {
@@ -1097,11 +1104,22 @@ function isiSemuaRata() {
 document.addEventListener('DOMContentLoaded', () => {
 
     if (JENIS === 'bulanan') {
-        const fieldMap = { nh1: 'h1', nh2: 'h2', nh3: 'h3', tugas: 'tugas' };
-        const hidMap   = { nh1: 'hid_nh1', nh2: 'hid_nh2', nh3: 'hid_nh3', tugas: 'hid_tugas' };
+        const fieldMap = {
+            nh1: 'h1',
+            nh2: 'h2',
+            nh3: 'h3',
+            tugas: 'tugas'
+        };
+        const hidMap = {
+            nh1: 'hid_nh1',
+            nh2: 'hid_nh2',
+            nh3: 'hid_nh3',
+            tugas: 'hid_tugas'
+        };
 
         // ── Key localStorage unik per konteks penilaian ──────────────────
-        const LS_KEY = 'kolom_aktif_<?= (int)$ta_id ?>_<?= (int)$kelas_id ?>_<?= (int)$mapel_id ?>_<?= e($jenis) ?>_<?= (int)$bulan ?>';
+        const LS_KEY =
+            'kolom_aktif_<?= (int)$ta_id ?>_<?= (int)$kelas_id ?>_<?= (int)$mapel_id ?>_<?= e($jenis) ?>_<?= (int)$bulan ?>';
 
         // ── Jika redirect dari import, override localStorage dengan state template
         <?php
@@ -1110,15 +1128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         $imp_nh3   = isset($_GET['aktif_nh3'])   ? (int)$_GET['aktif_nh3']   : -1;
         $imp_tugas = isset($_GET['aktif_tugas']) ? (int)$_GET['aktif_tugas'] : -1;
         if ($imp_nh1 >= 0): ?>
-        (function() {
-            const importState = {
-                nh1:   <?= $imp_nh1 ? 'true' : 'false' ?>,
-                nh2:   <?= $imp_nh2 ? 'true' : 'false' ?>,
-                nh3:   <?= $imp_nh3 ? 'true' : 'false' ?>,
-                tugas: <?= $imp_tugas ? 'true' : 'false' ?>
-            };
-            try { localStorage.setItem(LS_KEY, JSON.stringify(importState)); } catch(e) {}
-        })();
+            (function() {
+                const importState = {
+                    nh1: <?= $imp_nh1 ? 'true' : 'false' ?>,
+                    nh2: <?= $imp_nh2 ? 'true' : 'false' ?>,
+                    nh3: <?= $imp_nh3 ? 'true' : 'false' ?>,
+                    tugas: <?= $imp_tugas ? 'true' : 'false' ?>
+                };
+                try {
+                    localStorage.setItem(LS_KEY, JSON.stringify(importState));
+                } catch (e) {}
+            })();
         <?php endif; ?>
 
         /** Simpan state checkbox saat ini ke localStorage */
@@ -1127,17 +1147,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
                 state[chk.dataset.col] = chk.checked;
             });
-            try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+            try {
+                localStorage.setItem(LS_KEY, JSON.stringify(state));
+            } catch (e) {}
         }
 
         /** Terapkan disable/style ke kolom berdasarkan checked */
         function terapkanKolom(col, checked) {
             const field = fieldMap[col];
             document.querySelectorAll(`[name^="${field}_"]`).forEach(inp => {
-                inp.disabled           = !checked;
-                inp.style.background   = checked ? '' : '#f3f4f6';
-                inp.style.color        = checked ? '' : '#9ca3af';
-                inp.style.cursor       = checked ? '' : 'not-allowed';
+                inp.disabled = !checked;
+                inp.style.background = checked ? '' : '#f3f4f6';
+                inp.style.color = checked ? '' : '#9ca3af';
+                inp.style.cursor = checked ? '' : 'not-allowed';
             });
         }
 
@@ -1146,13 +1168,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const raw = localStorage.getItem(LS_KEY);
             if (raw) savedState = JSON.parse(raw);
-        } catch(e) {}
+        } catch (e) {}
 
         if (savedState) {
             document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
-                const col     = chk.dataset.col;
+                const col = chk.dataset.col;
                 const checked = savedState[col] !== undefined ? !!savedState[col] : true;
-                chk.checked   = checked;
+                chk.checked = checked;
                 terapkanKolom(col, checked);
                 // Sync hidden input juga
                 const hid = document.getElementById(hidMap[col]);
@@ -1160,20 +1182,39 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /** Update href tombol Import Excel dengan state kolom aktif saat ini */
+        function updateImportLink() {
+            const link = document.getElementById('linkImportExcel');
+            if (!link) return;
+            const base = link.href.split('&aktif_')[0]; // hapus param aktif_ lama
+            const state = {};
+            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+                state[chk.dataset.col] = chk.checked ? 1 : 0;
+            });
+            link.href = base +
+                '&aktif_nh1=' + (state.nh1 ?? 1) +
+                '&aktif_nh2=' + (state.nh2 ?? 1) +
+                '&aktif_nh3=' + (state.nh3 ?? 1) +
+                '&aktif_tugas=' + (state.tugas ?? 1);
+        }
+        // Update link segera setelah state di-restore dari localStorage
+        updateImportLink();
+
         // ── Checkbox change: disable kolom + recalc + simpan ─────────────
         document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
-            chk.addEventListener('change', function () {
+            chk.addEventListener('change', function() {
                 terapkanKolom(this.dataset.col, this.checked);
                 // Hitung ulang semua baris
                 document.querySelectorAll('[id^="row_"]').forEach(row => {
                     hitungBaris(parseInt(row.id.replace('row_', '')));
                 });
                 simpanStateKolom();
+                updateImportLink();
             });
         });
 
         // ── Sebelum submit: sync hidden inputs + simpan state ────────────
-        document.getElementById('formBulk')?.addEventListener('submit', function () {
+        document.getElementById('formBulk')?.addEventListener('submit', function() {
             document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
                 const hid = document.getElementById(hidMap[chk.dataset.col]);
                 if (hid) hid.value = chk.checked ? '1' : '0';

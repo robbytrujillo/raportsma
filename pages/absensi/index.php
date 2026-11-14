@@ -12,7 +12,7 @@ $ta_id    = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 
 // ── Handle Save ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'save') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=absensi'); exit; }
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /raportku23102026/absensi'); exit; }
 
     $kelas_id = (int)$_POST['kelas_id'];
     $ta_id_p  = (int)$_POST['tahun_ajaran_id'];
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'save') 
         }
     }
     flash('success','Data absensi berhasil disimpan.');
-    header("Location: index.php?page=absensi&ta=$ta_id_p&kelas=$kelas_id"); exit;
+    header("Location: /raportku23102026/absensi?ta=$ta_id_p&kelas=$kelas_id"); exit;
 }
 
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
@@ -133,7 +133,7 @@ if ($kelas_id) {
             <span>Input Absensi Kelas &mdash;
                 <?= e(array_column($kelas_list,'nama_kelas',null)[array_search($kelas_id, array_column($kelas_list,'id'))] ?? '') ?></span>
         </div>
-        <form method="POST" action="index.php?page=absensi&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>">
+        <form method="POST" action="/raportku23102026/absensi?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="kelas_id" value="<?= $kelas_id ?>">

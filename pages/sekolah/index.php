@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/sekolah/index.php
  * Pengaturan Informasi Sekolah â€" admin
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
             }
             flash('success', 'Informasi sekolah berhasil disimpan.');
-            header('Location: index.php?page=sekolah'); exit;
+            header('Location: /raportku23102026/sekolah'); exit;
         }
     }
 }
@@ -103,7 +103,7 @@ $s = $sekolah;
     <div class="card">
         <div class="card-header">Informasi Sekolah</div>
         <div class="card-body">
-            <form method="POST" action="index.php?page=sekolah" enctype="multipart/form-data">
+            <form method="POST" action="/raportku23102026/sekolah" enctype="multipart/form-data">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/siswa/form.php
  * Form tambah / edit siswa â€" admin
@@ -15,7 +15,7 @@ $siswa_data = null;
 if ($is_edit) {
     $user_data  = db_row('SELECT * FROM users WHERE id = :id AND role = "siswa"', [':id' => $id]);
     $siswa_data = db_row('SELECT * FROM siswa WHERE user_id = :id', [':id' => $id]);
-    if (!$user_data) { flash('error','Siswa tidak ditemukan.'); header('Location: index.php?page=siswa'); exit; }
+    if (!$user_data) { flash('error','Siswa tidak ditemukan.'); header('Location: /raportku23102026/siswa'); exit; }
 }
 
 $errors = [];
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 flash('success','Siswa baru berhasil ditambahkan.');
             }
-            header('Location: index.php?page=siswa'); exit;
+            header('Location: /raportku23102026/siswa'); exit;
         }
     }
 }
@@ -102,7 +102,7 @@ $s = $siswa_data ?? [];
         <div>
             <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
         </div>
-        <a href="index.php?page=siswa" class="btn btn-secondary" style="border-radius: 30px">
+        <a href="/raportku23102026/siswa" class="btn btn-secondary" style="border-radius: 30px">
             Kembali</a>
     </div>
 
@@ -113,7 +113,7 @@ $s = $siswa_data ?? [];
     <div class="card">
         <div class="card-header">Data Siswa</div>
         <div class="card-body">
-            <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit?'&id='.$id:'' ?>">
+            <form method="POST" action="/raportku23102026/<?= $page_action ?><?= $is_edit?'?id='.$id:'' ?>">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -188,7 +188,7 @@ $s = $siswa_data ?? [];
                         </svg>
                         <?= $is_edit ? 'Simpan' : 'Tambah Siswa' ?>
                     </button>
-                    <a href="index.php?page=siswa" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
+                    <a href="/raportku23102026/siswa" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
                 </div>
             </form>
         </div>

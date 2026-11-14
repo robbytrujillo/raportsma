@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/login.php
  * Halaman login — tampilan baru dengan split layout & thumbnail
@@ -7,7 +7,7 @@ require_once __DIR__ . '/../auth.php';
 
 // Jika sudah login, redirect ke dashboard
 if (is_logged_in()) {
-    header('Location: index.php?page=dashboard');
+    header('Location: /raportku23102026/dashboard');
     exit;
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
         } else {
             $result = do_login($username, $password);
             if ($result['success']) {
-                header('Location: index.php?page=dashboard');
+                header('Location: /raportku23102026/dashboard');
                 exit;
             } else {
                 $error  = $result['message'];
@@ -558,7 +558,7 @@ $sekolah_l = sekolah_info();
                 <?php endif; ?>
 
                 <!-- Form -->
-                <form method="POST" action="index.php?page=login" id="loginForm" autocomplete="on">
+                <form method="POST" action="/raportku23102026/login" id="loginForm" autocomplete="on">
                     <?= csrf_field() ?>
 
                     <!-- Username -->

@@ -218,7 +218,7 @@ if ($role === 'siswa') {
                 </div>
                 <?php endif; ?>
                 <div class="flex gap-2 mt-3">
-                    <a href="index.php?page=raport.view&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
+                    <a href="/raportku23102026/raport.view?siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
                         class="btn btn-secondary btn-sm flex-1 justify-center" style="border-radius: 30px;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
@@ -227,7 +227,7 @@ if ($role === 'siswa') {
                         </svg>
                         Lihat
                     </a>
-                    <a href="index.php?page=raport.print&siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
+                    <a href="/raportku23102026/raport.print?siswa=<?= $user['id'] ?>&ta=<?= $r['tahun_ajaran_id'] ?>&jenis=<?= $r['jenis_raport'] ?>&bulan=<?= $r['bulan']??0 ?>"
                         target="_blank" class="btn btn-primary btn-sm flex-1 justify-center"
                         style="border-radius: 30px;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
@@ -444,7 +444,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <?php if (!in_array($role, ['siswa'])): ?>
                 <?php if ($leger_boleh): ?>
                 <?php
-                    $leger_url = 'index.php?page=raport.leger&ta='.$ta_id.'&kelas='.$kelas_id.'&jenis='.$jenis.'&bulan='.$bulan;
+                    $leger_url = '/raportku23102026/raport.leger?ta='.$ta_id.'&kelas='.$kelas_id.'&jenis='.$jenis.'&bulan='.$bulan;
                 ?>
                 <button type="button"
                     onclick="<?= $ada_nilai ? "window.open('".htmlspecialchars($leger_url)."','_blank')" : "document.getElementById('modalLegerBelumNilai').style.display='flex'" ?>"
@@ -466,7 +466,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 </button>
                 <?php endif; ?>
                 <?php if ($cetak_boleh): ?>
-                <a href="index.php?page=raport.print_kelas&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                <a href="/raportku23102026/raport.print_kelas?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                     target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
                     style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -554,9 +554,9 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="index.php?page=raport.view&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                                <a href="/raportku23102026/raport.view?siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                                     class="btn btn-sm btn-secondary" style="border-radius:30px">Lihat</a>
-                                <a href="index.php?page=raport.print&siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
+                                <a href="/raportku23102026/raport.print?siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                                     target="_blank" class="btn btn-sm btn-primary" style="border-radius:30px">Cetak</a>
                             </div>
                         </td>
@@ -686,7 +686,7 @@ if ($kelas_id) {
 <?php
     $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS (Tengah Semester)','semester'=>'Semester (SAS)'];
     $kelas_nama_leger = db_row('SELECT nama_kelas FROM kelas WHERE id = :id', [':id' => $kelas_id])['nama_kelas'] ?? '';
-    $input_nilai_url  = 'index.php?page=nilai';
+    $input_nilai_url  = '/raportku23102026/nilai';
 ?>
 <div id="modalLegerBelumNilai" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
             align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
@@ -747,7 +747,7 @@ if ($kelas_id) {
         const newVal = this.checked ? 1 : 0;
         toggle.disabled = true;
 
-        fetch('index.php?page=raport', {
+        fetch('/raportku23102026/raport', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'

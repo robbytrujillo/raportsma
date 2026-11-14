@@ -406,7 +406,12 @@ function initSignaturePreview() {
    12. Active Sidebar Link
    ============================================================ */
 function initActiveNav() {
-  const currentPage = new URLSearchParams(window.location.search).get('page') || 'dashboard';
+  // Support both clean URLs (/raportku23102026/penugasan) and legacy ?page= query strings
+  const pathParts = window.location.pathname.replace(/\/$/, '').split('/');
+  const lastSegment = pathParts[pathParts.length - 1];
+  // If last path segment looks like a page name (letters, digits, dots, underscores) use it
+  const pageFromPath = /^[a-zA-Z0-9_.]+$/.test(lastSegment) && lastSegment !== 'index.php' ? lastSegment : null;
+  const currentPage = new URLSearchParams(window.location.search).get('page') || pageFromPath || 'dashboard';
   document.querySelectorAll('.sidebar-nav a[data-page]').forEach(link => {
     const pages = link.dataset.page.split(',');
     // Exact match OR sub-page match (e.g. "nilai.bulk" matches data-page="nilai")

@@ -309,7 +309,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             </svg>
             <?= implode(' &bull; ', $pill_parts) ?>
             &nbsp;&mdash;&nbsp;
-            <a href="index.php?page=dashboard" style="color:#f97316;text-decoration:none;font-weight:700">✕ Reset</a>
+            <a href="/raportku23102026/dashboard" style="color:#f97316;text-decoration:none;font-weight:700">✕ Reset</a>
         </span>
         <?php endif; ?>
     </div>
@@ -1314,7 +1314,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     <div class="card">
         <div class="card-header">
             <span>Aktivitas Nilai Terbaru</span>
-            <a href="index.php?page=nilai" class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat Semua</a>
+            <a href="/raportku23102026/nilai" class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat Semua</a>
         </div>
         <div class="table-container">
             <table class="data-table">
@@ -1369,7 +1369,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     ];
     ?>
         <?php foreach ($quick as $q): ?>
-        <a href="index.php?page=<?= $q['page'] ?>"
+        <a href="/raportku23102026/<?= $q['page'] ?>"
             class="card flex flex-col items-center justify-center p-5 hover:shadow-md transition-all text-center"
             style="text-decoration:none">
             <div class="<?= $q['color'] ?> rounded-xl p-3 mb-3">

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/raport/manage_nilai.php
  * Manajemen Nilai Raport — hapus nilai per-siswa per-mapel
@@ -159,7 +159,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
             <h1 class="page-title">Manajemen Nilai Raport</h1>
             <p class="page-subtitle">Hapus nilai per-siswa per-mapel tanpa mengganggu kelas lain</p>
         </div>
-        <a href="index.php?page=raport.manage" class="btn btn-secondary" style="border-radius:30px">
+        <a href="/raportku23102026/raport.manage" class="btn btn-secondary" style="border-radius:30px">
             &larr; Manajemen Raport
         </a>
     </div>

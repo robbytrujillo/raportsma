@@ -7,7 +7,7 @@ require_role(['admin','super_admin']);
 
 // â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: index.php?page=tahun_ajaran'); exit; }
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /raportku23102026/tahun_ajaran'); exit; }
 
     $action = $_POST['action'] ?? '';
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $is_aktif = isset($_POST['is_aktif']) ? 1 : 0;
         $tid      = (int)($_POST['id'] ?? 0);
 
-        if (!$nama) { flash('error','Nama tahun ajaran wajib diisi.'); header('Location: index.php?page=tahun_ajaran'); exit; }
+        if (!$nama) { flash('error','Nama tahun ajaran wajib diisi.'); header('Location: /raportku23102026/tahun_ajaran'); exit; }
 
         if ($is_aktif) {
             // Nonaktifkan semua dulu
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db_execute('DELETE FROM tahun_ajaran WHERE id = :id', [':id'=>(int)$_POST['id']]);
         flash('success','Tahun ajaran dihapus.');
     }
-    header('Location: index.php?page=tahun_ajaran'); exit;
+    header('Location: /raportku23102026/tahun_ajaran'); exit;
 }
 
 $ta_list = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
@@ -84,7 +84,7 @@ $ta_list = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
                             <?php if ($ta['is_aktif']): ?>
                             <span class="badge badge-green">Aktif</span>
                             <?php else: ?>
-                            <form method="POST" action="index.php?page=tahun_ajaran" style="display:inline">
+                            <form method="POST" action="/raportku23102026/tahun_ajaran" style="display:inline">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="set_aktif">
                                 <input type="hidden" name="id" value="<?= $ta['id'] ?>">
@@ -98,7 +98,7 @@ $ta_list = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
                                 <button onclick='editTA(<?= json_encode($ta) ?>)' class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px">Edit</button>
                                 <?php if (!$ta['is_aktif']): ?>
-                                <form method="POST" action="index.php?page=tahun_ajaran" style="display:inline"
+                                <form method="POST" action="/raportku23102026/tahun_ajaran" style="display:inline"
                                     onsubmit="return confirm('Hapus tahun ajaran ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -126,7 +126,7 @@ $ta_list = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
             <button onclick="Modal.close('modalTA')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
-        <form method="POST" action="index.php?page=tahun_ajaran">
+        <form method="POST" action="/raportku23102026/tahun_ajaran">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" id="taId" value="">

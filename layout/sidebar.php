@@ -82,7 +82,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
   <nav class="sidebar-nav" id="sidebarNav">
 
     <!-- Dashboard -->
-    <a href="index.php?page=dashboard" data-page="dashboard">
+    <a href="/raportku23102026/dashboard" data-page="dashboard">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
         <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
@@ -107,14 +107,14 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <div class="sb-group" data-group="akademik">
 
     <?php if (in_array($role, ['super_admin','admin','wali_kelas','guru'])): ?>
-    <a href="index.php?page=nilai.bulk" data-page="nilai.bulk,nilai">
+    <a href="/raportku23102026/nilai.bulk" data-page="nilai.bulk,nilai">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
       </svg>
       <span class="sidebar-nav-label">Input Nilai</span>
       <span class="sidebar-tooltip">Input Nilai</span>
     </a>
-    <a href="index.php?page=absensi" data-page="absensi">
+    <a href="/raportku23102026/absensi" data-page="absensi">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
@@ -126,7 +126,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <?php endif; ?>
 
     <?php if ($role === 'kepala_sekolah'): ?>
-    <a href="index.php?page=nilai" data-page="nilai">
+    <a href="/raportku23102026/nilai" data-page="nilai">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
       </svg>
@@ -135,7 +135,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </a>
     <?php endif; ?>
 
-    <a href="index.php?page=raport" data-page="raport">
+    <a href="/raportku23102026/raport" data-page="raport">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -145,7 +145,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </a>
 
     <?php if ($role === 'super_admin'): ?>
-    <a href="index.php?page=raport.manage" data-page="raport.manage">
+    <a href="/raportku23102026/raport.manage" data-page="raport.manage">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
       </svg>
@@ -155,7 +155,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <?php endif; ?>
 
     <?php if (in_array($role, ['admin', 'super_admin'])): ?>
-    <a href="index.php?page=raport.manage_nilai" data-page="raport.manage_nilai">
+    <a href="/raportku23102026/raport.manage_nilai" data-page="raport.manage_nilai">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6l-1 14H6L5 6"/>
@@ -171,7 +171,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 
     <?php if ($role === 'siswa'): ?>
     <div class="sidebar-section-title">Saya</div>
-    <a href="index.php?page=raport" data-page="raport">
+    <a href="/raportku23102026/raport" data-page="raport">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -192,7 +192,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       </svg>
     </div>
     <div class="sb-group" data-group="manajemen">
-    <a href="index.php?page=siswa" data-page="siswa">
+    <a href="/raportku23102026/siswa" data-page="siswa">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
@@ -201,14 +201,14 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Data Siswa</span>
       <span class="sidebar-tooltip">Data Siswa</span>
     </a>
-    <a href="index.php?page=guru" data-page="guru">
+    <a href="/raportku23102026/guru" data-page="guru">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/>
       </svg>
       <span class="sidebar-nav-label">Data Guru</span>
       <span class="sidebar-tooltip">Data Guru</span>
     </a>
-    <a href="index.php?page=kelas" data-page="kelas">
+    <a href="/raportku23102026/kelas" data-page="kelas">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
@@ -216,7 +216,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Data Kelas</span>
       <span class="sidebar-tooltip">Data Kelas</span>
     </a>
-    <a href="index.php?page=mapel" data-page="mapel">
+    <a href="/raportku23102026/mapel" data-page="mapel">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
         <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
@@ -224,7 +224,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Mata Pelajaran</span>
       <span class="sidebar-tooltip">Mata Pelajaran</span>
     </a>
-    <a href="index.php?page=penugasan" data-page="penugasan">
+    <a href="/raportku23102026/penugasan" data-page="penugasan">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
@@ -245,7 +245,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     </div>
     <div class="sb-group" data-group="pengaturan">
     <?php if (in_array($role, ['super_admin','admin'])): ?>
-    <a href="index.php?page=users" data-page="users">
+    <a href="/raportku23102026/users" data-page="users">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
@@ -254,7 +254,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-tooltip">Pengguna</span>
     </a>
     <?php endif; ?>
-    <a href="index.php?page=tahun_ajaran" data-page="tahun_ajaran">
+    <a href="/raportku23102026/tahun_ajaran" data-page="tahun_ajaran">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
         <polyline points="12 6 12 12 16 14"/>
@@ -262,7 +262,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Tahun Ajaran</span>
       <span class="sidebar-tooltip">Tahun Ajaran</span>
     </a>
-    <a href="index.php?page=jenis_raport" data-page="jenis_raport">
+    <a href="/raportku23102026/jenis_raport" data-page="jenis_raport">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -272,7 +272,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Jenis Raport</span>
       <span class="sidebar-tooltip">Jenis Raport</span>
     </a>
-    <a href="index.php?page=sekolah" data-page="sekolah">
+    <a href="/raportku23102026/sekolah" data-page="sekolah">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.07 4.93A10 10 0 1 0 4.93 19.07"/>
@@ -287,7 +287,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 
     <!-- ── Akun ──────────────────────── -->
     <div class="sidebar-section-title">Akun</div>
-    <a href="index.php?page=profil" data-page="profil">
+    <a href="/raportku23102026/profil" data-page="profil">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
@@ -361,19 +361,25 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
 (function () {
   /* ── Peta page → group ── */
   var pageGroup = {
-    'nilai.bulk':'akademik','nilai':'akademik','absensi':'akademik',
+    'nilai.bulk':'akademik','nilai':'akademik','nilai.input':'akademik',
+    'nilai.import':'akademik','absensi':'akademik',
     'raport':'akademik','raport.view':'akademik','raport.manage':'akademik',
     'raport.manage_nilai':'akademik','raport.print':'akademik',
-    'siswa':'manajemen','siswa.create':'manajemen','siswa.edit':'manajemen',
-    'guru':'manajemen','guru.create':'manajemen','guru.edit':'manajemen',
-    'kelas':'manajemen','kelas.create':'manajemen','kelas.edit':'manajemen',
-    'mapel':'manajemen','mapel.create':'manajemen','mapel.edit':'manajemen',
-    'penugasan':'manajemen','penugasan.create':'manajemen',
+    'raport.print_kelas':'akademik','raport.leger':'akademik',
+    'siswa':'manajemen','siswa.create':'manajemen','siswa.edit':'manajemen','siswa.import':'manajemen',
+    'guru':'manajemen','guru.create':'manajemen','guru.edit':'manajemen','guru.import':'manajemen',
+    'kelas':'manajemen','kelas.create':'manajemen','kelas.edit':'manajemen','kelas.import':'manajemen',
+    'mapel':'manajemen','mapel.create':'manajemen','mapel.edit':'manajemen','mapel.import':'manajemen',
+    'penugasan':'manajemen','penugasan.create':'manajemen','penugasan.import':'manajemen',
     'users':'pengaturan','users.create':'pengaturan','users.edit':'pengaturan',
     'tahun_ajaran':'pengaturan','jenis_raport':'pengaturan','sekolah':'pengaturan'
   };
 
-  var currentPage = (new URLSearchParams(window.location.search)).get('page') || 'dashboard';
+  // Support clean URLs (/raportku23102026/mapel) dan legacy ?page=mapel
+  var _pathParts  = window.location.pathname.replace(/\/$/, '').split('/');
+  var _lastSeg    = _pathParts[_pathParts.length - 1];
+  var _pageFromPath = /^[a-zA-Z0-9_.]+$/.test(_lastSeg) && _lastSeg !== 'index.php' ? _lastSeg : null;
+  var currentPage = (new URLSearchParams(window.location.search)).get('page') || _pageFromPath || 'dashboard';
   var activeGroup = pageGroup[currentPage] || null;
 
   /* ── Helper: tutup satu group ── */
@@ -488,7 +494,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <!-- Dropdown user menu -->
     <div id="userMenu"
          class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
-      <a href="index.php?page=profil"
+      <a href="/raportku23102026/profil"
          class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>

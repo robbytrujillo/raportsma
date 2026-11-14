@@ -83,7 +83,7 @@ function is_admin_or_super(): bool {
  */
 function require_login(): void {
     if (!is_logged_in()) {
-        header('Location: index.php?page=login');
+        header('Location: ' . page_url('login'));
         exit;
     }
 }
@@ -208,7 +208,7 @@ function do_login(string $username, string $password): array {
 function do_logout(): void {
     $_SESSION = [];
     session_destroy();
-    header('Location: index.php?page=login');
+    header('Location: ' . page_url('login'));
     exit;
 }
 
@@ -235,6 +235,24 @@ function verify_csrf(): bool {
  */
 function csrf_field(): string {
     return '<input type="hidden" name="_token" value="' . htmlspecialchars(csrf_token()) . '">';
+}
+
+/**
+ * Generate clean URL untuk halaman aplikasi.
+ * Contoh: page_url('login')              → /raportku23102026/login
+ *         page_url('penugasan', ['ta'=>1])→ /raportku23102026/penugasan?ta=1
+ * Gunakan fungsi ini di semua href dan header('Location:')
+ */
+function page_url(string $page, array $params = []): string {
+    $base = rtrim(BASE_URL, '/');
+    // Ambil path dari BASE_URL (misalnya /raportku23102026)
+    $parsed = parse_url($base);
+    $path   = rtrim($parsed['path'] ?? '', '/');
+    $url    = $path . '/' . $page;
+    if ($params) {
+        $url .= '?' . http_build_query($params);
+    }
+    return $url;
 }
 
 /**

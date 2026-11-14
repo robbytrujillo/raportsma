@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/403.php &mdash; Akses Ditolak
  */
@@ -8,6 +8,6 @@
     <div style="font-size:5rem;font-weight:900;color:#f97316;line-height:1">403</div>
     <h2 class="text-xl font-bold text-gray-800 mt-2">Akses Ditolak</h2>
     <p class="text-gray-500 mt-2 mb-6">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
-    <a href="index.php?page=dashboard" class="btn btn-primary">&larr; Kembali ke Dashboard</a>
+    <a href="/raportku23102026/dashboard" class="btn btn-primary">&larr; Kembali ke Dashboard</a>
   </div>
 </div>

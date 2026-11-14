@@ -329,7 +329,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
                            color:#fff;padding:4px 8px;border-radius:30px;font-size:.82rem;cursor:pointer"
                     onchange="applyTglCetak(this.value)">
             </label>
-            <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+            <a href="<?= page_url('raport', ['ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
                onclick="if(window.opener||history.length<=1){window.close();return false;}"
                style="border-radius:30px">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">

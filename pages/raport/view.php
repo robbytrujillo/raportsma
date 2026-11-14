@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/raport/view.php
  * Preview raport dalam layout aplikasi
@@ -43,7 +43,7 @@ if ($role === 'siswa') {
                     </svg>
                     <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;color:#1f2937">Raport Belum Dirilis</h2>
                     <p style="color:#6b7280;margin-bottom:20px">Raport ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
-                    <a href="index.php?page=raport" class="btn btn-secondary">&larr; Kembali ke Raport</a>
+                    <a href="/raportku23102026/raport" class="btn btn-secondary">&larr; Kembali ke Raport</a>
                 </div>
             </div>
         </div>'; return;
@@ -73,7 +73,7 @@ $pw_px = round(210 * $mm2px);
         </div>
         <div class="preview-actions">
             <a href="javascript:history.back()" class="btn btn-secondary" style="border-radius:30px">&larr; Kembali</a>
-            <a href="index.php?page=raport.print&siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+            <a href="/raportku23102026/raport.print?siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
                target="_blank" class="btn btn-primary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <polyline points="6 9 6 2 18 2 18 9"/>

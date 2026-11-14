@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * pages/users/index.php
  * Daftar semua pengguna &mdash; super_admin (CRUD penuh) atau admin (hanya lihat)
@@ -38,7 +38,7 @@ if ($can_crud && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '
             flash('success', 'Pengguna berhasil dihapus.');
         }
     }
-    header('Location: index.php?page=users'); exit;
+    header('Location: /raportku23102026/users'); exit;
 }
 
 // ── Filter & Paginasi ──────────────────────────────────────────
@@ -84,7 +84,7 @@ $role_labels = [
             </p>
         </div>
         <?php if ($can_crud): ?>
-        <a href="index.php?page=users.create" class="btn btn-primary" style="border-radius: 30px">
+        <a href="/raportku23102026/users.create" class="btn btn-primary" style="border-radius: 30px">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -122,7 +122,7 @@ $role_labels = [
                 </select>
                 <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Filter</button>
                 <?php if ($search || $role_f): ?>
-                <a href="index.php?page=users" class="btn btn-secondary btn-sm" style="border-radius: 30px">Reset</a>
+                <a href="/raportku23102026/users" class="btn btn-secondary btn-sm" style="border-radius: 30px">Reset</a>
                 <?php endif; ?>
             </form>
             <span class="text-sm text-gray-500"><?= $total ?> pengguna</span>
@@ -177,7 +177,7 @@ $role_labels = [
                         <?php if ($can_crud): ?>
                         <td>
                             <div class="flex gap-1">
-                                <a href="index.php?page=users.edit&id=<?= $u['id'] ?>"
+                                <a href="/raportku23102026/users.edit?id=<?= $u['id'] ?>"
                                     class="btn btn-sm btn-secondary tooltip-wrap" style="border-radius: 30px">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24">
@@ -188,7 +188,7 @@ $role_labels = [
                                 </a>
                                 <?php if ($u['id'] != current_user()['id']): ?>
                                         <!-- Tombol Toggle Aktif/Nonaktif -->
-                                        <form method="POST" action="index.php?page=users" style="display:inline"
+                                        <form method="POST" action="/raportku23102026/users" style="display:inline"
                                             onsubmit="return confirm('<?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?> pengguna <?= e($u['nama_lengkap']) ?>?')">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="toggle_active">
@@ -201,7 +201,7 @@ $role_labels = [
                                                 <?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
                                             </button>
                                         </form>
-                                        <form method="POST" action="index.php?page=users" style="display:inline"
+                                        <form method="POST" action="/raportku23102026/users" style="display:inline"
                                             onsubmit="return confirm('Hapus pengguna <?= e($u['nama_lengkap']) ?>?')">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="delete">

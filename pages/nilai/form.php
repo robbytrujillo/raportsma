@@ -40,7 +40,7 @@ if ($is_edit) {
     }
     if (!$nilai_data || !$boleh_edit) {
         flash('error','Data tidak ditemukan atau akses ditolak.');
-        header('Location: index.php?page=nilai'); exit;
+        header('Location: /raportku23102026/nilai'); exit;
     }
 }
 
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             if (empty($errors)) {
-                header('Location: index.php?page=nilai'); exit;
+                header('Location: /raportku23102026/nilai'); exit;
             }
         }
     }
@@ -199,7 +199,7 @@ $n = $nilai_data ?? [];
       <h1 class="page-title"><?= $is_edit ? 'Edit Nilai' : 'Input Nilai' ?></h1>
       <p class="page-subtitle">Masukkan nilai siswa per mata pelajaran</p>
     </div>
-    <a href="index.php?page=nilai" class="btn btn-secondary">â† Kembali</a>
+    <a href="/raportku23102026/nilai" class="btn btn-secondary">â† Kembali</a>
   </div>
 
   <?php foreach ($errors as $err): ?>
@@ -234,7 +234,7 @@ $n = $nilai_data ?? [];
   <div class="card">
     <div class="card-header">Form Nilai</div>
     <div class="card-body">
-      <form method="POST" action="index.php?page=nilai.input<?= $is_edit?'&id='.$id:'' ?>" id="formNilai">
+      <form method="POST" action="/raportku23102026/nilai.input<?= $is_edit?'?id='.$id:'' ?>" id="formNilai">
         <?= csrf_field() ?>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -434,7 +434,7 @@ $n = $nilai_data ?? [];
             </svg>
             Simpan Nilai
           </button>
-          <a href="index.php?page=nilai" class="btn btn-secondary">Batal</a>
+          <a href="/raportku23102026/nilai" class="btn btn-secondary">Batal</a>
         </div>
       </form>
     </div>

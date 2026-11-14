@@ -47,8 +47,7 @@
         <span class="app-footer-copy">&copy; <?= date('Y') ?> <?= APP_NAME ?></span>
         <span class="app-footer-dot"></span>
         <span class="app-footer-credit">
-            Build with
-            <a href="https://robbyilham.com" target="_blank" rel="noopener">robby</a> IT Development
+            BuildWith<a href="https://robbyilham.com" target="_blank" rel="noopener">Robby</a>
         </span>
     </div>
 
@@ -57,19 +56,19 @@
 <script>
 // ── Bersihkan preview-raport-mode jika halaman ini bukan raport.view ───
 // Melindungi dari bfcache yang merestorasi class dari halaman sebelumnya.
-(function () {
-  var page = new URLSearchParams(window.location.search).get('page') || '';
-  if (page !== 'raport.view') {
-    document.body.classList.remove('preview-raport-mode');
-  }
-  // Juga tangani bfcache pageshow di halaman non-preview
-  window.addEventListener('pageshow', function (e) {
-    if (e.persisted) {
-      var p = new URLSearchParams(window.location.search).get('page') || '';
-      if (p !== 'raport.view') {
+(function() {
+    var page = new URLSearchParams(window.location.search).get('page') || '';
+    if (page !== 'raport.view') {
         document.body.classList.remove('preview-raport-mode');
-      }
     }
-  });
+    // Juga tangani bfcache pageshow di halaman non-preview
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            var p = new URLSearchParams(window.location.search).get('page') || '';
+            if (p !== 'raport.view') {
+                document.body.classList.remove('preview-raport-mode');
+            }
+        }
+    });
 })();
 </script>

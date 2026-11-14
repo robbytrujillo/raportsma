@@ -6,7 +6,7 @@
 require_login();
 if (!is_super_admin()) {
     flash('error', 'Hanya Super Admin yang dapat mengelola akun pengguna.');
-    header('Location: index.php?page=users'); exit;
+    header('Location: /raportku23102026/users'); exit;
 }
 
 $page_action = $_GET['page'] ?? 'users.create';
@@ -16,7 +16,7 @@ $user_data   = null;
 
 if ($is_edit) {
     $user_data = db_row('SELECT * FROM users WHERE id = :id', [':id' => $id]);
-    if (!$user_data) { flash('error','Pengguna tidak ditemukan.'); header('Location: index.php?page=users'); exit; }
+    if (!$user_data) { flash('error','Pengguna tidak ditemukan.'); header('Location: /raportku23102026/users'); exit; }
 }
 
 $errors = [];
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 flash('success', 'Pengguna baru berhasil ditambahkan.');
             }
-            header('Location: index.php?page=users'); exit;
+            header('Location: /raportku23102026/users'); exit;
         }
     }
 }
@@ -71,7 +71,7 @@ $d = $user_data ?? [];
             <h1 class="page-title"><?= $is_edit ? 'Edit Pengguna' : 'Tambah Pengguna' ?></h1>
             <p class="page-subtitle"><?= $is_edit ? 'Perbarui data pengguna' : 'Buat akun pengguna baru' ?></p>
         </div>
-        <a href="index.php?page=users" class="btn btn-secondary" style="border-radius: 30px">&larr; Kembali</a>
+        <a href="/raportku23102026/users" class="btn btn-secondary" style="border-radius: 30px">&larr; Kembali</a>
     </div>
 
     <?php foreach ($errors as $e): ?>
@@ -81,7 +81,7 @@ $d = $user_data ?? [];
     <div class="card">
         <div class="card-header">Informasi Pengguna</div>
         <div class="card-body">
-            <form method="POST" action="index.php?page=<?= $page_action ?><?= $is_edit ? '&id='.$id : '' ?>">
+            <form method="POST" action="/raportku23102026/<?= $page_action ?><?= $is_edit ? '?id='.$id : '' ?>">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,7 +140,7 @@ $d = $user_data ?? [];
                         </svg>
                         <?= $is_edit ? 'Simpan Perubahan' : 'Buat Pengguna' ?>
                     </button>
-                    <a href="index.php?page=users" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
+                    <a href="/raportku23102026/users" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
                 </div>
             </form>
         </div>

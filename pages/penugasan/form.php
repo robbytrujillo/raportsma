@@ -1,3 +1,3 @@
-<?php
+﻿<?php
 // pages/penugasan/form.php &mdash; redirect ke penugasan
-header('Location: index.php?page=penugasan'); exit;
+header('Location: /raportku23102026/penugasan'); exit;

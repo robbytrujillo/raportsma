@@ -14,7 +14,7 @@ $role     = $user_ses['role'];
 
 // Guard server-side: redirect jika role tidak diizinkan
 if (!in_array($role, ['super_admin', 'admin', 'kepala_sekolah', 'wali_kelas'])) {
-    header('Location: ' . BASE_URL . '/index.php?page=' . ($role === 'siswa' ? 'raport' : 'dashboard'));
+    header('Location: ' . page_url($role === 'siswa' ? 'raport' : 'dashboard'));
     exit;
 }
 
@@ -36,7 +36,7 @@ if ($role === 'wali_kelas') {
         [':kid' => $kelas_id, ':uid' => $user_ses['id']]
     );
     if (!$kelas_check) {
-        header('Location: ' . BASE_URL . '/index.php?page=raport');
+        header('Location: ' . page_url('raport'));
         exit;
     }
 }
@@ -588,7 +588,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
             </div>
         </div>
         <div class="tb-btns">
-            <a href="<?= BASE_URL ?>/index.php?page=raport&ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+            <a href="<?= page_url('raport', ['ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
                 onclick="if(window.opener||history.length<=1){window.close();return false;}"
                 style="border-radius: 30px">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
