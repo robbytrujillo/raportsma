@@ -102,38 +102,39 @@ $sekolah_l = sekolah_info();
         z-index: 0;
     }
 
-    /* Overlay warna tema pekat — foto menerawang samar di baliknya */
+    /* Overlay warna tema — lebih transparan agar gambar lebih terlihat */
     .ll-overlay {
         position: absolute;
         inset: 0;
-        /* Warna tema solid pekat dari kiri-atas ke kanan-bawah,
-           sedikit memudar di sudut kanan bawah agar ada dimensi */
         background: linear-gradient(135deg,
                 var(--theme-dark, #ea580c) 0%,
                 var(--theme, #f97316) 55%,
                 var(--theme-dark, #ea580c) 100%);
-        opacity: 0.50;
+        opacity: 0.35;
         z-index: 1;
     }
 
-    /* Bayangan gelap di bawah untuk keterbacaan teks caption */
+    /* Bayangan gelap halus di bawah — fade panjang agar tidak terlihat blok */
     .ll-overlay::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 45%);
+        background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.60) 0%,
+            rgba(0, 0, 0, 0.20) 40%,
+            transparent 70%);
         opacity: 1;
     }
 
     /* Caption di bawah layar */
     .ll-caption {
         position: absolute;
-        bottom: 72px;
+        bottom: 56px;
         left: 0;
         right: 0;
         z-index: 3;
         text-align: center;
-        padding: 0 32px;
+        padding: 0 36px;
     }
 
     .ll-caption h2 {
@@ -143,20 +144,27 @@ $sekolah_l = sekolah_info();
         line-height: 1.25;
         letter-spacing: -0.4px;
         margin-bottom: 10px;
-        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+        text-shadow:
+            0 1px 3px rgba(0,0,0,0.95),
+            0 3px 12px rgba(0,0,0,0.75);
     }
 
     .ll-caption h2 span {
         color: #fde68a;
+        text-shadow:
+            0 1px 3px rgba(0,0,0,0.95),
+            0 3px 12px rgba(0,0,0,0.75);
     }
 
     .ll-caption p {
         font-size: 0.88rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.95);
         line-height: 1.6;
         max-width: 320px;
         margin: 0 auto;
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+        text-shadow:
+            0 1px 3px rgba(0,0,0,0.95),
+            0 2px 8px rgba(0,0,0,0.65);
     }
 
     /* RIGHT PANEL — form */

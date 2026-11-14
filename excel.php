@@ -481,6 +481,51 @@ function xlsx_template(string $filename, array $config): void {
         }
     }
 
+    // ── Sheet referensi tambahan (extra_sheets) ────────────────
+    // Format: [['title'=>'...','headers'=>[...],'rows'=>[...]], ...]
+    if (!empty($config['extra_sheets'])) {
+        foreach ($config['extra_sheets'] as $es) {
+            $esSheet = $spreadsheet->createSheet();
+            $esTitle = substr($es['title'] ?? 'Referensi', 0, 31); // Excel max 31 chars
+            $esSheet->setTitle($esTitle);
+            $esHeaders = $es['headers'] ?? [];
+            $esRows    = $es['rows']    ?? [];
+            $esLastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(max(1, count($esHeaders)));
+
+            $esSheet->mergeCells("A1:{$esLastCol}1");
+            $esSheet->setCellValue('A1', $es['title'] ?? 'Referensi');
+            $esSheet->getStyle('A1')->applyFromArray([
+                'font'      => ['bold'=>true,'size'=>12,'color'=>['argb'=>XLS_COLOR_HEADER]],
+                'fill'      => ['fillType'=>Fill::FILL_SOLID,'startColor'=>['argb'=>XLS_COLOR_ORANGE]],
+                'alignment' => ['horizontal'=>Alignment::HORIZONTAL_CENTER],
+            ]);
+
+            foreach ($esHeaders as $hi => $hLabel) {
+                $hCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($hi + 1);
+                $esSheet->setCellValue("{$hCol}2", $hLabel);
+                $esSheet->getStyle("{$hCol}2")->applyFromArray([
+                    'font' => ['bold'=>true,'color'=>['argb'=>XLS_COLOR_HEADER]],
+                    'fill' => ['fillType'=>Fill::FILL_SOLID,'startColor'=>['argb'=>XLS_COLOR_ORANGE]],
+                ]);
+                $esSheet->getColumnDimension($hCol)->setAutoSize(true);
+            }
+
+            foreach ($esRows as $ri => $rRow) {
+                $excelR = $ri + 3;
+                $bg = ($ri % 2 === 0) ? 'FFFFF7ED' : 'FFFFFFFF';
+                foreach ($rRow as $ci => $cVal) {
+                    $cLtr = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($ci + 1);
+                    $esSheet->setCellValue("{$cLtr}{$excelR}", $cVal);
+                }
+                $esLastC = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($rRow));
+                $esSheet->getStyle("A{$excelR}:{$esLastC}{$excelR}")->applyFromArray([
+                    'fill'    => ['fillType'=>Fill::FILL_SOLID,'startColor'=>['argb'=>$bg]],
+                    'borders' => ['allBorders'=>['borderStyle'=>Border::BORDER_THIN,'color'=>['argb'=>XLS_COLOR_BORDER]]],
+                ]);
+            }
+        }
+    }
+
     // ── Kembali ke sheet Data ──────────────────────────────────
     $spreadsheet->setActiveSheetIndex(0);
 

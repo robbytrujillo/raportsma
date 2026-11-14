@@ -1,9 +1,61 @@
-﻿<?php
+<?php
 /**
  * pages/penugasan/index.php
  * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
  */
 require_role(['admin','super_admin']);
+require_once __DIR__ . '/../../excel.php';
+
+// ── Export XLSX ────────────────────────────────────────────────────────────
+if (isset($_GET['export'])) {
+    $exp_ta_id = (int)($_GET['ta'] ?? 0);
+    $exp_where = $exp_ta_id ? 'gmk.tahun_ajaran_id = :ta' : '1=1';
+    $exp_params= $exp_ta_id ? [':ta'=>$exp_ta_id] : [];
+
+    $exp_user   = current_user();
+    $exp_unit_f = get_user_unit_filter($exp_user);
+    if ($exp_unit_f['sql'] !== '') { $exp_where .= ' ' . $exp_unit_f['sql']; }
+
+    $exp_rows = db_query(
+        "SELECT u.id as guru_user_id, u.nama_lengkap as nama_guru,
+                m.id as mapel_id, m.kode_mapel, m.nama_mapel,
+                k.id as kelas_id, k.nama_kelas,
+                ta.id as tahun_ajaran_id, ta.nama as ta_nama, ta.semester
+         FROM guru_mapel_kelas gmk
+         LEFT JOIN users u  ON u.id  = gmk.guru_user_id
+         LEFT JOIN mapel m  ON m.id  = gmk.mapel_id
+         LEFT JOIN kelas k  ON k.id  = gmk.kelas_id
+         LEFT JOIN tahun_ajaran ta ON ta.id = gmk.tahun_ajaran_id
+         WHERE $exp_where
+         ORDER BY u.nama_lengkap, m.nama_mapel, k.nama_kelas",
+        $exp_params
+    );
+
+    $ta_suffix = $exp_ta_id ? ('_ta'.$exp_ta_id) : '';
+    xlsx_template('export_penugasan' . $ta_suffix . '_' . date('Ymd') . '.xlsx', [
+        'title'    => 'Export Penugasan Guru -- Raportku',
+        'subtitle' => 'Kolom ID dapat digunakan untuk re-import. Kolom Nama hanya untuk referensi.',
+        'columns'  => [
+            ['header'=>'Guru User ID',    'field'=>'guru_user_id',    'width'=>16, 'required'=>true,  'type'=>'number'],
+            ['header'=>'Nama Guru',       'field'=>'nama_guru',       'width'=>32, 'required'=>false, 'type'=>'text','format'=>'@'],
+            ['header'=>'Mapel ID',        'field'=>'mapel_id',        'width'=>12, 'required'=>true,  'type'=>'number'],
+            ['header'=>'Kode Mapel',      'field'=>'kode_mapel',      'width'=>12, 'required'=>false, 'type'=>'text','format'=>'@'],
+            ['header'=>'Nama Mapel',      'field'=>'nama_mapel',      'width'=>28, 'required'=>false, 'type'=>'text','format'=>'@'],
+            ['header'=>'Kelas ID',        'field'=>'kelas_id',        'width'=>12, 'required'=>true,  'type'=>'number'],
+            ['header'=>'Nama Kelas',      'field'=>'nama_kelas',      'width'=>16, 'required'=>false, 'type'=>'text','format'=>'@'],
+            ['header'=>'Tahun Ajaran ID', 'field'=>'tahun_ajaran_id', 'width'=>18, 'required'=>true,  'type'=>'number'],
+            ['header'=>'Tahun Ajaran',    'field'=>'ta_nama',         'width'=>18, 'required'=>false, 'type'=>'text','format'=>'@'],
+        ],
+        'examples' => array_map(fn($r) => [
+            $r['guru_user_id'], $r['nama_guru'],
+            $r['mapel_id'], $r['kode_mapel'], $r['nama_mapel'],
+            $r['kelas_id'], $r['nama_kelas'],
+            $r['tahun_ajaran_id'], $r['ta_nama'].' Sem.'.$r['semester'],
+        ], $exp_rows),
+    ]);
+}
+
+
 
 // â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,6 +75,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [':g'=>$guru_uid, ':m'=>$mapel_id, ':k'=>$kelas_id, ':ta'=>$ta_id]
                 );
                 flash('success','Penugasan berhasil ditambahkan.');
+            } catch (\PDOException $e) {
+                flash('error','Penugasan sudah ada atau data tidak valid.');
+            }
+        } else {
+            flash('error','Semua field wajib diisi.');
+        }
+    } elseif ($action === 'update') {
+        $id       = (int)($_POST['id'] ?? 0);
+        $guru_uid = (int)($_POST['guru_user_id'] ?? 0);
+        $mapel_id = (int)($_POST['mapel_id'] ?? 0);
+        $kelas_id = (int)($_POST['kelas_id'] ?? 0);
+        $ta_id    = (int)($_POST['tahun_ajaran_id'] ?? 0);
+
+        if ($id && $guru_uid && $mapel_id && $kelas_id && $ta_id) {
+            try {
+                db_execute(
+                    'UPDATE guru_mapel_kelas SET guru_user_id=:g, mapel_id=:m, kelas_id=:k, tahun_ajaran_id=:ta WHERE id=:id',
+                    [':g'=>$guru_uid, ':m'=>$mapel_id, ':k'=>$kelas_id, ':ta'=>$ta_id, ':id'=>$id]
+                );
+                flash('success','Penugasan berhasil diperbarui.');
             } catch (\PDOException $e) {
                 flash('error','Penugasan sudah ada atau data tidak valid.');
             }
@@ -49,7 +121,7 @@ $_gunit_f   = get_user_unit_filter($user, 'g');
 $_guru_where = "u.role IN ('guru','wali_kelas')";
 if ($_gunit_f['sql'] !== '') { $_guru_where .= ' ' . $_gunit_f['sql']; }
 $guru_list  = db_query("SELECT u.id, u.nama_lengkap FROM users u LEFT JOIN guru g ON g.user_id = u.id WHERE {$_guru_where} ORDER BY u.nama_lengkap");
-$mapel_list = db_query('SELECT * FROM mapel ORDER BY nama_mapel');
+$mapel_list = db_query('SELECT id, nama_mapel, kode_mapel FROM mapel ORDER BY nama_mapel');
 $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
@@ -107,13 +179,31 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <h1 class="page-title">Penugasan Guru</h1>
             <p class="page-subtitle">Atur guru mengajar mata pelajaran di kelas tertentu</p>
         </div>
-        <button onclick="Modal.open('modalPenugasan')" class="btn btn-primary" style="border-radius: 30px">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Tambah Penugasan
-        </button>
+        <div class="flex gap-2">
+            <a href="index.php?page=penugasan&export=1&ta=<?= $ta_id ?>" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export
+            </a>
+            <a href="index.php?page=penugasan.import" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import
+            </a>
+            <button onclick="Modal.open('modalPenugasan')" class="btn btn-primary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Tambah Penugasan
+            </button>
+        </div>
     </div>
 
     <!-- Filter TA -->
@@ -187,14 +277,23 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                         <td><?= e($p['nama_mapel']) ?></td>
                         <td><span class="badge badge-blue"><?= e($p['nama_kelas']) ?></span></td>
                         <td>
-                            <form method="POST" action="index.php?page=penugasan&ta=<?= $ta_id ?>"
-                                style="display:inline" onsubmit="return confirm('Hapus penugasan ini?')">
-                                <?= csrf_field() ?>
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?= $p['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                    style="border-radius: 30px">Hapus</button>
-                            </form>
+                            <div class="flex gap-1">
+                                <button onclick='editPenugasan(<?= json_encode([
+                                    'id'              => $p['id'],
+                                    'guru_user_id'    => $p['guru_user_id'],
+                                    'mapel_id'        => $p['mapel_id'],
+                                    'kelas_id'        => $p['kelas_id'],
+                                    'tahun_ajaran_id' => $p['tahun_ajaran_id'],
+                                ]) ?>)' class="btn btn-sm btn-secondary" style="border-radius:30px">Edit</button>
+                                <form method="POST" action="index.php?page=penugasan&ta=<?= $ta_id ?>"
+                                    style="display:inline" onsubmit="return confirm('Hapus penugasan ini?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        style="border-radius: 30px">Hapus</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -232,21 +331,22 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
     </div>
 </div>
 
-<!-- Modal Tambah Penugasan -->
+<!-- Modal Tambah / Edit Penugasan -->
 <div class="modal-overlay" id="modalPenugasan">
     <div class="modal">
         <div class="modal-header">
-            <span>Tambah Penugasan Guru</span>
+            <span id="modalPenugasanTitle">Tambah Penugasan Guru</span>
             <button onclick="Modal.close('modalPenugasan')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
         <form method="POST" action="index.php?page=penugasan&ta=<?= $ta_id ?>">
             <?= csrf_field() ?>
-            <input type="hidden" name="action" value="save">
+            <input type="hidden" name="action" id="penugasanAction" value="save">
+            <input type="hidden" name="id"     id="penugasanId"     value="">
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Guru <span class="text-red-500">*</span></label>
-                    <select name="guru_user_id" class="form-control" required>
+                    <select name="guru_user_id" id="penugasanGuru" class="form-control" required>
                         <option value="">-- Pilih Guru --</option>
                         <?php foreach ($guru_list as $g): ?>
                         <option value="<?= $g['id'] ?>"><?= e($g['nama_lengkap']) ?></option>
@@ -255,16 +355,16 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </div>
                 <div class="form-group">
                     <label class="form-label">Mata Pelajaran <span class="text-red-500">*</span></label>
-                    <select name="mapel_id" class="form-control" required>
+                    <select name="mapel_id" id="penugasanMapel" class="form-control" required>
                         <option value="">-- Pilih Mata Pelajaran --</option>
                         <?php foreach ($mapel_list as $m): ?>
-                        <option value="<?= $m['id'] ?>"><?= e($m['nama_mapel']) ?></option>
+                        <option value="<?= $m['id'] ?>"><?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Kelas <span class="text-red-500">*</span></label>
-                    <select name="kelas_id" class="form-control" required>
+                    <select name="kelas_id" id="penugasanKelas" class="form-control" required>
                         <option value="">-- Pilih Kelas --</option>
                         <?php foreach ($kelas_list as $k): ?>
                         <option value="<?= $k['id'] ?>"><?= e($k['nama_kelas']) ?></option>
@@ -273,7 +373,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </div>
                 <div class="form-group">
                     <label class="form-label">Tahun Ajaran <span class="text-red-500">*</span></label>
-                    <select name="tahun_ajaran_id" class="form-control" required>
+                    <select name="tahun_ajaran_id" id="penugasanTA" class="form-control" required>
                         <?php foreach ($ta_list as $ta): ?>
                         <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
                             <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
@@ -290,3 +390,32 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
         </form>
     </div>
 </div>
+
+<script>
+function editPenugasan(data) {
+    document.getElementById('modalPenugasanTitle').textContent = 'Edit Penugasan Guru';
+    document.getElementById('penugasanAction').value = 'update';
+    document.getElementById('penugasanId').value     = data.id;
+    document.getElementById('penugasanGuru').value   = data.guru_user_id;
+    document.getElementById('penugasanMapel').value  = data.mapel_id;
+    document.getElementById('penugasanKelas').value  = data.kelas_id;
+    document.getElementById('penugasanTA').value     = data.tahun_ajaran_id;
+    Modal.open('modalPenugasan');
+}
+
+// Reset modal ke mode "Tambah" saat ditutup
+document.getElementById('modalPenugasan').addEventListener('click', function(e) {
+    if (e.target === this) resetPenugasanModal();
+});
+document.querySelector('#modalPenugasan .modal-header button').addEventListener('click', resetPenugasanModal);
+
+function resetPenugasanModal() {
+    document.getElementById('modalPenugasanTitle').textContent = 'Tambah Penugasan Guru';
+    document.getElementById('penugasanAction').value = 'save';
+    document.getElementById('penugasanId').value     = '';
+    document.getElementById('penugasanGuru').value   = '';
+    document.getElementById('penugasanMapel').value  = '';
+    document.getElementById('penugasanKelas').value  = '';
+    document.getElementById('penugasanTA').value     = '<?= $ta_id ?>';
+}
+</script>

@@ -78,16 +78,38 @@ if (in_array($role, ['admin','super_admin'])) {
     // Nilai siswa ini
     $siswa_data = db_row('SELECT s.*, k.nama_kelas FROM siswa s LEFT JOIN kelas k ON k.id = s.kelas_id WHERE s.user_id = :uid', [':uid' => $user['id']]);
 
+    // ── JOIN raport_publikasi — hanya tampilkan nilai yang sudah dirilis ──
+    // Pola JOIN ini ditambahkan ke semua query nilai siswa di dashboard.
+    $rp_join = "INNER JOIN raport_publikasi rp
+                        ON rp.kelas_id        = (SELECT kelas_id FROM siswa WHERE user_id = n.siswa_user_id LIMIT 1)
+                       AND rp.tahun_ajaran_id = n.tahun_ajaran_id
+                       AND rp.jenis_raport    = n.jenis_raport
+                       AND (rp.bulan = n.bulan OR (rp.bulan IS NULL AND n.bulan IS NULL))
+                       AND rp.is_published    = 1";
+
+    // Cek apakah ada nilai tapi belum dirilis sama sekali di TA ini
+    $ada_belum_rilis_dash = (int)(db_row(
+        'SELECT COUNT(*) as n FROM nilai n
+         LEFT JOIN raport_publikasi rp
+                ON rp.kelas_id        = (SELECT kelas_id FROM siswa WHERE user_id = n.siswa_user_id LIMIT 1)
+               AND rp.tahun_ajaran_id = n.tahun_ajaran_id
+               AND rp.jenis_raport    = n.jenis_raport
+               AND (rp.bulan = n.bulan OR (rp.bulan IS NULL AND n.bulan IS NULL))
+         WHERE n.siswa_user_id = :uid
+           AND n.tahun_ajaran_id = :ta
+           AND COALESCE(rp.is_published, 0) = 0',
+        [':uid' => $user['id'], ':ta' => $filter_ta_id]
+    )['n'] ?? 0) > 0;
+
     // ── Filter Bulan ──────────────────────────────────────────
-    // Bulan hanya relevan untuk jenis bulanan (atau semua yang mungkin berisi bulanan).
-    // Deteksi bulan terakhir yang ada nilainya untuk siswa ini di TA + jenis terpilih.
     $bulan_relevan = in_array($filter_jenis, ['bulanan', 'semua']);
 
-    // Ambil daftar bulan yang tersedia (untuk dropdown)
+    // Ambil daftar bulan yang tersedia (hanya dari yang sudah dirilis)
     $bulan_tersedia = [];
     if ($bulan_relevan) {
         $bulan_rows = db_query(
             "SELECT DISTINCT n.bulan FROM nilai n
+             $rp_join
              WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta
                AND n.bulan IS NOT NULL AND n.nilai_akhir > 0
                $jenis_cond
@@ -97,18 +119,16 @@ if (in_array($role, ['admin','super_admin'])) {
         $bulan_tersedia = array_column($bulan_rows, 'bulan');
     }
 
-    // Bulan default = bulan terbaru yang tersedia (update terakhir input)
+    // Bulan default = bulan terbaru yang tersedia
     $bulan_default = !empty($bulan_tersedia) ? (int)$bulan_tersedia[0] : 0;
 
-    // Bulan yang dipilih user; 0 = semua bulan (hanya untuk jenis non-bulanan atau semua)
+    // Bulan yang dipilih user; 0 = semua bulan
     $filter_bulan = 0;
     if ($bulan_relevan) {
         if (isset($_GET['f_bulan'])) {
             $fb = (int)$_GET['f_bulan'];
-            // validasi: harus ada di daftar tersedia, atau 0 (semua)
             $filter_bulan = ($fb === 0 || in_array($fb, $bulan_tersedia)) ? $fb : $bulan_default;
         } else {
-            // default otomatis ke bulan terbaru
             $filter_bulan = $bulan_default;
         }
     }
@@ -121,24 +141,27 @@ if (in_array($role, ['admin','super_admin'])) {
     $extra_cond  = $jenis_cond . ' ' . $bulan_cond;
     $extra_param = array_merge($jenis_param, $bulan_param);
 
+    // Semua query berikut hanya membaca nilai yang sudah is_published = 1
     $total_nilai = db_row(
-        "SELECT COUNT(*) as n FROM nilai n WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta $extra_cond",
+        "SELECT COUNT(*) as n FROM nilai n $rp_join
+         WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta $extra_cond",
         array_merge([':uid' => $user['id'], ':ta' => $filter_ta_id], $extra_param)
     )['n'] ?? 0;
 
     // Rata-rata nilai akhir siswa (dengan filter)
     $avg_nilai = db_row(
-        "SELECT ROUND(AVG(n.nilai_akhir),2) as avg FROM nilai n
+        "SELECT ROUND(AVG(n.nilai_akhir),2) as avg FROM nilai n $rp_join
          WHERE n.siswa_user_id = :uid AND n.tahun_ajaran_id = :ta $extra_cond",
         array_merge([':uid' => $user['id'], ':ta' => $filter_ta_id], $extra_param)
     )['avg'] ?? 0;
 
-    // Peringkat di kelas (filter TA + jenis + bulan, kelas otomatis dari data siswa)
+    // Peringkat di kelas
     if ($siswa_data) {
         $rank_data = db_query(
             "SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
              FROM siswa sv
              INNER JOIN nilai n ON n.siswa_user_id = sv.user_id
+             $rp_join
              WHERE sv.kelas_id = :kelas AND n.tahun_ajaran_id = :ta $extra_cond
              GROUP BY sv.user_id
              ORDER BY avg_nilai DESC",
@@ -154,18 +177,18 @@ if (in_array($role, ['admin','super_admin'])) {
         $total_siswa_kelas = count($rank_data);
     }
 
-    // ── Data grafik: nilai per mapel per bulan (bulanan) ────────
-    // Chart donut: selalu hanya bulanan, tampilkan semua bulan (tidak difilter per bulan)
+    // ── Data grafik: nilai per mapel per bulan (bulanan, sudah dirilis) ──
     $chart_rows = db_query(
-        'SELECT n.bulan, m.nama_mapel, n.nilai_akhir
+        "SELECT n.bulan, m.nama_mapel, n.nilai_akhir
          FROM nilai n
          INNER JOIN mapel m ON m.id = n.mapel_id
+         $rp_join
          WHERE n.siswa_user_id = :uid
            AND n.tahun_ajaran_id = :ta
-           AND n.jenis_raport = "bulanan"
+           AND n.jenis_raport = 'bulanan'
            AND n.bulan IS NOT NULL
            AND n.nilai_akhir > 0
-         ORDER BY n.bulan ASC, m.urutan ASC, m.nama_mapel ASC',
+         ORDER BY n.bulan ASC, m.urutan ASC, m.nama_mapel ASC",
         [':uid' => $user['id'], ':ta' => $filter_ta_id]
     );
 
@@ -182,11 +205,12 @@ if (in_array($role, ['admin','super_admin'])) {
     }
     sort($chart_bulan_list);
 
-    // Bar chart: rata-rata per mapel (mengikuti filter jenis + bulan)
+    // Bar chart: rata-rata per mapel (sudah dirilis, ikut filter jenis + bulan)
     $leger_rows = db_query(
         "SELECT m.nama_mapel, ROUND(AVG(n.nilai_akhir),2) as avg_nilai
          FROM nilai n
          INNER JOIN mapel m ON m.id = n.mapel_id
+         $rp_join
          WHERE n.siswa_user_id = :uid
            AND n.tahun_ajaran_id = :ta
            AND n.nilai_akhir > 0
@@ -499,6 +523,20 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
         <?php endif; ?>
 
         <?php if ($role === 'siswa'): ?>
+
+        <?php if ($ada_belum_rilis_dash ?? false): ?>
+        <!-- Banner: ada nilai belum dirilis -->
+        </div><!-- tutup grid stat sementara -->
+        <div class="alert alert-info mb-4" style="margin-top:-8px">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <span>Sebagian nilai Anda belum dirilis oleh sekolah. Statistik dan grafik hanya menampilkan nilai yang sudah resmi diterbitkan.</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><!-- buka kembali grid stat -->
+        <?php endif; ?>
+
         <!-- Nilai siswa -->
         <div class="stat-card">
             <div class="stat-icon" style="background:#fff7ed">
@@ -726,48 +764,165 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     $pc_default_mapel = htmlspecialchars($pc_mapel[0] ?? '', ENT_QUOTES);
   ?>
 
-    <!-- ── PIE CHART: Perbandingan Nilai Bulanan per Mapel ─── -->
-    <div class="card mt-4" style="overflow:hidden" id="card-pie-chart">
-        <div class="card-header" style="background:linear-gradient(135deg,#eff6ff 0%,#fff 60%)">
-            <div class="pie-card-header-inner">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <span style="background:#3b82f6;border-radius:8px;padding:6px 8px;display:flex;flex-shrink:0">
-                        <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-                            <path d="M22 12A10 10 0 0 0 12 2v10z" />
-                        </svg>
-                    </span>
-                    <div>
-                        <div style="font-weight:700;font-size:.95rem;color:#1f2937">Perbandingan Nilai Bulanan per Mapel
-                        </div>
-                        <div style="font-size:.75rem;color:#9ca3af">
-                            Raport Bulanan &bull;
-                            TA <?= e($filter_ta['nama'] ?? '') ?> &mdash; Sem. <?= $filter_sem_label ?>
-                            &bull; Kelas <?= $filter_kelas_nama ?>
-                            <span style="color:#f97316;font-weight:600">&bull; Semua bulan tersedia</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Combobox pilih mapel -->
-                <div class="pie-select-wrap">
-                    <label for="pie-mapel-select"
-                        style="font-size:.8rem;font-weight:600;color:#374151;white-space:nowrap">Mata Pelajaran:</label>
-                    <div style="position:relative;flex:1;min-width:0">
-                        <select id="pie-mapel-select" class="pie-select">
-                            <?php foreach ($pc_mapel as $mn): ?>
-                            <option value="<?= htmlspecialchars($mn, ENT_QUOTES) ?>"><?= htmlspecialchars($mn) ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none"
-                            width="12" height="12" fill="none" stroke="#6b7280" stroke-width="2.5" viewBox="0 0 24 24">
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+    <!-- ── GRID: Line chart + Pie chart bersebelahan ──────── -->
+    <div style="display:grid;gap:16px;margin-top:16px" class="dash-chart-grid">
+
+    <!-- ── LINE CHART: Rata-rata Nilai per Bulan ────────────── -->
+    <div class="card" style="overflow:hidden" id="card-line-chart">
+        <div class="card-header" style="background:linear-gradient(135deg,#f0fdf4 0%,#fff 60%)">
+            <div style="display:flex;align-items:center;gap:10px">
+                <span style="background:#22c55e;border-radius:8px;padding:6px 8px;display:flex;flex-shrink:0">
+                    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </span>
+                <div>
+                    <div style="font-weight:700;font-size:.95rem;color:#1f2937">Tren Nilai per Bulan</div>
+                    <div style="font-size:.75rem;color:#9ca3af">
+                        Raport Bulanan &bull;
+                        TA <?= e($filter_ta['nama'] ?? '') ?> &mdash; Sem. <?= $filter_sem_label ?>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card-body" style="padding:24px 20px 20px">
+        <div class="card-body" style="padding:16px 12px 12px;overflow-x:auto">
+            <?php
+            // ── Hitung rata-rata TOTAL semua mapel per bulan ─────
+            $lc_bulan = $chart_bulan_list; // sorted [int]
+            $lc_nb    = count($lc_bulan);
+            $lc_avg   = []; // [bulan_int => avg_float]
+            foreach ($lc_bulan as $bl) {
+                $vals = [];
+                foreach ($chart_mapel_list as $mn) {
+                    if (isset($chart_data[$mn][$bl])) $vals[] = (float)$chart_data[$mn][$bl];
+                }
+                $lc_avg[$bl] = !empty($vals) ? round(array_sum($vals) / count($vals), 2) : null;
+            }
+
+            $lc_w  = 340; $lc_h = 220;
+            $lc_pl = 36;  $lc_pt = 20; $lc_pr = 14; $lc_pb = 44;
+            $lc_cw = $lc_w - $lc_pl - $lc_pr;
+            $lc_ch = $lc_h - $lc_pt - $lc_pb;
+            $lc_kkm = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
+
+            $lc_y = fn($v) => round($lc_pt + $lc_ch - ($v / 100) * $lc_ch, 1);
+            $lc_x = fn($i) => $lc_nb <= 1
+                ? round($lc_pl + $lc_cw / 2, 1)
+                : round($lc_pl + $i * ($lc_cw / ($lc_nb - 1)), 1);
+
+            // Kumpulkan titik yang valid
+            $lc_pts = [];
+            foreach ($lc_bulan as $bi => $bl) {
+                if ($lc_avg[$bl] !== null) $lc_pts[] = [$bi, $lc_avg[$bl], $bl];
+            }
+            ?>
+            <svg viewBox="0 0 <?= $lc_w ?> <?= $lc_h ?>" width="100%" style="display:block;min-width:240px">
+
+                <!-- Grid + label Y -->
+                <?php for ($gi = 0; $gi <= 5; $gi++):
+                    $gv = $gi * 20; $gy = $lc_y($gv);
+                ?>
+                <line x1="<?= $lc_pl ?>" y1="<?= $gy ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $gy ?>"
+                      stroke="#f3f4f6" stroke-width="1"/>
+                <text x="<?= $lc_pl-4 ?>" y="<?= $gy+4 ?>" text-anchor="end" font-size="9" fill="#9ca3af"><?= $gv ?></text>
+                <?php endfor; ?>
+
+                <!-- KKM line -->
+                <?php $lc_ykkm = $lc_y($lc_kkm); ?>
+                <line x1="<?= $lc_pl ?>" y1="<?= $lc_ykkm ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $lc_ykkm ?>"
+                      stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3"/>
+                <text x="<?= $lc_w-$lc_pr-2 ?>" y="<?= $lc_ykkm-3 ?>" text-anchor="end"
+                      font-size="8" fill="#ef4444">KKM</text>
+
+                <!-- X axis base + labels -->
+                <line x1="<?= $lc_pl ?>" y1="<?= $lc_pt+$lc_ch ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $lc_pt+$lc_ch ?>"
+                      stroke="#e5e7eb" stroke-width="1"/>
+                <?php foreach ($lc_bulan as $bi => $bl): ?>
+                <text x="<?= $lc_x($bi) ?>" y="<?= $lc_pt+$lc_ch+14 ?>" text-anchor="middle"
+                      font-size="9" fill="#6b7280"><?= substr($bulan_id_arr[$bl] ?? ('Bln'.$bl), 0, 3) ?></text>
+                <?php endforeach; ?>
+
+                <?php if (count($lc_pts) >= 2):
+                    // Area fill bawah garis
+                    $firstPt = $lc_pts[0];
+                    $lastPt  = $lc_pts[count($lc_pts)-1];
+                    $areaStr = $lc_x($firstPt[0]).','.$lc_y(0).' '.
+                               implode(' ', array_map(fn($p) => $lc_x($p[0]).','.$lc_y($p[1]), $lc_pts)).
+                               ' '.$lc_x($lastPt[0]).','.$lc_y(0);
+                    $lineStr = implode(' ', array_map(fn($p) => $lc_x($p[0]).','.$lc_y($p[1]), $lc_pts));
+                ?>
+                <!-- Area fill -->
+                <polygon points="<?= $areaStr ?>" fill="#22c55e" fill-opacity="0.08"/>
+                <!-- Main line -->
+                <polyline points="<?= $lineStr ?>" fill="none" stroke="#22c55e"
+                          stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                <?php endif; ?>
+
+                <!-- Dots + nilai label -->
+                <?php foreach ($lc_pts as [$bi, $avg, $bl]):
+                    $dx = $lc_x($bi); $dy = $lc_y($avg);
+                    $above = $avg >= $lc_kkm;
+                    $dotClr = $above ? '#22c55e' : '#f97316';
+                ?>
+                <circle cx="<?= $dx ?>" cy="<?= $dy ?>" r="5" fill="<?= $dotClr ?>" stroke="#fff" stroke-width="2">
+                    <title><?= $bulan_id_arr[$bl] ?? 'Bulan '.$bl ?>: <?= $avg ?></title>
+                </circle>
+                <text x="<?= $dx ?>" y="<?= $dy-10 ?>" text-anchor="middle"
+                      font-size="10" font-weight="700" fill="<?= $dotClr ?>"><?= $avg ?></text>
+                <?php endforeach; ?>
+
+            </svg>
+
+            <!-- Keterangan ringkas -->
+            <div style="display:flex;align-items:center;gap:16px;margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6;font-size:.75rem;color:#6b7280">
+                <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:16px;height:3px;background:#22c55e;border-radius:2px;display:inline-block"></span>
+                    Rata-rata semua mapel
+                </div>
+                <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:14px;height:2px;background:#ef4444;display:inline-block;border-top:1px dashed #ef4444"></span>
+                    KKM <?= $lc_kkm ?>
+                </div>
+            </div>
+        </div>
+    </div><!-- /#card-line-chart -->
+
+    <!-- ── PIE CHART: Perbandingan Nilai Bulanan per Mapel ─── -->
+    <div class="card" style="overflow:hidden" id="card-pie-chart">
+        <div class="card-header" style="background:linear-gradient(135deg,#eff6ff 0%,#fff 60%)">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="background:#3b82f6;border-radius:8px;padding:6px 8px;display:flex;flex-shrink:0">
+                    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                        <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                    </svg>
+                </span>
+                <div style="min-width:0">
+                    <div style="font-weight:700;font-size:.95rem;color:#1f2937">Perbandingan Nilai Bulanan per Mapel</div>
+                    <div style="font-size:.75rem;color:#9ca3af;white-space:normal">
+                        Raport Bulanan &bull;
+                        TA <?= e($filter_ta['nama'] ?? '') ?> Sem. <?= $filter_sem_label ?>
+                        &bull; Kelas <?= $filter_kelas_nama ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:16px 20px 20px">
+            <!-- Combobox pilih mapel — di dalam body agar tidak overflow header -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6">
+                <label for="pie-mapel-select" style="font-size:.82rem;font-weight:600;color:#374151;white-space:nowrap;flex-shrink:0">Mata Pelajaran:</label>
+                <div style="position:relative;flex:1;min-width:0">
+                    <select id="pie-mapel-select" class="pie-select">
+                        <?php foreach ($pc_mapel as $mn): ?>
+                        <option value="<?= htmlspecialchars($mn, ENT_QUOTES) ?>"><?= htmlspecialchars($mn) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none"
+                        width="12" height="12" fill="none" stroke="#6b7280" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </div>
+            </div>
             <!-- Container pie charts — diisi JS -->
             <div id="pie-charts-container"
                 style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;min-height:200px">
@@ -984,6 +1139,8 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
         if (mapelList.length > 0) renderPies(mapelList[0]);
     })();
     </script>
+
+    </div><!-- /.dash-chart-grid -->
     <?php endif; ?>
 
     <?php if (empty($leger_rows)): ?>
@@ -1086,8 +1243,17 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
         box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
     }
 
+    /* Side-by-side chart grid */
+    .dash-chart-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
     /* Mobile <= 600px */
     @media (max-width: 600px) {
+        .dash-chart-grid {
+            grid-template-columns: 1fr;
+        }
+
         .bar-legend-grid {
             grid-template-columns: 1fr;
         }
@@ -1117,8 +1283,26 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
 
     /* Tablet <= 900px */
     @media (max-width: 900px) {
+        .dash-chart-grid {
+            grid-template-columns: 1fr;
+        }
+
         .bar-legend-grid {
             grid-template-columns: repeat(2, 1fr);
+        }
+
+        .pie-card-header-inner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .pie-select-wrap {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .card-header {
+            flex-wrap: wrap;
         }
     }
     </style>

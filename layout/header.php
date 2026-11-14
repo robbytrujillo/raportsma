@@ -95,6 +95,14 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../style.css') ?>">
+    <!-- Apply saved theme BEFORE first paint to prevent flash of orange -->
+    <script>
+    (function(){
+        var t=localStorage.getItem('raportku_theme');
+        if(t==='green'||t==='purple'||t==='orange')
+            document.documentElement.classList.add('theme-'+t);
+    })();
+    </script>
 </head>
 
 <body>

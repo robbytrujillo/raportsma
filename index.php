@@ -69,6 +69,8 @@ $routes = [
 
     // Penugasan Guru ke Mapel-Kelas
     'penugasan'       => 'pages/penugasan/index.php',
+    'penugasan.import'=> 'pages/penugasan/import.php',
+
     'penugasan.create'=> 'pages/penugasan/form.php',
 
     // Nilai

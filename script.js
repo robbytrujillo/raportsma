@@ -505,14 +505,8 @@ function initThemeSwitcher() {
     });
   });
 }
+// Theme applied in <head> (layout/header.php) to prevent FOUC — no duplicate needed here.
 
-// Apply theme ASAP to avoid FOUC — before DOMContentLoaded
-(function () {
-  var t = (typeof localStorage !== 'undefined' && localStorage.getItem(THEME_KEY)) || 'orange';
-  if (THEMES.includes(t)) {
-    document.documentElement.classList.add('theme-' + t);
-  }
-})();
 
 /* ============================================================
    INIT — jalankan semua saat DOM siap
