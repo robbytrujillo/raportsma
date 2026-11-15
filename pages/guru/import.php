@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             <h1 class="page-title">Import Data Guru</h1>
             <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan banyak guru sekaligus</p>
         </div>
-        <a href="/raportku23102026/guru" class="btn btn-secondary" style="border-radius: 30px">Kembali</a>
+        <a href="/guru" class="btn btn-secondary" style="border-radius: 30px">Kembali</a>
     </div>
 
     <?php foreach ($errors as $err): ?>
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         <div class="card">
             <div class="card-header">
                 <span>Petunjuk & Kolom</span>
-                <a href="/raportku23102026/guru.import?download_template=1" class="btn btn-sm btn-primary"
+                <a href="/guru.import?download_template=1" class="btn btn-sm btn-primary"
                     style="border-radius: 30px;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -176,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         <div class="card">
             <div class="card-header">Upload File</div>
             <div class="card-body">
-                <form method="POST" action="/raportku23102026/guru.import" enctype="multipart/form-data">
+                <form method="POST" action="/guru.import" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <div class="form-group">
                         <label class="form-label">Pilih File Excel / CSV <span class="text-red-500">*</span></label>

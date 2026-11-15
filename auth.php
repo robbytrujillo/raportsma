@@ -239,8 +239,8 @@ function csrf_field(): string {
 
 /**
  * Generate clean URL untuk halaman aplikasi.
- * Contoh: page_url('login')              → /raportku23102026/login
- *         page_url('penugasan', ['ta'=>1])→ /raportku23102026/penugasan?ta=1
+ * Contoh: page_url('login')              → /login
+ *         page_url('penugasan', ['ta'=>1])→ /penugasan?ta=1
  * Gunakan fungsi ini di semua href dan header('Location:')
  */
 function page_url(string $page, array $params = []): string {

@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     }
 
     flash('success', 'Nilai berhasil disimpan.');
-    header("Location: /raportku23102026/nilai.bulk?ta=$p_ta&kelas=$p_kelas&mapel=$p_mapel&jenis=$p_jenis&bulan=$p_bulan");
+    header("Location: /nilai.bulk?ta=$p_ta&kelas=$p_kelas&mapel=$p_mapel&jenis=$p_jenis&bulan=$p_bulan");
     exit;
 }
 
@@ -296,7 +296,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
         <div class="flex gap-2 flex-wrap">
             <?php if ($ready): ?>
-            <a href="/raportku23102026/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
+            <a href="/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
                 class="btn btn-secondary" style="border-radius:30px" title="Export data nilai kelas ini ke Excel">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -307,7 +307,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
             </a>
             <?php endif; ?>
             <a id="linkImportExcel"
-                href="/raportku23102026/nilai.import?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&mapel=<?= $mapel_id ?>&jenis=<?= e($jenis) ?>&bulan=<?= $bulan ?>"
+                href="/nilai.import?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&mapel=<?= $mapel_id ?>&jenis=<?= e($jenis) ?>&bulan=<?= $bulan ?>"
                 class="btn btn-secondary" style="border-radius: 30px"
                 title="Download template dengan daftar siswa sudah terisi, lalu upload kembali">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -317,7 +317,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                 </svg>
                 Import Excel
             </a>
-            <a href="/raportku23102026/nilai" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/nilai" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <polyline points="15 18 9 12 15 6" />
                 </svg>
@@ -455,7 +455,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
     </div>
 
     <!-- â"€â"€ STEP 2: FORM INPUT â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
-    <form method="POST" action="/raportku23102026/nilai.bulk" id="formBulk">
+    <form method="POST" action="/nilai.bulk" id="formBulk">
         <?= csrf_field() ?>
         <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
         <input type="hidden" name="kelas_id" value="<?= $kelas_id ?>">

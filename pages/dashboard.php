@@ -267,9 +267,10 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     $filter_kelas_nama = e($siswa_data['nama_kelas'] ?? '-');
     $bulan_id_arr_local = BULAN_ID; // [1=>'Januari', ...]
     $filter_bulan_nama  = ($filter_bulan > 0) ? ($bulan_id_arr_local[$filter_bulan] ?? '') : 'Semua Bulan';
-    $is_filter_active   = ($filter_jenis !== 'semua'
-                           || $filter_ta_id !== ($ta_aktif['id'] ?? 0)
-                           || ($bulan_relevan && $filter_bulan !== $bulan_default));
+    // Filter dianggap aktif HANYA jika user benar-benar mengirim parameter GET
+    $is_filter_active   = (isset($_GET['f_jenis']) && $filter_jenis !== 'semua')
+                       || (isset($_GET['f_ta'])    && $filter_ta_id !== ($ta_aktif['id'] ?? 0))
+                       || (isset($_GET['f_bulan']) && $bulan_relevan && $filter_bulan !== $bulan_default);
   ?>
     <!-- Tombol toggle filter -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
@@ -309,7 +310,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             </svg>
             <?= implode(' &bull; ', $pill_parts) ?>
             &nbsp;&mdash;&nbsp;
-            <a href="/raportku23102026/dashboard" style="color:#f97316;text-decoration:none;font-weight:700">✕ Reset</a>
+            <a href="/dashboard" style="color:#f97316;text-decoration:none;font-weight:700">✕ Reset</a>
         </span>
         <?php endif; ?>
     </div>
@@ -1314,7 +1315,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     <div class="card">
         <div class="card-header">
             <span>Aktivitas Nilai Terbaru</span>
-            <a href="/raportku23102026/nilai" class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat Semua</a>
+            <a href="/nilai" class="btn btn-sm btn-secondary" style="border-radius: 30px">Lihat Semua</a>
         </div>
         <div class="table-container">
             <table class="data-table">
@@ -1369,7 +1370,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     ];
     ?>
         <?php foreach ($quick as $q): ?>
-        <a href="/raportku23102026/<?= $q['page'] ?>"
+        <a href="/<?= $q['page'] ?>"
             class="card flex flex-col items-center justify-center p-5 hover:shadow-md transition-all text-center"
             style="text-decoration:none">
             <div class="<?= $q['color'] ?> rounded-xl p-3 mb-3">

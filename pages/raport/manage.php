@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 /**
  * pages/raport/manage.php
- * Manajemen Raport — khusus super_admin.
+ * Manajemen Raport � khusus super_admin.
  * Fitur:
  *   - Tampilkan semua periode nilai (kelas + TA + jenis + bulan)
  *   - Hapus semua nilai untuk satu periode (bulk delete)
@@ -25,9 +25,9 @@ $kelas_list = $ta_id
     ? db_query('SELECT * FROM kelas WHERE tahun_ajaran_id = :ta ORDER BY nama_kelas', [':ta' => $ta_id])
     : [];
 
-// ── Handle: Hapus satu periode ─────────────────────────────────
+// -- Handle: Hapus satu periode ---------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_periode') {
-    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: /raportku23102026/raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit; }
+    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: /raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit; }
 
     $d_kelas = (int)($_POST['kelas_id']        ?? 0);
     $d_ta    = (int)($_POST['tahun_ajaran_id'] ?? 0);
@@ -57,12 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     } else {
         flash('error', 'Parameter tidak lengkap.');
     }
-    header('Location: /raportku23102026/raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
+    header('Location: /raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
 }
 
-// ── Handle: Edit bulan ────────────────────────────────────────
+// -- Handle: Edit bulan ----------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit_bulan') {
-    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: /raportku23102026/raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit; }
+    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: /raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit; }
 
     $e_kelas      = (int)($_POST['kelas_id']        ?? 0);
     $e_ta         = (int)($_POST['tahun_ajaran_id'] ?? 0);
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit_
         }
         if ((int)($konflik['n'] ?? 0) > 0) {
             flash('error', 'Bulan tujuan sudah memiliki data nilai yang konflik (siswa & mapel yang sama). Hapus dulu data di bulan tersebut sebelum memindahkan.');
-            header('Location: /raportku23102026/raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
+            header('Location: /raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
         }
 
         $params = [':bulan_baru'=>$e_bulan_baru,':kid'=>$e_kelas,':ta'=>$e_ta,':jenis'=>$e_jenis];
@@ -139,10 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit_
     } else {
         flash('error', 'Parameter tidak lengkap atau bulan baru tidak dipilih.');
     }
-    header('Location: /raportku23102026/raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
+    header('Location: /raport.manage?ta='.$ta_id.'&kelas='.$kelas_id); exit;
 }
 
-// ── Ambil daftar periode yang tersedia ────────────────────────
+// -- Ambil daftar periode yang tersedia ------------------------
 $periodes = [];
 if ($ta_id) {
     $params = [':ta' => $ta_id];
@@ -315,7 +315,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
 </div>
 
 <style>
-/* ── Manajemen Raport: modal overlay ── */
+/* -- Manajemen Raport: modal overlay -- */
 .mgr-modal {
     display: none;
     position: fixed;
@@ -330,7 +330,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
 }
 </style>
 
-<!-- ── Modal: Konfirmasi Hapus Periode ──────────────────────── -->
+<!-- -- Modal: Konfirmasi Hapus Periode ------------------------ -->
 <div id="modalDelete" class="mgr-modal">
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:460px;width:90%;
                 box-shadow:0 8px 40px rgba(0,0,0,.2)">
@@ -350,7 +350,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
              padding:10px 14px;font-size:.82rem;color:#92400e;margin-bottom:16px"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end">
             <button type="button" onclick="mgr_closeModals()" class="btn btn-secondary" style="border-radius:30px">Batal</button>
-            <form id="formDelete" method="POST" action="/raportku23102026/raport.manage?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>" style="margin:0">
+            <form id="formDelete" method="POST" action="/raport.manage?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>" style="margin:0">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete_periode">
                 <input type="hidden" name="kelas_id" id="del_kelas_id">
@@ -363,13 +363,13 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
     </div>
 </div>
 
-<!-- ── Modal: Edit Bulan ────────────────────────────────────── -->
+<!-- -- Modal: Edit Bulan -------------------------------------- -->
 <div id="modalEditBulan" class="mgr-modal">
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:420px;width:90%;
                 box-shadow:0 8px 40px rgba(0,0,0,.2)">
         <h3 style="font-size:1rem;font-weight:700;color:#1f2937;margin:0 0 4px">Edit Bulan Raport</h3>
         <p id="editBulanDesc" style="font-size:.82rem;color:#6b7280;margin:0 0 18px"></p>
-        <form id="formEditBulan" method="POST" action="/raportku23102026/raport.manage?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>">
+        <form id="formEditBulan" method="POST" action="/raport.manage?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="edit_bulan">
             <input type="hidden" name="kelas_id" id="eb_kelas_id">

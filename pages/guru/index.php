@@ -1,7 +1,7 @@
-ï»¿<?php
+<?php
 /**
  * pages/guru/index.php
- * Daftar Guru Ã¢â‚¬" admin saja
+ * Daftar Guru â€" admin saja
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -9,7 +9,7 @@ $user = current_user();
 $_exp_uf   = get_user_unit_filter($user, 'g');
 $_exp_usql = $_exp_uf['sql']; // mis. "AND g.unit = 'putri'" atau ""
 
-// Ã¢"â‚¬Ã¢"â‚¬ Export CSV Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 // Export XLSX -- kolom sesuai template import guru.
 if (isset($_GET['export'])) {
     $rows = db_query(
@@ -44,7 +44,7 @@ if (isset($_GET['export'])) {
 }
 
 
-// â”€â”€ Handle TOGGLE UNIT (super_admin only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Handle TOGGLE UNIT (super_admin only) --------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_unit') {
     if (!is_super_admin()) { flash('error','Hanya super admin yang dapat mengubah unit guru.'); }
     elseif (verify_csrf()) {
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
     header("Location: index.php?$back"); exit;
 }
 
-// â”€â”€ Handle TOGGLE AKTIF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Handle TOGGLE AKTIF --------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
     if (verify_csrf()) {
         $tid     = (int)($_POST['id'] ?? 0);
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
 }
 
 
-// Ã¢"â‚¬Ã¢"â‚¬ Handle DELETE Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Handle DELETE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); }
     else {
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         db_execute('DELETE FROM users WHERE id = :id AND role IN ("guru","wali_kelas")', [':id' => $id]);
         flash('success', 'Data guru berhasil dihapus.');
     }
-    header('Location: /raportku23102026/guru'); exit;
+    header('Location: /guru'); exit;
 }
 
 $search = trim($_GET['q'] ?? '');
@@ -94,13 +94,13 @@ if ($search) {
     $params[':q2'] = "%$search%";
     $params[':q3'] = "%$search%";
 }
-// Filter unit â€” admin putri hanya lihat guru unit putri/campuran, dst.
+// Filter unit — admin putri hanya lihat guru unit putri/campuran, dst.
 $_gunit_f   = get_user_unit_filter($user, 'g');
 if ($_gunit_f['sql'] !== '') {
     $where .= ' ' . $_gunit_f['sql'];
 }
 
-// Ã¢"â‚¬Ã¢"â‚¬ Paginasi Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -134,7 +134,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             <p class="page-subtitle">Kelola data guru dan wali kelas</p>
         </div>
         <div class="flex gap-2">
-            <a href="/raportku23102026/guru?export=1" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/guru?export=1" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -142,7 +142,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </svg>
                 Export CSV
             </a>
-            <a href="/raportku23102026/guru.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/guru.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -150,7 +150,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </svg>
                 Import CSV
             </a>
-            <a href="/raportku23102026/guru.create" class="btn btn-primary" style="border-radius: 30px;">
+            <a href="/guru.create" class="btn btn-primary" style="border-radius: 30px;">
                 <svg width=" 16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -179,7 +179,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </div>
                 <div class="flex gap-2 items-end" style="padding-bottom:0">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px;">Cari</button>
-                    <?php if ($search || $per !== 10): ?><a href="/raportku23102026/guru"
+                    <?php if ($search || $per !== 10): ?><a href="/guru"
                         class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
                 </div>
             </form>
@@ -225,7 +225,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         <td>
                             <?php $g_unit = $g['unit'] ?? 'putra'; ?>
                             <?php if (is_super_admin()): ?>
-                            <form method="POST" action="/raportku23102026/guru" style="display:inline">
+                            <form method="POST" action="/guru" style="display:inline">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action" value="toggle_unit">
                                 <input type="hidden" name="id" value="<?= $g['id'] ?>">
@@ -261,10 +261,10 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="/raportku23102026/guru.edit?id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/guru.edit?id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
                                 <!-- Tombol Toggle Aktif/Nonaktif -->
-                                <form method="POST" action="/raportku23102026/guru" style="display:inline"
+                                <form method="POST" action="/guru" style="display:inline"
                                     onsubmit="return confirm('<?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_active">
@@ -277,7 +277,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                                         <?= ($g['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
                                     </button>
                                 </form>
-                                <form method="POST" action="/raportku23102026/guru" style="display:inline"
+                                <form method="POST" action="/guru" style="display:inline"
                                     onsubmit="return confirm('Hapus guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -306,7 +306,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
           $start = max(1, $page_n - 3);
           $end   = min($pages, $page_n + 3);
           if ($start > 1): ?><a href="?<?= $qstr ?>&p=1" class="page-link">1</a><?php
-            if ($start > 2): ?><span class="page-link disabled">Ã¢â‚¬Â¦</span><?php endif;
+            if ($start > 2): ?><span class="page-link disabled">â€¦</span><?php endif;
           endif;
           for ($pi = $start; $pi <= $end; $pi++):
         ?>
@@ -314,7 +314,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                             class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
                         <?php endfor;
           if ($end < $pages):
-            if ($end < $pages - 1): ?><span class="page-link disabled">Ã¢â‚¬Â¦</span><?php endif;
+            if ($end < $pages - 1): ?><span class="page-link disabled">â€¦</span><?php endif;
             ?><a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
           endif;
         ?>

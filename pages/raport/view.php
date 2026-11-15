@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/raport/view.php
  * Preview raport dalam layout aplikasi
@@ -43,7 +43,7 @@ if ($role === 'siswa') {
                     </svg>
                     <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;color:#1f2937">Raport Belum Dirilis</h2>
                     <p style="color:#6b7280;margin-bottom:20px">Raport ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
-                    <a href="/raportku23102026/raport" class="btn btn-secondary">&larr; Kembali ke Raport</a>
+                    <a href="/raport" class="btn btn-secondary">&larr; Kembali ke Raport</a>
                 </div>
             </div>
         </div>'; return;
@@ -52,7 +52,7 @@ if ($role === 'siswa') {
 ?>
 
 <?php
-// ── Include raport variables needed by raport_template ──────
+// -- Include raport variables needed by raport_template ------
 // raport_data.php already included above and sets: $siswa, $ta, $nilai_rows, etc.
 // We also need sekolah info (same as print.php uses)
 $sekolah_v   = sekolah_info();
@@ -73,7 +73,7 @@ $pw_px = round(210 * $mm2px);
         </div>
         <div class="preview-actions">
             <a href="javascript:history.back()" class="btn btn-secondary" style="border-radius:30px">&larr; Kembali</a>
-            <a href="/raportku23102026/raport.print?siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
+            <a href="/raport.print?siswa=<?= $siswa_uid ?>&ta=<?= $ta_id ?>&jenis=<?= urlencode($jenis) ?>&bulan=<?= $bulan ?>"
                target="_blank" class="btn btn-primary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <polyline points="6 9 6 2 18 2 18 9"/>
@@ -85,7 +85,7 @@ $pw_px = round(210 * $mm2px);
         </div>
     </div>
 
-    <!-- ── Preview container: scale-to-fit, no iframe ── -->
+    <!-- -- Preview container: scale-to-fit, no iframe -- -->
     <div id="previewOuter" style="width:100%;overflow:hidden;margin:0 auto">
       <div id="previewWrap" style="transform-origin:top left">
         <style>
@@ -101,7 +101,7 @@ $pw_px = round(210 * $mm2px);
           #previewWrap .no-print { display: none !important; }
           @media print { #previewOuter, #previewWrap { all: unset; } }
 
-          /* ── Preview mode: hanya di tablet/mobile ─────────────── */
+          /* -- Preview mode: hanya di tablet/mobile --------------- */
           /* Desktop (>1024px): sidebar tetap tampil, tidak perlu hide */
           @media (max-width: 1024px) {
             body.preview-raport-mode .sidebar {
@@ -149,7 +149,7 @@ $pw_px = round(210 * $mm2px);
 (function () {
   var NATURAL_W = <?= $pw_px ?>; // 210mm @ 96 dpi
 
-  // ── 1. Preview mode: sembunyikan sidebar HANYA di tablet/mobile ──
+  // -- 1. Preview mode: sembunyikan sidebar HANYA di tablet/mobile --
   // Di desktop (>1024px) sidebar tetap, CSS pun tidak menyembunyikannya.
   function applyPreviewMode() {
     document.body.classList.add('preview-raport-mode');
@@ -176,7 +176,7 @@ $pw_px = round(210 * $mm2px);
     }
   });
 
-  // ── 2. Scale raport agar muat di layar ───────────────────────────
+  // -- 2. Scale raport agar muat di layar ---------------------------
   function scalePreview() {
     var outer  = document.getElementById('previewOuter');
     var wrap   = document.getElementById('previewWrap');

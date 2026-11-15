@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 /**
  * pages/raport/manage_nilai.php
- * Manajemen Nilai Raport — hapus nilai per-siswa per-mapel
+ * Manajemen Nilai Raport � hapus nilai per-siswa per-mapel
  * Akses: admin & super_admin
  *
  * Fitur:
@@ -28,7 +28,7 @@ $siswa_id  = (int)($_GET['siswa']  ?? 0);
 $jenis     = $_GET['jenis']        ?? '';
 $bulan     = (int)($_GET['bulan']  ?? 0);
 
-// ── Handle: Hapus satu baris nilai ─────────────────────────────
+// -- Handle: Hapus satu baris nilai -----------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_nilai') {
     if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
 
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     header("Location: index.php?$qs"); exit;
 }
 
-// ── Handle: Hapus semua nilai satu siswa untuk periode ─────────
+// -- Handle: Hapus semua nilai satu siswa untuk periode ---------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_siswa_periode') {
     if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
 
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     header("Location: index.php?$qs"); exit;
 }
 
-// ── Handle: Hapus banyak nilai sekaligus (bulk) ────────────────
+// -- Handle: Hapus banyak nilai sekaligus (bulk) ----------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_bulk') {
     if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
 
@@ -85,12 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     header("Location: index.php?$qs"); exit;
 }
 
-// ── Kelas berdasarkan TA (difilter per unit) ────────────────────
+// -- Kelas berdasarkan TA (difilter per unit) --------------------
 $kelas_list = $ta_id
     ? db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_mn_usql} ORDER BY k.nama_kelas", [':ta' => $ta_id])
     : [];
 
-// ── Siswa berdasarkan Kelas ─────────────────────────────────────
+// -- Siswa berdasarkan Kelas -------------------------------------
 $siswa_list = [];
 if ($kelas_id) {
     $siswa_list = db_query(
@@ -101,7 +101,7 @@ if ($kelas_id) {
     );
 }
 
-// ── Ambil data nilai jika filter sudah cukup ────────────────────
+// -- Ambil data nilai jika filter sudah cukup --------------------
 $nilai_rows = [];
 $nama_siswa_sel = '';
 $nama_kelas_sel = '';
@@ -159,12 +159,12 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
             <h1 class="page-title">Manajemen Nilai Raport</h1>
             <p class="page-subtitle">Hapus nilai per-siswa per-mapel tanpa mengganggu kelas lain</p>
         </div>
-        <a href="/raportku23102026/raport.manage" class="btn btn-secondary" style="border-radius:30px">
+        <a href="/raport.manage" class="btn btn-secondary" style="border-radius:30px">
             &larr; Manajemen Raport
         </a>
     </div>
 
-    <!-- ── Filter ──────────────────────────────────────────────── -->
+    <!-- -- Filter ------------------------------------------------ -->
     <form method="GET" action="index.php" class="card mb-5" id="filterForm">
         <div class="card-body">
             <input type="hidden" name="page" value="raport.manage_nilai">
@@ -232,7 +232,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
     </form>
 
     <?php if ($kelas_id && $jenis && !empty($nilai_rows)): ?>
-    <!-- ── Info Bar ─────────────────────────────────────────── -->
+    <!-- -- Info Bar ------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
         <div style="font-size:.875rem;color:#6b7280">
             Menampilkan <strong><?= count($nilai_rows) ?></strong> baris &mdash;
@@ -242,11 +242,11 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
             <?= $siswa_id && $nama_siswa_sel ? ', Siswa <strong>' . e($nama_siswa_sel) . '</strong>' : '' ?>
         </div>
         <div style="font-size:.75rem;color:#ef4444;font-weight:600">
-            ⚠ Penghapusan bersifat permanen dan tidak dapat dibatalkan
+            ? Penghapusan bersifat permanen dan tidak dapat dibatalkan
         </div>
     </div>
 
-    <!-- ── Toolbar: search + bulk-delete ───────────────────── -->
+    <!-- -- Toolbar: search + bulk-delete --------------------- -->
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
         <!-- Search -->
         <div style="position:relative;flex:1;min-width:200px;max-width:340px">
@@ -254,14 +254,14 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                  style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" id="mnrSearch" placeholder="Cari nama siswa atau mapel…"
+            <input type="text" id="mnrSearch" placeholder="Cari nama siswa atau mapel�"
                    style="width:100%;padding:7px 10px 7px 32px;border:1px solid #e5e7eb;border-radius:8px;
                           font-size:.875rem;outline:none;transition:border-color .2s"
                    onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='#e5e7eb'">
         </div>
         <!-- Counter -->
         <span id="mnrCount" style="font-size:.8rem;color:#9ca3af;white-space:nowrap"></span>
-        <!-- Tombol hapus terpilih — muncul saat ada yang dicentang -->
+        <!-- Tombol hapus terpilih � muncul saat ada yang dicentang -->
         <button id="btnBulkDelete" type="button"
             style="display:none;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;
                    background:#dc2626;color:#fff;border:none;font-size:.82rem;font-weight:600;
@@ -276,7 +276,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
         </button>
     </div>
 
-    <!-- ── Tabel Nilai ──────────────────────────────────────── -->
+    <!-- -- Tabel Nilai ---------------------------------------- -->
     <div class="card">
         <div class="card-header">
             <span>Data Nilai</span>
@@ -324,7 +324,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         style="white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis"
                         title="<?= e($n['nama_siswa']) ?>"><?= e($n['nama_siswa']) ?></td>
                     <?php if (in_array($jenis, ['bulanan','sts']) && !$bulan): ?>
-                    <td style="white-space:nowrap"><?= $n['bulan'] ? e($bulan_names[(int)$n['bulan']] ?? 'Bln '.$n['bulan']) : '—' ?></td>
+                    <td style="white-space:nowrap"><?= $n['bulan'] ? e($bulan_names[(int)$n['bulan']] ?? 'Bln '.$n['bulan']) : '�' ?></td>
                     <?php endif; ?>
                     <td><span class="badge badge-gray" style="font-size:.65rem;padding:2px 5px"><?= e($n['kelompok']) ?></span></td>
                     <td>
@@ -337,7 +337,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         <?php endif; ?>
                     </td>
                     <td style="text-align:center;font-weight:700;color:#ea580c"><?= number_format((float)$n['nilai_akhir'], 0) ?></td>
-                    <td style="text-align:center"><?= $pred ? '<span class="badge ' . $predBadge . '" style="font-size:.65rem;padding:2px 5px">' . e($pred) . '</span>' : '—' ?></td>
+                    <td style="text-align:center"><?= $pred ? '<span class="badge ' . $predBadge . '" style="font-size:.65rem;padding:2px 5px">' . e($pred) . '</span>' : '�' ?></td>
                     <td style="text-align:center">
                         <div style="display:flex;align-items:center;justify-content:center;gap:4px">
                             <!-- Hapus 1 baris (icon trash) -->
@@ -406,7 +406,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
     <?php endif; ?>
 </div>
 
-<!-- ── Modal: Konfirmasi Hapus Semua Mapel Siswa ─────────────── -->
+<!-- -- Modal: Konfirmasi Hapus Semua Mapel Siswa --------------- -->
 <div id="modalHapusSiswa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
      z-index:9999;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:460px;width:90%;
@@ -446,7 +446,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
     </div>
 </div>
 
-<!-- ── Modal: Konfirmasi Hapus Terpilih (Bulk) ───────────────── -->
+<!-- -- Modal: Konfirmasi Hapus Terpilih (Bulk) ----------------- -->
 <div id="modalBulkDelete" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
      z-index:9999;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:460px;width:90%;
@@ -483,7 +483,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
 </div>
 
 <script>
-// ── Hapus per-siswa ──────────────────────────────────────────────
+// -- Hapus per-siswa ----------------------------------------------
 function mnr_hapusSiswa(siswaId, kelasId, taId, jenis, bulan, namaSiswa) {
     document.getElementById('mnr_siswa_id').value = siswaId;
     document.getElementById('mnr_kelas_id').value = kelasId;
@@ -493,13 +493,13 @@ function mnr_hapusSiswa(siswaId, kelasId, taId, jenis, bulan, namaSiswa) {
 
     var jenisLabel = {bulanan:'Bulanan',sts:'STS',semester:'Semester'};
     var bulanNames = <?= json_encode(array_map('strval', BULAN_ID)) ?>;
-    var bDesc = bulan && bulanNames[bulan] ? ' — ' + bulanNames[bulan] : '';
+    var bDesc = bulan && bulanNames[bulan] ? ' � ' + bulanNames[bulan] : '';
     document.getElementById('mnrSiswaDesc').textContent =
         namaSiswa + ' | ' + (jenisLabel[jenis] || jenis) + bDesc;
     document.getElementById('modalHapusSiswa').style.display = 'flex';
 }
 
-// ── Hapus bulk terpilih ──────────────────────────────────────────
+// -- Hapus bulk terpilih ------------------------------------------
 function mnr_bulkDelete() {
     var checked = document.querySelectorAll('#tblNilai .row-chk:checked');
     if (!checked.length) return;
@@ -509,13 +509,13 @@ function mnr_bulkDelete() {
     document.getElementById('modalBulkDelete').style.display = 'flex';
 }
 
-// ── Tutup modal klik backdrop ────────────────────────────────────
+// -- Tutup modal klik backdrop ------------------------------------
 ['modalHapusSiswa','modalBulkDelete'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
 });
 
-// ── Checkbox logic ────────────────────────────────────────────────
+// -- Checkbox logic ------------------------------------------------
 (function() {
     var chkAll  = document.getElementById('chkAll');
     var btnBulk = document.getElementById('btnBulkDelete');
@@ -550,7 +550,7 @@ function mnr_bulkDelete() {
         if (e.target.classList.contains('row-chk')) syncBulkBtn();
     });
 
-    // Klik baris → toggle checkbox (kecuali klik di tombol/form)
+    // Klik baris ? toggle checkbox (kecuali klik di tombol/form)
     document.querySelectorAll('#tblNilai tbody tr').forEach(function(tr) {
         tr.style.cursor = 'default';
         tr.addEventListener('click', function(e) {
@@ -561,7 +561,7 @@ function mnr_bulkDelete() {
     });
 })();
 
-// ── Auto-disable bulan jika jenis bukan bulanan/sts ──────────────
+// -- Auto-disable bulan jika jenis bukan bulanan/sts --------------
 (function() {
     var jenisEl = document.querySelector('select[name="jenis"]');
     var bulanEl = document.querySelector('select[name="bulan"]');
@@ -572,7 +572,7 @@ function mnr_bulkDelete() {
     });
 })();
 
-// ── Live search ──────────────────────────────────────────────────
+// -- Live search --------------------------------------------------
 (function() {
     var input   = document.getElementById('mnrSearch');
     var badge   = document.getElementById('mnrBadge');

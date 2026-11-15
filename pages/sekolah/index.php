@@ -1,14 +1,14 @@
-ï»¿<?php
+<?php
 /**
  * pages/sekolah/index.php
- * Pengaturan Informasi Sekolah Ã¢â‚¬" admin
+ * Pengaturan Informasi Sekolah â€" admin
  */
 require_role(['admin','super_admin']);
 
 $errors = [];
 $sekolah = sekolah_info();
 
-// Ã¢"â‚¬Ã¢"â‚¬ Handle POST Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
             }
             flash('success', 'Informasi sekolah berhasil disimpan.');
-            header('Location: /raportku23102026/sekolah'); exit;
+            header('Location: /sekolah'); exit;
         }
     }
 }
@@ -103,7 +103,7 @@ $s = $sekolah;
     <div class="card">
         <div class="card-header">Informasi Sekolah</div>
         <div class="card-body">
-            <form method="POST" action="/raportku23102026/sekolah" enctype="multipart/form-data">
+            <form method="POST" action="/sekolah" enctype="multipart/form-data">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

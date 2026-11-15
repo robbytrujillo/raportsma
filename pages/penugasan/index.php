@@ -1,12 +1,12 @@
-ï»¿<?php
+<?php
 /**
  * pages/penugasan/index.php
- * Penugasan Guru ke Mata Pelajaran & Kelas Ã¢â‚¬" admin
+ * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
-// â”€â”€ Export XLSX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Export XLSX ------------------------------------------------------------
 if (isset($_GET['export'])) {
     $exp_ta_id = (int)($_GET['ta'] ?? 0);
     $exp_where = $exp_ta_id ? 'gmk.tahun_ajaran_id = :ta' : '1=1';
@@ -57,9 +57,9 @@ if (isset($_GET['export'])) {
 
 
 
-// Ã¢"â‚¬Ã¢"â‚¬ Handle POST Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /raportku23102026/penugasan'); exit; }
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /penugasan'); exit; }
 
     $action = $_POST['action'] ?? '';
     if ($action === 'save') {
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db_execute('DELETE FROM guru_mapel_kelas WHERE id = :id', [':id'=>(int)$_POST['id']]);
         flash('success','Penugasan dihapus.');
     }
-    header('Location: /raportku23102026/penugasan'); exit;
+    header('Location: /penugasan'); exit;
 }
 
 $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
@@ -125,7 +125,7 @@ $mapel_list = db_query('SELECT id, nama_mapel, kode_mapel FROM mapel ORDER BY na
 $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
-// Ã¢"â‚¬Ã¢"â‚¬ Build where untuk filter Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Build where untuk filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $where_p  = 'gmk.tahun_ajaran_id = :ta';
 $params_p = [':ta' => $ta_id];
 
@@ -141,7 +141,7 @@ if ($search_p) {
     $params_p[':q3']    = "%$search_p%";
 }
 
-// Ã¢"â‚¬Ã¢"â‚¬ Paginasi Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬Ã¢"â‚¬
+// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -180,7 +180,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <p class="page-subtitle">Atur guru mengajar mata pelajaran di kelas tertentu</p>
         </div>
         <div class="flex gap-2">
-            <a href="/raportku23102026/penugasan?export=1&ta=<?= $ta_id ?>" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/penugasan?export=1&ta=<?= $ta_id ?>" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -188,7 +188,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </svg>
                 Export
             </a>
-            <a href="/raportku23102026/penugasan.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/penugasan.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -211,7 +211,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
     <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
         <div class="flex gap-2 flex-wrap">
             <?php foreach ($ta_list as $ta): ?>
-            <a href="/raportku23102026/penugasan?ta=<?= $ta['id'] ?>&per=<?= $per ?>"
+            <a href="/penugasan?ta=<?= $ta['id'] ?>&per=<?= $per ?>"
                 class="badge text-sm py-1 px-3 <?= $ta['id']==$ta_id ? 'badge-orange' : 'badge-gray' ?>"
                 style="text-decoration:none;cursor:pointer">
                 <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
@@ -240,7 +240,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </div>
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Cari</button>
-                    <?php if ($search_p || $per !== 10): ?><a href="/raportku23102026/penugasan?ta=<?= $ta_id ?>"
+                    <?php if ($search_p || $per !== 10): ?><a href="/penugasan?ta=<?= $ta_id ?>"
                         class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
                 </div>
             </form>
@@ -290,7 +290,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                                     'kelas_id'        => $p['kelas_id'],
                                     'tahun_ajaran_id' => $p['tahun_ajaran_id'],
                                 ]) ?>)' class="btn btn-sm btn-secondary" style="border-radius:30px">Edit</button>
-                                <form method="POST" action="/raportku23102026/penugasan?ta=<?= $ta_id ?>"
+                                <form method="POST" action="/penugasan?ta=<?= $ta_id ?>"
                                     style="display:inline" onsubmit="return confirm('Hapus penugasan ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -344,7 +344,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <button onclick="Modal.close('modalPenugasan')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
-        <form method="POST" action="/raportku23102026/penugasan?ta=<?= $ta_id ?>">
+        <form method="POST" action="/penugasan?ta=<?= $ta_id ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="action" id="penugasanAction" value="save">
             <input type="hidden" name="id"     id="penugasanId"     value="">

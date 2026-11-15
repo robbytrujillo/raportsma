@@ -1,15 +1,15 @@
-﻿<?php
+<?php
 /**
  * pages/jenis_raport/index.php
- * Kelola jenis raport — superadmin & admin saja
+ * Kelola jenis raport � superadmin & admin saja
  */
 require_role(['super_admin', 'admin']);
 
-// ── Handle POST ────────────────────────────────────────────────
+// -- Handle POST ------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) {
         flash('error', 'Token tidak valid.');
-        header('Location: /raportku23102026/jenis_raport'); exit;
+        header('Location: /jenis_raport'); exit;
     }
 
     $action = $_POST['action'] ?? '';
@@ -35,14 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$nama) {
             flash('error', 'Nama jenis raport wajib diisi.');
-            header('Location: /raportku23102026/jenis_raport'); exit;
+            header('Location: /jenis_raport'); exit;
         }
         if (!$kode) {
             flash('error', 'Kode jenis raport wajib diisi.');
-            header('Location: /raportku23102026/jenis_raport'); exit;
+            header('Location: /jenis_raport'); exit;
         }
 
-        // Normalisasi kode: lowercase, spasi → underscore
+        // Normalisasi kode: lowercase, spasi ? underscore
         $kode = strtolower(preg_replace('/\s+/', '_', $kode));
 
         if ($id) {
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dup = db_row('SELECT id FROM jenis_raport WHERE kode = :k AND id != :id', [':k' => $kode, ':id' => $id]);
             if ($dup) {
                 flash('error', 'Kode "' . $kode . '" sudah digunakan oleh jenis raport lain.');
-                header('Location: /raportku23102026/jenis_raport'); exit;
+                header('Location: /jenis_raport'); exit;
             }
             db_execute(
                 'UPDATE jenis_raport SET nama=:n, kode=:k, tipe=:t, tipe_basis=:tb, deskripsi=:d, judul_cetak=:jc, is_aktif=:a, urutan=:u WHERE id=:id',
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dup = db_row('SELECT id FROM jenis_raport WHERE kode = :k', [':k' => $kode]);
             if ($dup) {
                 flash('error', 'Kode "' . $kode . '" sudah digunakan.');
-                header('Location: /raportku23102026/jenis_raport'); exit;
+                header('Location: /jenis_raport'); exit;
             }
             db_execute(
                 'INSERT INTO jenis_raport (nama, kode, tipe, tipe_basis, deskripsi, judul_cetak, is_aktif, urutan) VALUES (:n,:k,:t,:tb,:d,:jc,:a,:u)',
@@ -86,10 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('success', 'Jenis raport berhasil dihapus.');
     }
 
-    header('Location: /raportku23102026/jenis_raport'); exit;
+    header('Location: /jenis_raport'); exit;
 }
 
-// ── Data ──────────────────────────────────────────────────────
+// -- Data ------------------------------------------------------
 $list = db_query('SELECT * FROM jenis_raport ORDER BY urutan ASC, id ASC');
 
 // Helper label tipe
@@ -98,7 +98,7 @@ $tipe_badge = ['bulanan' => 'badge-blue', 'uts' => 'badge-purple', 'semester' =>
 $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester' => 'Format Semester'];
 ?>
 <style>
-/* ── Responsive overrides khusus halaman Jenis Raport ── */
+/* -- Responsive overrides khusus halaman Jenis Raport -- */
 @media (max-width: 640px) {
     /* Kolom sekunder disembunyikan di mobile */
     .jr-col-kode,
@@ -184,7 +184,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                         <td class="jr-col-kode"><code style="font-size:.78rem;background:#f3f4f6;padding:2px 6px;border-radius:4px"><?= e($jr['kode']) ?></code></td>
                         <td><span class="badge <?= $tipe_badge[$jr['tipe']] ?? 'badge-gray' ?>"><?= $tipe_label[$jr['tipe']] ?? $jr['tipe'] ?></span></td>
                         <td class="jr-col-format"><span class="text-xs text-gray-500"><?= e($basis_label[$jr['tipe_basis'] ?? $jr['tipe']] ?? '-') ?></span></td>
-                        <td class="jr-col-judul text-xs text-gray-600"><?= $jr['judul_cetak'] ? e($jr['judul_cetak']) : '<span class="text-gray-300">—</span>' ?></td>
+                        <td class="jr-col-judul text-xs text-gray-600"><?= $jr['judul_cetak'] ? e($jr['judul_cetak']) : '<span class="text-gray-300">�</span>' ?></td>
                         <td class="jr-col-urutan text-center"><?= (int)$jr['urutan'] ?></td>
                         <td>
                             <?php if ($jr['is_aktif']): ?>
@@ -199,7 +199,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                                     class="btn btn-sm btn-secondary" style="border-radius:30px">Edit</button>
 
                                 <!-- Toggle aktif/nonaktif -->
-                                <form method="POST" action="/raportku23102026/jenis_raport" style="display:inline">
+                                <form method="POST" action="/jenis_raport" style="display:inline">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_aktif">
                                     <input type="hidden" name="id" value="<?= $jr['id'] ?>">
@@ -210,7 +210,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                                 </form>
 
                                 <!-- Hapus -->
-                                <form method="POST" action="/raportku23102026/jenis_raport" style="display:inline"
+                                <form method="POST" action="/jenis_raport" style="display:inline"
                                     onsubmit="return confirm('Hapus jenis raport ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -237,7 +237,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
             <button onclick="Modal.close('modalJR')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
-        <form method="POST" action="/raportku23102026/jenis_raport"
+        <form method="POST" action="/jenis_raport"
               style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="save">
@@ -281,7 +281,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                     <label class="form-label">Judul Cetak Kustom</label>
                     <input type="text" name="judul_cetak" id="jrJudulCetak" class="form-control"
                         placeholder="Kosongkan = gunakan judul otomatis">
-                    <div class="text-xs text-gray-400 mt-1">Contoh: <em>LAPORAN BULANAN DINIYAH (PERIODE: %s)</em> — tulis <code>%s</code> untuk sisipkan bulan/semester otomatis.</div>
+                    <div class="text-xs text-gray-400 mt-1">Contoh: <em>LAPORAN BULANAN DINIYAH (PERIODE: %s)</em> � tulis <code>%s</code> untuk sisipkan bulan/semester otomatis.</div>
                 </div>
 
                 <div class="form-group">

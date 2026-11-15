@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 /**
  * pages/siswa/index.php
- * Daftar siswa – admin / super_admin
+ * Daftar siswa � admin / super_admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -13,7 +13,7 @@ if ($_exp_uf['units']) {
     $_exp_usql_siswa = "AND k.unit IN ('$u_in')";
 }
 
-// ── Export Excel ──────────────────────────────────────────────────────────────
+// -- Export Excel --------------------------------------------------------------
 if (isset($_GET['export'])) {
     $rows = db_query(
         "SELECT u.nama_lengkap, u.username, u.email, s.nis, s.nisn,
@@ -60,7 +60,7 @@ if (isset($_GET['export'])) {
     ]);
 }
 
-// ── Handle TOGGLE AKTIF ───────────────────────────────────────────────────────
+// -- Handle TOGGLE AKTIF -------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
     if (verify_csrf()) {
         $tid     = (int)($_POST['id'] ?? 0);
@@ -73,16 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
     header("Location: index.php?$back"); exit;
 }
 
-// ── Handle DELETE ─────────────────────────────────────────────────────────────
+// -- Handle DELETE -------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
     if (verify_csrf()) {
         db_execute('DELETE FROM users WHERE id = :id AND role = "siswa"', [':id'=>(int)$_POST['id']]);
         flash('success','Data siswa dihapus.');
     }
-    header('Location: /raportku23102026/siswa'); exit;
+    header('Location: /siswa'); exit;
 }
 
-// ── Handle BULK PINDAH KELAS ──────────────────────────────────────────────────
+// -- Handle BULK PINDAH KELAS --------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'bulk_pindah_kelas') {
     if (verify_csrf()) {
         $ids_raw   = $_POST['siswa_ids'] ?? [];
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'bulk_pi
     header("Location: index.php?$back"); exit;
 }
 
-// ── Data tampilan ─────────────────────────────────────────────────────────────
+// -- Data tampilan -------------------------------------------------------------
 $ta_aktif = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_id    = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 $kelas_id = (int)($_GET['kelas'] ?? 0);
@@ -124,7 +124,7 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $_unit_f   = get_user_unit_filter($user);
 $_unit_sql = $_unit_f['sql'];
 $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
-// Semua kelas dari semua tahun ajaran (untuk target pindah kelas) — difilter unit
+// Semua kelas dari semua tahun ajaran (untuk target pindah kelas) � difilter unit
 $semua_kelas = db_query(
     "SELECT k.id, k.nama_kelas, k.tingkat, ta.nama as ta_nama, ta.semester
      FROM kelas k
@@ -195,7 +195,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             <p class="page-subtitle">Kelola data siswa sekolah</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-            <a href="/raportku23102026/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
+            <a href="/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -203,7 +203,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </svg>
                 Export Excel
             </a>
-            <a href="/raportku23102026/siswa.import" class="btn btn-secondary" style="border-radius:30px">
+            <a href="/siswa.import" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -211,7 +211,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </svg>
                 Import Excel
             </a>
-            <a href="/raportku23102026/siswa.create" class="btn btn-primary" style="border-radius:30px">
+            <a href="/siswa.create" class="btn btn-primary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
@@ -273,7 +273,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <span>Daftar Siswa</span>
                 <span class="text-sm text-gray-500"><?= $total ?> siswa</span>
             </div>
-            <!-- Tombol Pindah Kelas Massal — muncul jika ada yang dicentang -->
+            <!-- Tombol Pindah Kelas Massal � muncul jika ada yang dicentang -->
             <button type="button" id="btnPindahKelas"
                 onclick="bukaPindahKelas()"
                 class="btn btn-sm"
@@ -338,9 +338,9 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="/raportku23102026/siswa.edit?id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/siswa.edit?id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius:30px">Edit</a>
-                                <form method="POST" action="/raportku23102026/siswa" style="display:inline"
+                                <form method="POST" action="/siswa" style="display:inline"
                                     onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_active">
@@ -355,7 +355,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                         <?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
                                     </button>
                                 </form>
-                                <form method="POST" action="/raportku23102026/siswa" style="display:inline"
+                                <form method="POST" action="/siswa" style="display:inline"
                                     onsubmit="return confirm('Hapus siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
@@ -401,7 +401,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
     </div>
 </div>
 
-<!-- ── Modal Pindah Kelas Massal ─────────────────────────────────────────── -->
+<!-- -- Modal Pindah Kelas Massal ------------------------------------------- -->
 <div class="modal-overlay" id="modalPindahKelas" onclick="if(event.target===this)tutupPindahKelas()">
     <div class="modal" style="max-width:480px;width:100%">
         <div class="modal-header">
@@ -413,7 +413,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             </h3>
             <button type="button" onclick="tutupPindahKelas()" class="btn btn-sm btn-secondary" style="border-radius:50%;padding:4px 8px">&times;</button>
         </div>
-        <form method="POST" action="/raportku23102026/siswa" id="formPindahKelas">
+        <form method="POST" action="/siswa" id="formPindahKelas">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="bulk_pindah_kelas">
             <input type="hidden" name="ta" value="<?= $ta_id ?>">
@@ -478,14 +478,14 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
 </div>
 
 <script>
-/* ── Data nama siswa di halaman ini (untuk ditampilkan di modal) ── */
+/* -- Data nama siswa di halaman ini (untuk ditampilkan di modal) -- */
 const SISWA_NAMA = {
 <?php foreach ($siswa_list as $s): ?>
     <?= (int)$s['id'] ?>: <?= json_encode($s['nama_lengkap']) ?>,
 <?php endforeach; ?>
 };
 
-/* ── Update counter pilihan & tampilkan tombol ── */
+/* -- Update counter pilihan & tampilkan tombol -- */
 function updatePilihan() {
     const dipilih = document.querySelectorAll('.chk-siswa:checked');
     const btn     = document.getElementById('btnPindahKelas');
@@ -502,13 +502,13 @@ function updatePilihan() {
     }
 }
 
-/* ── Centang / lepas semua ── */
+/* -- Centang / lepas semua -- */
 function toggleSemuaSiswa(val) {
     document.querySelectorAll('.chk-siswa').forEach(c => c.checked = val);
     updatePilihan();
 }
 
-/* ── Buka modal, isi daftar nama & hidden inputs ── */
+/* -- Buka modal, isi daftar nama & hidden inputs -- */
 function bukaPindahKelas() {
     const dipilih = [...document.querySelectorAll('.chk-siswa:checked')];
     if (!dipilih.length) return;
@@ -531,12 +531,12 @@ function bukaPindahKelas() {
     setTimeout(() => document.getElementById('selKelasTujuan').focus(), 80);
 }
 
-/* ── Tutup modal ── */
+/* -- Tutup modal -- */
 function tutupPindahKelas() {
     document.getElementById('modalPindahKelas').classList.remove('open');
 }
 
-/* ── Konfirmasi sebelum submit ── */
+/* -- Konfirmasi sebelum submit -- */
 function konfirmasiPindah() {
     const sel  = document.getElementById('selKelasTujuan');
     const jml  = document.querySelectorAll('.chk-siswa:checked').length;
@@ -545,7 +545,7 @@ function konfirmasiPindah() {
     return confirm(`Pindahkan ${jml} siswa ke kelas "${nama}"?\n\nTindakan ini akan mengubah kelas siswa. Data nilai yang ada tetap tersimpan.`);
 }
 
-/* ── Keyboard: Esc menutup modal ── */
+/* -- Keyboard: Esc menutup modal -- */
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') tutupPindahKelas();
 });

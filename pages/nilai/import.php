@@ -686,7 +686,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 // Redirect ke halaman asal (bulk.php jika mode bulk, sinon daftar nilai)
                 if ($is_bulk && $bulk_kelas_id && $bulk_mapel_id) {
                     // Sertakan state kolom aktif agar bulk.php bisa restore checkbox
-                    $redir = '/raportku23102026/nilai.bulk'
+                    $redir = '/nilai.bulk'
                         . '?ta='          . $bulk_ta_id
                         . '&kelas='       . $bulk_kelas_id
                         . '&mapel='       . $bulk_mapel_id
@@ -697,7 +697,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         . '&aktif_nh3='   . ($bulk_aktif_nh3   ?? true ? 1 : 0)
                         . '&aktif_tugas=' . ($bulk_aktif_tugas ?? true ? 1 : 0);
                 } else {
-                    $redir = '/raportku23102026/nilai.import'
+                    $redir = '/nilai.import'
                         . '?f_ta='    . $f_ta_id
                         . '&f_kelas=' . $f_kelas
                         . '&f_mapel=' . $f_mapel
@@ -711,7 +711,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
     }
     // PRG: redirect juga saat tidak ada sukses (error/skip saja) agar refresh aman
     $_SESSION['_import_result'] = compact('results','errors','successes');
-    $redir_base = '/raportku23102026/nilai.import?' . http_build_query([
+    $redir_base = '/nilai.import?' . http_build_query([
         'imported'=>1,'f_ta'=>$f_ta_id,'f_kelas'=>$f_kelas,
         'f_mapel'=>$f_mapel,'f_jenis'=>$f_jenis,'f_bulan'=>$f_bulan,
         'aktif_nh1'=>$f_aktif_nh1,'aktif_nh2'=>$f_aktif_nh2,
@@ -736,7 +736,7 @@ if ($f_kelas && $f_mapel) {
 $f_siswa_count = $f_kelas ? (int)(db_row('SELECT COUNT(*) as n FROM siswa WHERE kelas_id=:k',[':k'=>$f_kelas])['n'] ?? 0) : 0;
 $jenis_opts    = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'STS – Tengah Semester','semester'=>'Semester (SAS)'];
 $bulk_ready    = $f_kelas && $f_mapel && ($f_jenis === 'semester' || $f_bulan > 0);
-$bulk_url      = '/raportku23102026/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_kelas.'&f_mapel='.$f_mapel.'&f_jenis='.$f_jenis.'&f_bulan='.$f_bulan
+$bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_kelas.'&f_mapel='.$f_mapel.'&f_jenis='.$f_jenis.'&f_bulan='.$f_bulan
                . '&aktif_nh1='.$f_aktif_nh1.'&aktif_nh2='.$f_aktif_nh2.'&aktif_nh3='.$f_aktif_nh3.'&aktif_tugas='.$f_aktif_tugas;
 ?>
 
@@ -750,8 +750,8 @@ $bulk_url      = '/raportku23102026/nilai.import?download_bulk=1&f_ta='.$f_ta_id
         <?php
         // Tombol kembali: ke bulk.php dengan parameter jika dari sana, atau ke daftar nilai
         $back_url = ($f_kelas && $f_mapel)
-            ? '/raportku23102026/nilai.bulk?ta='.$f_ta_id.'&kelas='.$f_kelas.'&mapel='.$f_mapel.'&jenis='.e($f_jenis).'&bulan='.$f_bulan
-            : '/raportku23102026/nilai';
+            ? '/nilai.bulk?ta='.$f_ta_id.'&kelas='.$f_kelas.'&mapel='.$f_mapel.'&jenis='.e($f_jenis).'&bulan='.$f_bulan
+            : '/nilai';
         ?>
         <a href="<?= $back_url ?>" class="btn btn-secondary" style="border-radius:30px">&larr; Kembali</a>
     </div>
@@ -918,7 +918,7 @@ $bulk_url      = '/raportku23102026/nilai.import?download_bulk=1&f_ta='.$f_ta_id
                 <span class="badge badge-orange">Semua</span>
             </div>
             <div class="card-body">
-                <form method="POST" action="/raportku23102026/nilai.import" enctype="multipart/form-data">
+                <form method="POST" action="/nilai.import" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <!-- Hidden: metadata bulk -->
                     <input type="hidden" name="bulk_ta_id" value="<?= $f_ta_id ?>">

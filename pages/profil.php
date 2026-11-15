@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/profil.php
  * Halaman profil pengguna &mdash; update data, foto, tanda tangan (upload atau draw)
@@ -11,13 +11,13 @@ $uid       = $user['id'];
 $errors    = [];
 $full_user = db_row('SELECT * FROM users WHERE id = :id', [':id' => $uid]);
 
-// ── Handle POST ──────────────────────────────────────────────────
+// -- Handle POST --------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { $errors[] = 'Token tidak valid.'; }
     else {
         $action = $_POST['action'] ?? 'update_profil';
 
-        // ── Update profil dasar ──────────────────────────────────
+        // -- Update profil dasar ----------------------------------
         if ($action === 'update_profil') {
             $nama      = trim($_POST['nama_lengkap'] ?? '');
             $email     = trim($_POST['email'] ?? '');
@@ -35,11 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 db_execute($sql, $p);
                 $_SESSION['nama_lengkap'] = $nama;
                 flash('success', 'Profil berhasil diperbarui.');
-                header('Location: /raportku23102026/profil'); exit;
+                header('Location: /profil'); exit;
             }
         }
 
-        // ── Upload foto profil ───────────────────────────────────
+        // -- Upload foto profil -----------------------------------
         if ($action === 'upload_foto') {
             $result = _handle_upload('foto', 'photos');
             if ($result['success']) {
@@ -48,10 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['foto'] = $result['path'];
                 flash('success', 'Foto profil diperbarui.');
             } else { $errors[] = $result['message']; }
-            if (empty($errors)) { header('Location: /raportku23102026/profil'); exit; }
+            if (empty($errors)) { header('Location: /profil'); exit; }
         }
 
-        // ── Upload tanda tangan (file) ───────────────────────────
+        // -- Upload tanda tangan (file) ---------------------------
         if ($action === 'upload_ttd') {
             if (!in_array($role, ['guru','wali_kelas','kepala_sekolah','admin'])) {
                 $errors[] = 'Role Anda tidak memerlukan tanda tangan.';
@@ -63,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['tanda_tangan'] = $result['path'];
                     flash('success', 'Tanda tangan berhasil diupload.');
                 } else { $errors[] = $result['message']; }
-                if (empty($errors)) { header('Location: /raportku23102026/profil'); exit; }
+                if (empty($errors)) { header('Location: /profil'); exit; }
             }
         }
 
-        // ── Simpan tanda tangan dari canvas (draw) ───────────────
+        // -- Simpan tanda tangan dari canvas (draw) ---------------
         if ($action === 'save_ttd_canvas') {
             if (!in_array($role, ['guru','wali_kelas','kepala_sekolah','admin'])) {
                 $errors[] = 'Role Anda tidak memerlukan tanda tangan.';
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             db_execute('UPDATE users SET tanda_tangan=:t WHERE id=:id', [':t'=>$filename, ':id'=>$uid]);
                             $_SESSION['tanda_tangan'] = $filename;
                             flash('success', 'Tanda tangan berhasil disimpan.');
-                            header('Location: /raportku23102026/profil'); exit;
+                            header('Location: /profil'); exit;
                         } else {
                             $errors[] = 'Gagal menyimpan file tanda tangan.';
                         }
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // ── Hapus tanda tangan ───────────────────────────────────
+        // -- Hapus tanda tangan -----------------------------------
         if ($action === 'delete_ttd') {
             if ($full_user['tanda_tangan']) {
                 @unlink(UPLOAD_DIR . $full_user['tanda_tangan']);
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['tanda_tangan'] = null;
                 flash('success', 'Tanda tangan dihapus.');
             }
-            header('Location: /raportku23102026/profil'); exit;
+            header('Location: /profil'); exit;
         }
     }
     $full_user = db_row('SELECT * FROM users WHERE id = :id', [':id' => $uid]);
@@ -177,7 +177,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-        <!-- ── KOLOM KIRI: Avatar, Foto, Tanda Tangan ── -->
+        <!-- -- KOLOM KIRI: Avatar, Foto, Tanda Tangan -- -->
         <div>
 
             <!-- Card Foto Profil -->
@@ -201,7 +201,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                     <div class="text-sm text-gray-400 mb-3">@<?= e($full_user['username']) ?></div>
 
                     <!-- Upload Foto -->
-                    <form method="POST" action="/raportku23102026/profil" enctype="multipart/form-data">
+                    <form method="POST" action="/profil" enctype="multipart/form-data">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="upload_foto">
                         <label class="btn btn-secondary btn-sm w-full justify-center cursor-pointer">
@@ -225,7 +225,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                 <div class="card-header">
                     <span>Tanda Tangan Digital</span>
                     <?php if ($has_ttd): ?>
-                    <span class="badge badge-green" style="font-size:.7rem">✓ Tersimpan</span>
+                    <span class="badge badge-green" style="font-size:.7rem">? Tersimpan</span>
                     <?php else: ?>
                     <span class="badge badge-red" style="font-size:.7rem">Belum ada</span>
                     <?php endif; ?>
@@ -280,7 +280,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 
                     <!-- Panel: Upload File -->
                     <div id="panelUpload">
-                        <form method="POST" action="/raportku23102026/profil" enctype="multipart/form-data"
+                        <form method="POST" action="/profil" enctype="multipart/form-data"
                             id="formUploadTtd">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="upload_ttd">
@@ -324,14 +324,14 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                         <div class="flex gap-2 mb-2">
                             <button type="button" onclick="clearCanvas()"
                                 class="btn btn-sm btn-secondary flex-1 justify-center">
-                                ✕ Hapus
+                                ? Hapus
                             </button>
                             <button type="button" onclick="saveCanvas()" id="btnSaveCanvas"
                                 class="btn btn-sm btn-primary flex-1 justify-center">
-                                ✓ Simpan
+                                ? Simpan
                             </button>
                         </div>
-                        <form method="POST" action="/raportku23102026/profil" id="formCanvasTtd">
+                        <form method="POST" action="/profil" id="formCanvasTtd">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="save_ttd_canvas">
                             <input type="hidden" name="canvas_data" id="canvasDataInput">
@@ -342,7 +342,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                     <!-- Tombol hapus (jika sudah ada TTD) -->
                     <?php if ($has_ttd): ?>
                     <div style="border-top:1px solid #f3f4f6;margin-top:12px;padding-top:10px">
-                        <form method="POST" action="/raportku23102026/profil" id="formDeleteTtd"
+                        <form method="POST" action="/profil" id="formDeleteTtd"
                             onsubmit="return confirm('Hapus tanda tangan ini?')">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="delete_ttd">
@@ -365,14 +365,14 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 
         </div><!-- /kolom kiri -->
 
-        <!-- ── KOLOM KANAN: Edit Profil + Panduan ── -->
+        <!-- -- KOLOM KANAN: Edit Profil + Panduan -- -->
         <div class="md:col-span-2">
 
             <!-- Edit Profil -->
             <div class="card mb-4">
                 <div class="card-header">Edit Informasi Akun</div>
                 <div class="card-body">
-                    <form method="POST" action="/raportku23102026/profil">
+                    <form method="POST" action="/profil">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="update_profil">
                         <div class="form-group">
@@ -434,7 +434,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                         <!-- Cara 1: Upload File -->
                         <div class="p-3 rounded-lg" style="background:#f0fdf4;border:1px solid #bbf7d0">
                             <p class="font-semibold text-sm mb-2" style="color:#15803d">
-                                📁 Cara 1: Upload File Gambar
+                                ?? Cara 1: Upload File Gambar
                             </p>
                             <ol style="padding-left:16px;color:#166534;font-size:.82rem;line-height:1.9">
                                 <li>Tanda tangan di kertas putih dengan <strong>spidol hitam</strong></li>
@@ -444,24 +444,24 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                                 <li>Upload via tombol "<strong>Upload File</strong>" di sebelah kiri</li>
                             </ol>
                             <div class="mt-2 p-2 rounded text-xs" style="background:#dcfce7;color:#166534">
-                                <strong>✓ Direkomendasikan</strong> untuk tampilan terbaik di raport PDF
+                                <strong>? Direkomendasikan</strong> untuk tampilan terbaik di raport PDF
                             </div>
                         </div>
 
                         <!-- Cara 2: Draw di Browser -->
                         <div class="p-3 rounded-lg" style="background:#eff6ff;border:1px solid #bfdbfe">
                             <p class="font-semibold text-sm mb-2" style="color:#1d4ed8">
-                                ✏️ Cara 2: Tanda Langsung di Browser
+                                ?? Cara 2: Tanda Langsung di Browser
                             </p>
                             <ol style="padding-left:16px;color:#1e40af;font-size:.82rem;line-height:1.9">
                                 <li>Klik tombol "<strong>Tanda di Sini</strong>" di sebelah kiri</li>
                                 <li>Tanda tangani di kotak yang muncul</li>
                                 <li>Gunakan <strong>mouse, stylus, atau jari</strong> (layar sentuh)</li>
-                                <li>Klik "<strong>✓ Simpan</strong>" untuk menyimpan</li>
-                                <li>Klik "<strong>✕ Hapus</strong>" jika ingin mengulang</li>
+                                <li>Klik "<strong>? Simpan</strong>" untuk menyimpan</li>
+                                <li>Klik "<strong>? Hapus</strong>" jika ingin mengulang</li>
                             </ol>
                             <div class="mt-2 p-2 rounded text-xs" style="background:#dbeafe;color:#1e40af">
-                                <strong>✓ Cepat</strong> &mdash; langsung dari perangkat tanpa aplikasi lain
+                                <strong>? Cepat</strong> &mdash; langsung dari perangkat tanpa aplikasi lain
                             </div>
                         </div>
                     </div>
@@ -471,17 +471,17 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                     <p class="font-semibold text-sm mb-2">Format & Tips</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                         <div class="p-3 rounded-lg text-center" style="background:#f3f4f6">
-                            <div style="font-size:1.4rem;margin-bottom:4px">🖼️</div>
+                            <div style="font-size:1.4rem;margin-bottom:4px">???</div>
                             <strong>Format terbaik</strong><br>
                             PNG dengan latar transparan
                         </div>
                         <div class="p-3 rounded-lg text-center" style="background:#f3f4f6">
-                            <div style="font-size:1.4rem;margin-bottom:4px">📐</div>
+                            <div style="font-size:1.4rem;margin-bottom:4px">??</div>
                             <strong>Ukuran ideal</strong><br>
-                            Maks 400×150 px, 2MB
+                            Maks 400�150 px, 2MB
                         </div>
                         <div class="p-3 rounded-lg text-center" style="background:#f3f4f6">
-                            <div style="font-size:1.4rem;margin-bottom:4px">📄</div>
+                            <div style="font-size:1.4rem;margin-bottom:4px">??</div>
                             <strong>Di raport</strong><br>
                             Muncul otomatis di halaman cetak
                         </div>
@@ -534,7 +534,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 </div>
 
 <script>
-// ── Pilih metode TTD (upload / draw) ───────────────────────────
+// -- Pilih metode TTD (upload / draw) ---------------------------
 function showTtdMethod(method) {
     const panelUpload = document.getElementById('panelUpload');
     const panelDraw = document.getElementById('panelDraw');
@@ -563,7 +563,7 @@ function showTtdMethod(method) {
     }
 }
 
-// ── Live preview file upload ────────────────────────────────────
+// -- Live preview file upload ------------------------------------
 function previewTtdFile(input) {
     const preview = document.getElementById('ttdFilePreview');
     const previewImg = document.getElementById('ttdFilePreviewImg');
@@ -577,7 +577,7 @@ function previewTtdFile(input) {
     }
 }
 
-// ── Canvas drawing ──────────────────────────────────────────────
+// -- Canvas drawing ----------------------------------------------
 let canvas, ctx, drawing = false,
     lastX = 0,
     lastY = 0,

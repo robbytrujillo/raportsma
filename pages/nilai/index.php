@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete'
         }
         flash('success','Data nilai dihapus.');
     }
-    header('Location: /raportku23102026/nilai'); exit;
+    header('Location: /nilai'); exit;
 }
 
 // â"€â"€ Filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -251,7 +251,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
             <p class="page-subtitle">Input dan kelola nilai siswa</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-            <a href="/raportku23102026/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
+            <a href="/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
                 class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -260,7 +260,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 </svg>
                 Export CSV
             </a>
-            <a href="/raportku23102026/nilai.import" class="btn btn-secondary" style="border-radius: 30px">
+            <a href="/nilai.import" class="btn btn-secondary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -269,7 +269,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 Import CSV
             </a>
             <?php if ($role !== 'kepala_sekolah'): ?>
-            <a href="/raportku23102026/nilai.input" class="btn btn-primary" style="border-radius: 30px">
+            <a href="/nilai.input" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -400,9 +400,9 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                         <td style="text-align:center">
                             <div class="flex gap-1" style="justify-content:center">
                                 <?php if ($role !== 'kepala_sekolah'): ?>
-                                <a href="/raportku23102026/nilai.input?id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary"
+                                <a href="/nilai.input?id=<?= $n['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
-                                <form method="POST" action="/raportku23102026/nilai" style="display:inline"
+                                <form method="POST" action="/nilai" style="display:inline"
                                     onsubmit="return confirm('Hapus nilai ini?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="delete">
