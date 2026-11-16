@@ -115,41 +115,44 @@ if ($role === 'siswa') {
 
     .print-toolbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: #f97316; color: #fff; padding: 8px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2); gap: 8px;
+      background: #f97316; color: #fff; padding: 6px 16px;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
       font-family: 'Poppins', sans-serif;
-      flex-wrap: wrap;
     }
     .print-toolbar-title {
       font-weight: 700; font-size: .95rem;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      flex: 1; min-width: 0; max-width: 100%;
+      flex: 1; min-width: 0;
     }
     .print-toolbar-actions {
-      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      display: flex; gap: 6px; align-items: center;
       flex-shrink: 0;
     }
     .print-toolbar button, .print-toolbar a {
       background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5);
-      color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+      color: #fff; padding: 6px 14px; border-radius: 20px; cursor: pointer;
       font-size: .82rem; font-weight: 600; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
     }
     .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,.35); }
+    /* Teks label cetak — disembunyikan di layar sempit */
+    .print-btn-label { display: inline; }
 
-    @media (max-width: 600px) {
-      body { padding-top: 110px; }
-      .print-toolbar { padding: 8px 12px; gap: 6px; }
-      .print-toolbar-title { font-size: .82rem; }
-      .print-toolbar-actions { gap: 6px; }
+    /* ── Mobile ≤ 640px: semua muat dalam 1 baris ── */
+    @media (max-width: 640px) {
+      body { padding-top: 54px; }
+      .print-toolbar { padding: 5px 8px; gap: 5px; }
+      .print-toolbar-title { font-size: .8rem; }
       .print-toolbar button, .print-toolbar a {
-        padding: 5px 10px; font-size: .75rem;
+        padding: 5px 9px; font-size: .75rem; gap: 4px;
       }
-    }
-    @media (max-width: 420px) {
-      body { padding-top: 130px; }
-      .print-toolbar-title { font-size: .75rem; }
+      /* Sembunyikan teks "Cetak / PDF", tampilkan ikon saja */
+      .print-btn-label { display: none; }
+      /* Sembunyikan teks "Kembali", tampilkan ikon saja */
+      .back-btn-label { display: none; }
+      /* Input tanggal lebih sempit */
+      #tglCetak { max-width: 118px; padding: 3px 5px; }
     }
 
     .btn-paper-active {
@@ -178,36 +181,10 @@ if ($role === 'siswa') {
       transform: scale(var(--print-preview-scale, 1));
     }
 
-    /* ── Print: paksa 1 halaman dengan zoom otomatis ── */
+    /* ── Print: ukuran halaman fisik ── */
     @media print {
-      body { background: #fff !important; padding-top: 0 !important; margin: 0 !important; }
-      .print-toolbar { display: none !important; }
-
-      /* Reset mobile scale wrapper so print layout is unaffected */
-      .print-scale-outer {
-        overflow: visible !important;
-        height: auto !important;
-        width: auto !important;
-        margin: 0 !important;
-      }
-
-      /* Reset JS-applied mobile zoom/transform on the raport page for printing */
-      .raport-page {
-        zoom: 1 !important;
-        transform: none !important;
-        width: var(--paper-w) !important;
-        min-height: 0 !important;
-        padding: var(--paper-pad-v) var(--paper-pad-h) !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        page-break-after: avoid;
-        break-after: avoid;
-      }
-
       @page { size: <?= $paper['size_css'] ?>; margin: 0; }
     }
-
-    /* A4 zoom + tightening sudah ditangani style.css @media print body[data-paper="a4"] */
     </style>
 </head>
 
@@ -222,47 +199,49 @@ if ($role === 'siswa') {
       <div class="print-toolbar-actions">
 
         <!-- Pilih ukuran kertas -->
-        <div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.15);
-                    border-radius:30px;padding:3px">
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
+                    border-radius:20px;padding:3px;flex-shrink:0">
           <button onclick="setUkuran('a4')"
             class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:30px;padding:4px 12px;border:none"
-            title="Kertas A4 &mdash; 210 × 297 mm">
-            A4
-          </button>
+            style="border-radius:20px;padding:4px 10px;border:none"
+            title="Kertas A4 — 210×297 mm">A4</button>
           <button onclick="setUkuran('f4')"
             class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:30px;padding:4px 12px;border:none"
-            title="Kertas F4 &mdash; 215 × 330 mm">
-            F4
-          </button>
+            style="border-radius:20px;padding:4px 10px;border:none"
+            title="Kertas F4 — 215×330 mm">F4</button>
         </div>
 
         <!-- Date picker tanggal cetak -->
-        <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600">
+        <label style="display:flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;flex-shrink:0">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          Tgl:
+          <span class="print-btn-label">Tgl:</span>
           <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
             style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
-                   color:#fff;padding:3px 7px;border-radius:30px;font-size:.8rem;cursor:pointer"
+                   color:#fff;padding:3px 7px;border-radius:20px;font-size:.8rem;cursor:pointer"
             onchange="applyTglCetak(this.value)">
         </label>
 
+        <!-- Kembali -->
         <a href="<?= page_url('raport', ['ta'=>$ta_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
            onclick="if(window.opener||history.length<=1){window.close();return false;}"
-           style="border-radius:30px">&larr; Kembali</a>
+           style="flex-shrink:0">
+          &larr; <span class="back-btn-label">Kembali</span>
+        </a>
 
-        <button onclick="window.print()" style="border-radius:30px;background:rgba(255,255,255,.9);color:#f97316;font-weight:700">
+        <!-- Cetak -->
+        <button onclick="window.print()"
+          style="background:rgba(255,255,255,.9);color:#f97316;font-weight:700;flex-shrink:0"
+          title="Cetak / Simpan PDF">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <polyline points="6 9 6 2 18 2 18 9"/>
             <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
             <rect x="6" y="14" width="12" height="8"/>
           </svg>
-          Cetak / PDF
+          <span class="print-btn-label">Cetak / PDF</span>
         </button>
       </div>
     </div>
@@ -289,22 +268,25 @@ if ($role === 'siswa') {
 
     <script>
     (function () {
+      var outer, page;
+
       function scalePrintPreview() {
-        var outer = document.getElementById('printScaleOuter');
-        var page  = outer && outer.querySelector('.raport-page');
+        outer = document.getElementById('printScaleOuter');
+        page  = outer && outer.querySelector('.raport-page');
         if (!outer || !page) return;
 
         // Reset so we measure the true natural size
-        page.style.zoom      = '';
-        page.style.transform = '';
-        outer.style.height   = '';
+        page.style.zoom            = '';
+        page.style.transform       = '';
+        page.style.transformOrigin = '';
+        outer.style.height         = '';
 
         var pageW  = page.getBoundingClientRect().width;
         var pageH  = page.getBoundingClientRect().height;
         var availW = outer.getBoundingClientRect().width;
 
         if (!pageW || availW <= 0) return;
-        if (availW >= pageW) return; // wide enough, no scaling
+        if (availW >= pageW) return; // wide enough, no scaling needed
 
         var scale = availW / pageW;
 
@@ -315,6 +297,33 @@ if ($role === 'siswa') {
           page.style.transform       = 'scale(' + scale + ')';
           outer.style.height = Math.ceil(pageH * scale) + 'px';
         }
+      }
+
+      // ── Sebelum print: hapus zoom/transform agar browser tidak salah hitung halaman
+      function resetForPrint() {
+        var el = document.getElementById('printScaleOuter');
+        var pg = el && el.querySelector('.raport-page');
+        if (!pg) return;
+        pg.style.zoom            = '';
+        pg.style.transform       = '';
+        pg.style.transformOrigin = '';
+        pg.style.width           = '';
+        if (el) { el.style.height = ''; el.style.overflow = ''; }
+      }
+
+      // ── Setelah print: kembalikan tampilan mobile
+      function restoreAfterPrint() {
+        scalePrintPreview();
+      }
+
+      window.addEventListener('beforeprint', resetForPrint);
+      window.addEventListener('afterprint',  restoreAfterPrint);
+      // matchMedia fallback untuk browser yang tidak support beforeprint
+      if (window.matchMedia) {
+        var mql = window.matchMedia('print');
+        mql.addEventListener('change', function(e) {
+          if (e.matches) resetForPrint(); else restoreAfterPrint();
+        });
       }
 
       window.addEventListener('load',   scalePrintPreview);

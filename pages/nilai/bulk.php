@@ -368,7 +368,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                             <option value="">-- Pilih --</option>
                             <?php foreach ($mapel_list as $m): ?>
                             <option value="<?= $m['id'] ?>" <?= $m['id']==$mapel_id?'selected':'' ?>>
-                                <?= e($m['nama_mapel']) ?></option>
+                                <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

@@ -807,7 +807,7 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                             <option value="">— Pilih —</option>
                             <?php foreach ($mapel_list as $m): ?>
                             <option value="<?= $m['id'] ?>" <?= $m['id']==$f_mapel?'selected':'' ?>>
-                                <?= e($m['nama_mapel']) ?></option>
+                                <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

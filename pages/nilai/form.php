@@ -278,7 +278,7 @@ $n = $nilai_data ?? [];
               <option value="">â€" Pilih Mapel â€"</option>
               <?php foreach ($mapel_list as $m): ?>
               <option value="<?= $m['id'] ?>" <?= ($n['mapel_id']??0)==$m['id']?'selected':'' ?>>
-                <?= e($m['nama_mapel']) ?>
+                <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?>
               </option>
               <?php endforeach; ?>
             </select>

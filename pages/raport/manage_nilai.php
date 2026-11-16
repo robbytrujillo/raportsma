@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/manage_nilai.php
- * Manajemen Nilai Raport — hapus nilai per-siswa per-mapel
+ * Manajemen Nilai Raport ï¿½ hapus nilai per-siswa per-mapel
  * Akses: admin & super_admin
  *
  * Fitur:
@@ -254,14 +254,14 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                  style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" id="mnrSearch" placeholder="Cari nama siswa atau mapel…"
+            <input type="text" id="mnrSearch" placeholder="Cari nama siswa atau mapelï¿½"
                    style="width:100%;padding:7px 10px 7px 32px;border:1px solid #e5e7eb;border-radius:8px;
                           font-size:.875rem;outline:none;transition:border-color .2s"
                    onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='#e5e7eb'">
         </div>
         <!-- Counter -->
         <span id="mnrCount" style="font-size:.8rem;color:#9ca3af;white-space:nowrap"></span>
-        <!-- Tombol hapus terpilih — muncul saat ada yang dicentang -->
+        <!-- Tombol hapus terpilih ï¿½ muncul saat ada yang dicentang -->
         <button id="btnBulkDelete" type="button"
             style="display:none;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;
                    background:#dc2626;color:#fff;border:none;font-size:.82rem;font-weight:600;
@@ -324,7 +324,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         style="white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis"
                         title="<?= e($n['nama_siswa']) ?>"><?= e($n['nama_siswa']) ?></td>
                     <?php if (in_array($jenis, ['bulanan','sts']) && !$bulan): ?>
-                    <td style="white-space:nowrap"><?= $n['bulan'] ? e($bulan_names[(int)$n['bulan']] ?? 'Bln '.$n['bulan']) : '—' ?></td>
+                    <td style="white-space:nowrap"><?= $n['bulan'] ? e($bulan_names[(int)$n['bulan']] ?? 'Bln '.$n['bulan']) : 'ï¿½' ?></td>
                     <?php endif; ?>
                     <td><span class="badge badge-gray" style="font-size:.65rem;padding:2px 5px"><?= e($n['kelompok']) ?></span></td>
                     <td>
@@ -337,7 +337,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         <?php endif; ?>
                     </td>
                     <td style="text-align:center;font-weight:700;color:#ea580c"><?= number_format((float)$n['nilai_akhir'], 0) ?></td>
-                    <td style="text-align:center"><?= $pred ? '<span class="badge ' . $predBadge . '" style="font-size:.65rem;padding:2px 5px">' . e($pred) . '</span>' : '—' ?></td>
+                    <td style="text-align:center"><?= $pred ? '<span class="badge ' . $predBadge . '" style="font-size:.65rem;padding:2px 5px">' . e($pred) . '</span>' : 'ï¿½' ?></td>
                     <td style="text-align:center">
                         <div style="display:flex;align-items:center;justify-content:center;gap:4px">
                             <!-- Hapus 1 baris (icon trash) -->
@@ -493,7 +493,7 @@ function mnr_hapusSiswa(siswaId, kelasId, taId, jenis, bulan, namaSiswa) {
 
     var jenisLabel = {bulanan:'Bulanan',sts:'STS',semester:'Semester'};
     var bulanNames = <?= json_encode(array_map('strval', BULAN_ID)) ?>;
-    var bDesc = bulan && bulanNames[bulan] ? ' — ' + bulanNames[bulan] : '';
+    var bDesc = bulan && bulanNames[bulan] ? ' ï¿½ ' + bulanNames[bulan] : '';
     document.getElementById('mnrSiswaDesc').textContent =
         namaSiswa + ' | ' + (jenisLabel[jenis] || jenis) + bDesc;
     document.getElementById('modalHapusSiswa').style.display = 'flex';
@@ -532,15 +532,15 @@ function mnr_bulkDelete() {
             btnBulk.style.display = 'none';
         }
         // Update indeterminate state of chkAll
-        var allVisible = document.querySelectorAll('#tblNilai tbody tr:not([style*="display: none"]) .row-chk');
-        var allVisibleChecked = document.querySelectorAll('#tblNilai tbody tr:not([style*="display: none"]) .row-chk:checked');
+        var allVisible = document.querySelectorAll('#tblNilai tbody tr:not(.mnr-hidden) .row-chk');
+        var allVisibleChecked = document.querySelectorAll('#tblNilai tbody tr:not(.mnr-hidden) .row-chk:checked');
         chkAll.indeterminate = allVisibleChecked.length > 0 && allVisibleChecked.length < allVisible.length;
         chkAll.checked = allVisible.length > 0 && allVisibleChecked.length === allVisible.length;
     }
 
     // Checkbox all: hanya centang/uncentang baris yang terlihat
-    chkAll.addEventListener('change', function() {
-        document.querySelectorAll('#tblNilai tbody tr:not([style*="display: none"]) .row-chk')
+        chkAll.addEventListener('change', function() {
+            document.querySelectorAll('#tblNilai tbody tr:not(.mnr-hidden) .row-chk')
             .forEach(function(c) { c.checked = chkAll.checked; });
         syncBulkBtn();
     });
@@ -587,12 +587,14 @@ function mnr_bulkDelete() {
         rows.forEach(function(tr) {
             var haystack = (tr.getAttribute('data-search') || '').toLowerCase();
             var show = !q || haystack.indexOf(q) !== -1;
-            tr.style.display = show ? '' : 'none';
-            if (!show) {
+            if (show) {
+                tr.classList.remove('mnr-hidden');
+                vis++;
+            } else {
+                tr.classList.add('mnr-hidden');
                 var chk = tr.querySelector('.row-chk');
                 if (chk) chk.checked = false; // uncheck baris tersembunyi
             }
-            if (show) vis++;
         });
         var total = rows.length;
         if (badge)   badge.textContent = (q ? vis + ' / ' + total : total) + ' data';
