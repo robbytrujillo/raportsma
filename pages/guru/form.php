@@ -9,6 +9,16 @@ $page_action = $_GET['page'] ?? 'guru.create';
 $is_edit     = ($page_action === 'guru.edit');
 $id          = (int)($_GET['id'] ?? 0); // user id
 
+// State pencarian dari halaman daftar agar bisa kembali ke posisi yang sama
+$_ret_q   = trim($_GET['_ret_q']   ?? '');
+$_ret_p   = max(1, (int)($_GET['_ret_p']  ?? 1));
+$_ret_per = (int)($_GET['_ret_per'] ?? 10);
+$_ret_params = ['page' => 'guru'];
+if ($_ret_q !== '')   $_ret_params['q']   = $_ret_q;
+if ($_ret_p > 1)      $_ret_params['p']   = $_ret_p;
+if ($_ret_per !== 10) $_ret_params['per'] = $_ret_per;
+$_back_url = '/index.php?' . http_build_query($_ret_params);
+
 $user_data = null;
 $guru_data = null;
 
@@ -75,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 flash('success', 'Guru baru berhasil ditambahkan.');
             }
-            header('Location: /guru'); exit;
+            header('Location: ' . $_back_url); exit;
         }
     }
 }
@@ -89,7 +99,7 @@ $dg = $guru_data ?? [];
             <h1 class="page-title"><?= $is_edit ? 'Edit Guru' : 'Tambah Guru' ?></h1>
             <p class="page-subtitle"><?= $is_edit ? 'Perbarui data guru' : 'Daftarkan guru baru ke sistem' ?></p>
         </div>
-        <a href="/guru" class="btn btn-secondary" style="border-radius: 30px"> Kembali</a>
+        <a href="<?= e($_back_url) ?>" class="btn btn-secondary" style="border-radius: 30px"> Kembali</a>
     </div>
 
     <?php foreach ($errors as $e): ?>
@@ -99,7 +109,15 @@ $dg = $guru_data ?? [];
     <div class="card">
         <div class="card-header">Data Guru</div>
         <div class="card-body">
-            <form method="POST" action="/<?= $page_action ?><?= $is_edit ? '?id='.$id : '' ?>">
+            <?php
+            $_form_action = '/' . $page_action;
+            $_form_qs = $is_edit ? ['id' => $id] : [];
+            // Teruskan state pencarian ke form agar POST bisa redirect kembali
+            $_form_qs['_ret_q']   = $_ret_q;
+            $_form_qs['_ret_p']   = $_ret_p;
+            $_form_qs['_ret_per'] = $_ret_per;
+            ?>
+            <form method="POST" action="<?= e($_form_action . '?' . http_build_query($_form_qs)) ?>">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,7 +190,7 @@ $dg = $guru_data ?? [];
                         </svg>
                         <?= $is_edit ? 'Simpan' : 'Tambah Guru' ?>
                     </button>
-                    <a href="/guru" class="btn btn-secondary" style="border-radius: 30px;">Batal</a>
+                    <a href="<?= e($_back_url) ?>" class="btn btn-secondary" style="border-radius: 30px;">Batal</a>
                 </div>
             </form>
         </div>

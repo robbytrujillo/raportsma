@@ -99,7 +99,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <script>
     (function(){
         var t=localStorage.getItem('raportku_theme');
-        if(t==='green'||t==='purple'||t==='orange')
+        if(t==='green'||t==='purple'||t==='orange'||t==='sky'||t==='pink')
             document.documentElement.classList.add('theme-'+t);
     })();
     </script>

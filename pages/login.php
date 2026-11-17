@@ -67,7 +67,7 @@ $sekolah_l = sekolah_info();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../../style.css') ?>">
 
     <style>
     /* ── Login Split Layout ──────────────────────────────── */
@@ -457,6 +457,14 @@ $sekolah_l = sekolah_info();
         background: #9C27B0;
     }
 
+    .ll-theme-btn[data-theme="sky"] {
+        background: #0ea5e9;
+    }
+
+    .ll-theme-btn[data-theme="pink"] {
+        background: #ec4899;
+    }
+
     /* ── Responsive ──────────────────────────────────────── */
     @media (max-width: 900px) {
         .login-left {
@@ -488,7 +496,11 @@ $sekolah_l = sekolah_info();
     <div class="login-split">
 
         <!-- ══ LEFT PANEL — Thumbnail + Gradient Overlay ════════════ -->
-        <div class="login-left" style="--ll-thumb-url: url('<?= UPLOAD_URL ?>photos/thumbnail.png')">
+        <?php
+        $_thumb_path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/photos/thumbnail.png';
+        $_thumb_v    = file_exists($_thumb_path) ? filemtime($_thumb_path) : time();
+        ?>
+        <div class="login-left" style="--ll-thumb-url: url('<?= UPLOAD_URL ?>photos/thumbnail.png?v=<?= $_thumb_v ?>')">
 
             <!-- Background foto -->
             <div class="ll-bg"></div>
@@ -505,8 +517,10 @@ $sekolah_l = sekolah_info();
             <!-- Color picker -->
             <div class="ll-theme-picker" aria-label="Pilih tema warna">
                 <button class="ll-theme-btn" data-theme="orange" aria-label="Tema Orange" title="Orange"></button>
-                <button class="ll-theme-btn" data-theme="green" aria-label="Tema Hijau" title="Hijau"></button>
-                <button class="ll-theme-btn" data-theme="purple" aria-label="Tema Ungu" title="Ungu"></button>
+                <button class="ll-theme-btn" data-theme="green"  aria-label="Tema Hijau"  title="Hijau"></button>
+                <button class="ll-theme-btn" data-theme="purple" aria-label="Tema Ungu"   title="Ungu"></button>
+                <button class="ll-theme-btn" data-theme="sky"    aria-label="Tema Biru Langit" title="Biru Langit"></button>
+                <button class="ll-theme-btn" data-theme="pink"   aria-label="Tema Pink"   title="Pink"></button>
             </div>
 
         </div><!-- /login-left -->
@@ -635,15 +649,18 @@ $sekolah_l = sekolah_info();
 
     </div><!-- /login-split -->
 
-    <script src="<?= BASE_URL ?>/script.js"></script>
     <script>
     (function() {
-        var validThemes = ['orange', 'green', 'purple'];
+        var validThemes = ['orange', 'green', 'purple', 'sky', 'pink'];
 
         // ── Apply saved theme ──────────────────────────────────────
         var savedTheme = (typeof localStorage !== 'undefined' && localStorage.getItem('raportku_theme')) ||
         'orange';
         if (validThemes.indexOf(savedTheme) === -1) savedTheme = 'orange';
+        // Hapus semua class tema dulu sebelum menambahkan yang baru
+        validThemes.forEach(function(t) {
+            document.documentElement.classList.remove('theme-' + t);
+        });
         document.documentElement.classList.add('theme-' + savedTheme);
 
         // ── Color picker ───────────────────────────────────────────

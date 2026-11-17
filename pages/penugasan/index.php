@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/penugasan/index.php
- * Penugasan Guru ke Mata Pelajaran & Kelas â€" admin
+ * Penugasan Guru ke Mata Pelajaran & Kelas ï¿½" admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -57,9 +57,21 @@ if (isset($_GET['export'])) {
 
 
 
-// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Handle POST ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /penugasan'); exit; }
+    // Simpan state pencarian agar redirect kembali ke halaman yang sama
+    $_ret_ta  = (int)($_POST['_ret_ta']  ?? 0);
+    $_ret_q   = trim($_POST['_ret_q']    ?? '');
+    $_ret_p   = max(1, (int)($_POST['_ret_p']  ?? 1));
+    $_ret_per = (int)($_POST['_ret_per'] ?? 10);
+    $_ret_params = ['page' => 'penugasan'];
+    if ($_ret_ta)        $_ret_params['ta']  = $_ret_ta;
+    if ($_ret_q !== '')  $_ret_params['q']   = $_ret_q;
+    if ($_ret_p > 1)     $_ret_params['p']   = $_ret_p;
+    if ($_ret_per !== 10) $_ret_params['per'] = $_ret_per;
+    $_back = '/index.php?' . http_build_query($_ret_params);
+
+    if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: ' . $_back); exit; }
 
     $action = $_POST['action'] ?? '';
     if ($action === 'save') {
@@ -105,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db_execute('DELETE FROM guru_mapel_kelas WHERE id = :id', [':id'=>(int)$_POST['id']]);
         flash('success','Penugasan dihapus.');
     }
-    header('Location: /penugasan'); exit;
+    header('Location: ' . $_back); exit;
 }
 
 $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
@@ -125,7 +137,7 @@ $mapel_list = db_query('SELECT id, nama_mapel, kode_mapel FROM mapel ORDER BY na
 $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
-// â"€â"€ Build where untuk filter â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Build where untuk filter ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 $where_p  = 'gmk.tahun_ajaran_id = :ta';
 $params_p = [':ta' => $ta_id];
 
@@ -141,7 +153,7 @@ if ($search_p) {
     $params_p[':q3']    = "%$search_p%";
 }
 
-// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Paginasi ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -290,9 +302,13 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                                     'kelas_id'        => $p['kelas_id'],
                                     'tahun_ajaran_id' => $p['tahun_ajaran_id'],
                                 ]) ?>)' class="btn btn-sm btn-secondary" style="border-radius:30px">Edit</button>
-                                <form method="POST" action="/penugasan?ta=<?= $ta_id ?>"
+                                <form method="POST" action="/penugasan"
                                     style="display:inline" onsubmit="return confirm('Hapus penugasan ini?')">
                                     <?= csrf_field() ?>
+                                    <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
+                                    <input type="hidden" name="_ret_q"   value="<?= e($search_p) ?>">
+                                    <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+                                    <input type="hidden" name="_ret_per" value="<?= $per ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-danger"
@@ -344,8 +360,12 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <button onclick="Modal.close('modalPenugasan')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
-        <form method="POST" action="/penugasan?ta=<?= $ta_id ?>">
+        <form method="POST" action="/penugasan">
             <?= csrf_field() ?>
+            <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
+            <input type="hidden" name="_ret_q"   value="<?= e($search_p) ?>">
+            <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+            <input type="hidden" name="_ret_per" value="<?= $per ?>">
             <input type="hidden" name="action" id="penugasanAction" value="save">
             <input type="hidden" name="id"     id="penugasanId"     value="">
             <div class="modal-body">

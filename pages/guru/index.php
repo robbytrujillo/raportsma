@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/guru/index.php
- * Daftar Guru â€" admin saja
+ * Daftar Guru ï¿½" admin saja
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -9,7 +9,7 @@ $user = current_user();
 $_exp_uf   = get_user_unit_filter($user, 'g');
 $_exp_usql = $_exp_uf['sql']; // mis. "AND g.unit = 'putri'" atau ""
 
-// â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Export CSV ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 // Export XLSX -- kolom sesuai template import guru.
 if (isset($_GET['export'])) {
     $rows = db_query(
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
 }
 
 
-// â"€â"€ Handle DELETE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Handle DELETE ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); }
     else {
@@ -81,7 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
         db_execute('DELETE FROM users WHERE id = :id AND role IN ("guru","wali_kelas")', [':id' => $id]);
         flash('success', 'Data guru berhasil dihapus.');
     }
-    header('Location: /guru'); exit;
+    $_ret_q   = trim($_POST['_ret_q']   ?? '');
+    $_ret_p   = max(1, (int)($_POST['_ret_p']  ?? 1));
+    $_ret_per = (int)($_POST['_ret_per'] ?? 10);
+    $_ret_params = ['page' => 'guru'];
+    if ($_ret_q !== '')   $_ret_params['q']   = $_ret_q;
+    if ($_ret_p > 1)      $_ret_params['p']   = $_ret_p;
+    if ($_ret_per !== 10) $_ret_params['per'] = $_ret_per;
+    header('Location: /index.php?' . http_build_query($_ret_params)); exit;
 }
 
 $search = trim($_GET['q'] ?? '');
@@ -94,13 +101,13 @@ if ($search) {
     $params[':q2'] = "%$search%";
     $params[':q3'] = "%$search%";
 }
-// Filter unit — admin putri hanya lihat guru unit putri/campuran, dst.
+// Filter unit ï¿½ admin putri hanya lihat guru unit putri/campuran, dst.
 $_gunit_f   = get_user_unit_filter($user, 'g');
 if ($_gunit_f['sql'] !== '') {
     $where .= ' ' . $_gunit_f['sql'];
 }
 
-// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Paginasi ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -261,7 +268,15 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="/guru.edit?id=<?= $g['id'] ?>" class="btn btn-sm btn-secondary"
+                                <?php
+                                $_edit_qs = http_build_query(array_filter([
+                                    'id'      => $g['id'],
+                                    '_ret_q'  => $search   ?: null,
+                                    '_ret_p'  => $page_n > 1 ? $page_n : null,
+                                    '_ret_per'=> $per !== 10  ? $per   : null,
+                                ], fn($v) => $v !== null));
+                                ?>
+                                <a href="/guru.edit?<?= $_edit_qs ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius: 30px;">Edit</a>
                                 <!-- Tombol Toggle Aktif/Nonaktif -->
                                 <form method="POST" action="/guru" style="display:inline"
@@ -280,8 +295,11 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                                 <form method="POST" action="/guru" style="display:inline"
                                     onsubmit="return confirm('Hapus guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                                    <input type="hidden" name="action"   value="delete">
+                                    <input type="hidden" name="id"       value="<?= $g['id'] ?>">
+                                    <input type="hidden" name="_ret_q"   value="<?= e($search) ?>">
+                                    <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+                                    <input type="hidden" name="_ret_per" value="<?= $per ?>">
                                     <button type="submit" class="btn btn-sm btn-danger"
                                         style="border-radius: 30px;">Hapus</button>
                                 </form>

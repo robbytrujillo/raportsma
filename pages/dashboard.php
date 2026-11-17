@@ -841,13 +841,14 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 $lc_avg[$bl] = !empty($vals) ? round(array_sum($vals) / count($vals), 2) : null;
             }
 
-            $lc_w  = 340; $lc_h = 220;
-            $lc_pl = 36;  $lc_pt = 20; $lc_pr = 14; $lc_pb = 44;
-            $lc_cw = $lc_w - $lc_pl - $lc_pr;
-            $lc_ch = $lc_h - $lc_pt - $lc_pb;
-            $lc_kkm = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
+            $lc_w    = 340; $lc_h = 230;
+            $lc_pl   = 36;  $lc_pt = 20; $lc_pr = 14; $lc_pb = 44;
+            $lc_cw   = $lc_w - $lc_pl - $lc_pr;
+            $lc_ch   = $lc_h - $lc_pt - $lc_pb;
+            $lc_ymax = 120; // skala atas 120 agar nilai 100 punya jarak dari tepi
+            $lc_kkm  = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
 
-            $lc_y = fn($v) => round($lc_pt + $lc_ch - ($v / 100) * $lc_ch, 1);
+            $lc_y = fn($v) => round($lc_pt + $lc_ch - ($v / $lc_ymax) * $lc_ch, 1);
             $lc_x = fn($i) => $lc_nb <= 1
                 ? round($lc_pl + $lc_cw / 2, 1)
                 : round($lc_pl + $i * ($lc_cw / ($lc_nb - 1)), 1);
@@ -860,13 +861,15 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             ?>
             <svg viewBox="0 0 <?= $lc_w ?> <?= $lc_h ?>" width="100%" style="display:block;min-width:240px">
 
-                <!-- Grid + label Y -->
+                <!-- Grid + label Y (0–80 saja; label "100" dihilangkan agar tidak tabrakan dengan label nilai) -->
                 <?php for ($gi = 0; $gi <= 5; $gi++):
                     $gv = $gi * 20; $gy = $lc_y($gv);
                 ?>
                 <line x1="<?= $lc_pl ?>" y1="<?= $gy ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $gy ?>"
                       stroke="#f3f4f6" stroke-width="1"/>
+                <?php if ($gv < 100): ?>
                 <text x="<?= $lc_pl-4 ?>" y="<?= $gy+4 ?>" text-anchor="end" font-size="9" fill="#9ca3af"><?= $gv ?></text>
+                <?php endif; ?>
                 <?php endfor; ?>
 
                 <!-- KKM line -->
@@ -901,15 +904,28 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <?php endif; ?>
 
                 <!-- Dots + nilai label -->
-                <?php foreach ($lc_pts as [$bi, $avg, $bl]):
+                <?php
+                $lc_total_pts = count($lc_pts);
+                foreach ($lc_pts as $lc_pi => [$bi, $avg, $bl]):
                     $dx = $lc_x($bi); $dy = $lc_y($avg);
                     $above = $avg >= $lc_kkm;
                     $dotClr = $above ? '#22c55e' : '#f97316';
+                    // Label selalu di atas titik — $lc_pt=36 memberi ruang cukup bahkan untuk nilai=100
+                    // Titik pertama: anchor start (hindari tumpang tindih Y-axis)
+                    // Titik terakhir: anchor end (hindari keluar batas kanan)
+                    // Titik tengah: anchor middle
+                    if ($lc_total_pts > 1 && $lc_pi === 0) {
+                        $labelAnchor = 'start'; $labelX = $dx + 7;
+                    } elseif ($lc_total_pts > 1 && $lc_pi === $lc_total_pts - 1) {
+                        $labelAnchor = 'end';   $labelX = $dx - 7;
+                    } else {
+                        $labelAnchor = 'middle'; $labelX = $dx;
+                    }
                 ?>
                 <circle cx="<?= $dx ?>" cy="<?= $dy ?>" r="5" fill="<?= $dotClr ?>" stroke="#fff" stroke-width="2">
                     <title><?= $bulan_id_arr[$bl] ?? 'Bulan '.$bl ?>: <?= $avg ?></title>
                 </circle>
-                <text x="<?= $dx ?>" y="<?= $dy-10 ?>" text-anchor="middle"
+                <text x="<?= $labelX ?>" y="<?= $dy - 10 ?>" text-anchor="<?= $labelAnchor ?>"
                       font-size="10" font-weight="700" fill="<?= $dotClr ?>"><?= $avg ?></text>
                 <?php endforeach; ?>
 

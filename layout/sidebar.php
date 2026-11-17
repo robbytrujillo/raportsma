@@ -469,7 +469,13 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
             aria-label="Tema Hijau" title="Hijau"></button>
     <button class="theme-dot" data-theme="purple"
             style="background:#9C27B0"
-            aria-label="Tema Ungu" title="Pink-Ungu"></button>
+            aria-label="Tema Ungu" title="Ungu"></button>
+    <button class="theme-dot" data-theme="sky"
+            style="background:#0ea5e9"
+            aria-label="Tema Biru Langit" title="Biru Langit"></button>
+    <button class="theme-dot" data-theme="pink"
+            style="background:#ec4899"
+            aria-label="Tema Pink" title="Pink"></button>
   </div>
 
   <div class="relative">

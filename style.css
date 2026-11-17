@@ -52,6 +52,20 @@ html.theme-purple {
   --theme-xlight: #fce4fc;
 }
 
+html.theme-sky {
+  --theme:        #0ea5e9;
+  --theme-dark:   #0284c7;
+  --theme-light:  #bae6fd;
+  --theme-xlight: #f0f9ff;
+}
+
+html.theme-pink {
+  --theme:        #ec4899;
+  --theme-dark:   #db2777;
+  --theme-light:  #fbcfe8;
+  --theme-xlight: #fdf2f8;
+}
+
 /* ── Base ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
