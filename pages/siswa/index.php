@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/siswa/index.php
- * Daftar siswa – admin / super_admin
+ * Daftar siswa ï¿½ admin / super_admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
         $cur     = (int)(db_row('SELECT is_active FROM users WHERE id=:id AND role="siswa"', [':id'=>$tid])['is_active'] ?? 1);
         $new_val = $cur ? 0 : 1;
         db_execute('UPDATE users SET is_active=:a WHERE id=:id AND role="siswa"', [':a'=>$new_val,':id'=>$tid]);
-        flash('success', 'Status siswa diubah menjadi ' . ($new_val ? 'Aktif' : 'Nonaktif') . '.');
+        flash('success', 'Status murid diubah menjadi ' . ($new_val ? 'Aktif' : 'Nonaktif') . '.');
     }
     $back = http_build_query(['page'=>'siswa','ta'=>$_POST['ta']??'','kelas'=>$_POST['kelas']??'','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
     header("Location: index.php?$back"); exit;
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
     if (verify_csrf()) {
         db_execute('DELETE FROM users WHERE id = :id AND role = "siswa"', [':id'=>(int)$_POST['id']]);
-        flash('success','Data siswa dihapus.');
+        flash('success','Data murid dihapus.');
     }
     header('Location: /siswa'); exit;
 }
@@ -102,12 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'bulk_pi
                         $berhasil++;
                     }
                 }
-                flash('success', "$berhasil siswa berhasil dipindahkan ke kelas {$kelas_valid['nama_kelas']}.");
+                flash('success', "$berhasil murid berhasil dipindahkan ke kelas {$kelas_valid['nama_kelas']}.");
             } else {
                 flash('error', 'Kelas tujuan tidak valid.');
             }
         } else {
-            flash('error', 'Pilih minimal 1 siswa dan kelas tujuan yang valid.');
+            flash('error', 'Pilih minimal 1 murid dan kelas tujuan yang valid.');
         }
     }
     $back = http_build_query(['page'=>'siswa','ta'=>$_POST['ta']??'','kelas'=>$_POST['kelas']??'','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
@@ -124,7 +124,7 @@ $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $_unit_f   = get_user_unit_filter($user);
 $_unit_sql = $_unit_f['sql'];
 $kelas_list = db_query("SELECT * FROM kelas k WHERE k.tahun_ajaran_id = :ta {$_unit_sql} ORDER BY k.nama_kelas", [':ta'=>$ta_id]);
-// Semua kelas dari semua tahun ajaran (untuk target pindah kelas) — difilter unit
+// Semua kelas dari semua tahun ajaran (untuk target pindah kelas) ï¿½ difilter unit
 $semua_kelas = db_query(
     "SELECT k.id, k.nama_kelas, k.tingkat, ta.nama as ta_nama, ta.semester
      FROM kelas k
@@ -191,8 +191,8 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Data Siswa</h1>
-            <p class="page-subtitle">Kelola data siswa sekolah</p>
+            <h1 class="page-title">Data Murid</h1>
+                      <p class="page-subtitle">Kelola data murid sekolah</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
@@ -216,7 +216,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Tambah Siswa
+                Tambah Murid
             </a>
         </div>
     </div>
@@ -266,14 +266,14 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
         </div>
     </div>
 
-    <!-- Daftar Siswa -->
+    <!-- Daftar Murid -->
     <div class="card">
         <div class="card-header">
             <div class="flex items-center gap-3">
-                <span>Daftar Siswa</span>
-                <span class="text-sm text-gray-500"><?= $total ?> siswa</span>
+                <span>Daftar Murid</span>
+                        <span class="text-sm text-gray-500"><?= $total ?> murid</span>
             </div>
-            <!-- Tombol Pindah Kelas Massal — muncul jika ada yang dicentang -->
+            <!-- Tombol Pindah Kelas Massal ï¿½ muncul jika ada yang dicentang -->
             <button type="button" id="btnPindahKelas"
                 onclick="bukaPindahKelas()"
                 class="btn btn-sm"
@@ -295,7 +295,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                 onchange="toggleSemuaSiswa(this.checked)">
                         </th>
                         <th>#</th>
-                        <th>Nama Siswa</th>
+                        <th>Nama Murid</th>
                         <th>NIS</th>
                         <th>NISN</th>
                         <th>Kelas</th>
@@ -308,7 +308,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <tbody>
                     <?php if (empty($siswa_list)): ?>
                     <tr>
-                        <td colspan="10" class="text-center py-8 text-gray-400">Belum ada data siswa.</td>
+                        <td colspan="10" class="text-center py-8 text-gray-400">Belum ada data murid.</td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($siswa_list as $i => $s): ?>
@@ -341,7 +341,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                 <a href="/siswa.edit?id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius:30px">Edit</a>
                                 <form method="POST" action="/siswa" style="display:inline"
-                                    onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
+                                    onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> murid <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="toggle_active">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
@@ -375,7 +375,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
         <!-- Paginasi -->
         <?php if ($pages > 1): ?>
         <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
-            <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> siswa)</span>
+            <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> murid)</span>
             <div class="pagination">
                 <a href="?<?= $qstr ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
                     style="border-radius:30px">&#8249; Prev</a>

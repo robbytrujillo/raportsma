@@ -231,6 +231,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leger Raport <?= htmlspecialchars($kelas['nama_kelas']) ?> | <?= htmlspecialchars($ta['nama']) ?>
     </title>
+    <!-- SheetJS lokal (hanya dipakai sebagai fallback; export utama via PHP server-side) -->
     <style>
     * {
         box-sizing: border-box;
@@ -278,6 +279,95 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         gap: 8px;
         align-items: center;
         flex-wrap: wrap;
+    }
+
+    /* ── Filter dalam leger-paper ── */
+    .leger-filter-panel {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 8px;
+        padding: 7px 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: .8rem;
+    }
+
+    .leger-filter-panel label {
+        font-weight: 700;
+        color: #7c2d12;
+        white-space: nowrap;
+        font-size: .78rem;
+    }
+
+    .abjad-btn-wrap {
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-abjad {
+        background: #fff;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        padding: 2px 7px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: .75rem;
+        font-weight: 600;
+        transition: background .15s, color .15s;
+        line-height: 1.4;
+    }
+
+    .btn-abjad.active,
+    .btn-abjad:hover {
+        background: #f97316;
+        color: #fff;
+        border-color: #f97316;
+    }
+
+    .filter-sep {
+        width: 1px;
+        height: 18px;
+        background: #fed7aa;
+        display: inline-block;
+        margin: 0 2px;
+    }
+
+    .sort-select {
+        border: 1px solid #fdba74;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: .77rem;
+        color: #7c2d12;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .sort-select:focus {
+        outline: none;
+        border-color: #f97316;
+    }
+
+    /* Hanya sembunyikan elemen non-print saat cetak */
+    @media print {
+        .leger-filter-panel {
+            display: none !important;
+        }
+    }
+
+    .btn-xlsx {
+        background: #16a34a !important;
+        border-color: #16a34a !important;
+        color: #fff !important;
+        border-radius: 30px !important;
+    }
+
+    .btn-xlsx:hover {
+        background: #15803d !important;
     }
 
     .leger-toolbar a,
@@ -583,7 +673,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
             <div class="tb-meta">
                 <?= htmlspecialchars($ta['nama']) ?> &middot; Sem. <?= $semester_lbl ?>
                 &middot; <?= $jenis_label ?><?= $bulan_nama ? " &mdash; $bulan_nama" : '' ?>
-                &middot; <strong><?= $total_siswa ?> siswa</strong>
+                &middot; <strong><?= $total_siswa ?> murid</strong>
                 &middot; <strong><?= count($mapel_list) ?> mapel</strong>
             </div>
         </div>
@@ -604,11 +694,44 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                 </svg>
                 Cetak / Simpan PDF
             </button>
+            <a id="btnExportXlsx" href="#" onclick="doExportXlsx(event)"
+               class="btn-print btn-xlsx" style="border-radius:30px">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="11" x2="12" y2="17"/>
+                    <polyline points="9 14 12 17 15 14"/>
+                </svg>
+                Export XLSX
+            </a>
         </div>
     </div>
 
     <!-- ── Kertas Leger ── -->
     <div class="leger-paper">
+
+        <!-- Panel Filter (di dalam paper, ikut print) -->
+        <div class="leger-filter-panel" id="filterPanel">
+            <label>Filter Nama:</label>
+            <div class="abjad-btn-wrap" id="abjadWrap">
+                <button class="btn-abjad active" data-abjad="ALL" onclick="filterAbjad(this)">Semua</button>
+                <?php
+                $huruf_list = range('A', 'Z');
+                foreach ($huruf_list as $h): ?>
+                <button class="btn-abjad" data-abjad="<?= $h ?>" onclick="filterAbjad(this)"><?= $h ?></button>
+                <?php endforeach; ?>
+            </div>
+            <div class="filter-sep"></div>
+            <label>Urut:</label>
+            <select class="sort-select" id="sortSelect" onchange="sortTable(this.value)">
+                <option value="rank_asc">Peringkat (1→<?= $total_siswa ?>)</option>
+                <option value="rank_desc">Peringkat (<?= $total_siswa ?>→1)</option>
+                <option value="nama_asc">Nama (A→Z)</option>
+                <option value="nama_desc">Nama (Z→A)</option>
+                <option value="rata_desc">Rata-rata (↓)</option>
+                <option value="rata_asc">Rata-rata (↑)</option>
+            </select>
+        </div>
 
         <!-- Kepala surat -->
         <div class="leger-header">
@@ -651,7 +774,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                     <tr>
                         <th class="col-no" rowspan="2">NO</th>
                         <th class="col-nisn" rowspan="2">NISN</th>
-                        <th class="col-nama" rowspan="2" style="text-align:center">NAMA SISWA</th>
+                        <th class="col-nama" rowspan="2" style="text-align:center">NAMA MURID</th>
                         <?php if (count($mapel_list) > 0): ?>
                         <th class="th-group-pengetahuan" colspan="<?= count($mapel_list) ?>">PENGETAHUAN</th>
                         <?php endif; ?>
@@ -680,7 +803,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                         <td><?= count($mapel_list) + 6 ?></td>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="legerTbody">
                     <?php foreach ($siswa_list as $i => $s):
             $peringkat   = $i + 1;
             $sid         = (int)$s['id'];
@@ -696,7 +819,9 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
             $rata  = $jml_mapel > 0 ? round($total_val / $jml_mapel, 1) : 0;
             $total = round($total_val, 1);
         ?>
-                    <tr>
+                    <tr data-nama="<?= htmlspecialchars(strtoupper($s['nama_lengkap'])) ?>"
+                        data-rank="<?= $peringkat ?>"
+                        data-rata="<?= $rata ?>">
                         <td class="col-no"><?= $peringkat ?></td>
                         <td class="col-nisn" style="font-size:9px"><?= htmlspecialchars($s['nisn'] ?? $s['nis']) ?></td>
                         <td class="col-nama"><?= htmlspecialchars($s['nama_lengkap']) ?></td>
@@ -754,22 +879,99 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
     </div><!-- /.leger-paper -->
 
     <script>
+    // ── PHP data ke JS ────────────────────────────────────────────
+    var _LEGER = {
+        kelas   : <?= json_encode($kelas['nama_kelas']) ?>,
+        wali    : <?= json_encode($kelas['wali_nama'] ?? '-') ?>,
+        kktp    : <?= json_encode((int)$krit_c) ?>,
+        ta      : <?= json_encode($ta['nama']) ?>,
+        jenis   : <?= json_encode($jenis_label) ?>,
+        bulan   : <?= json_encode($bulan_nama) ?>,
+        krit_c  : <?= json_encode((float)$krit_c) ?>,
+        krit_b  : <?= json_encode((float)$krit_b) ?>,
+        krit_a  : <?= json_encode((float)$krit_a) ?>,
+        mapel   : <?= json_encode(array_values(array_map(function($m){ return $m['nama_mapel']; }, $mapel_list))) ?>,
+        semester: <?= json_encode($semester_lbl) ?>,
+        sekolah : <?= json_encode($sekolah['nama_sekolah'] ?? '') ?>
+    };
+
+    // ── Filter Abjad ──────────────────────────────────────────────
+    function filterAbjad(btn) {
+        document.querySelectorAll('.btn-abjad').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        btn.classList.add('active');
+
+        var abjad = btn.dataset.abjad;
+        var tbody = document.getElementById('legerTbody');
+        var rows  = tbody.querySelectorAll('tr');
+        rows.forEach(function(row) {
+            if (abjad === 'ALL') {
+                row.style.display = '';
+            } else {
+                var nama = row.dataset.nama || '';
+                row.style.display = nama.startsWith(abjad) ? '' : 'none';
+            }
+        });
+        renumberVisible();
+    }
+
+    // ── Sort Tabel ────────────────────────────────────────────────
+    function sortTable(mode) {
+        var tbody = document.getElementById('legerTbody');
+        var rows  = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort(function(a, b) {
+            if (mode === 'rank_asc')   return parseInt(a.dataset.rank)  - parseInt(b.dataset.rank);
+            if (mode === 'rank_desc')  return parseInt(b.dataset.rank)  - parseInt(a.dataset.rank);
+            if (mode === 'nama_asc')   return (a.dataset.nama||'').localeCompare(b.dataset.nama||'');
+            if (mode === 'nama_desc')  return (b.dataset.nama||'').localeCompare(a.dataset.nama||'');
+            if (mode === 'rata_desc')  return parseFloat(b.dataset.rata) - parseFloat(a.dataset.rata);
+            if (mode === 'rata_asc')   return parseFloat(a.dataset.rata) - parseFloat(b.dataset.rata);
+            return 0;
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        renumberVisible();
+    }
+
+    // ── Renumber kolom NO (hanya baris visible) ───────────────────
+    function renumberVisible() {
+        var tbody = document.getElementById('legerTbody');
+        var no = 1;
+        tbody.querySelectorAll('tr').forEach(function(row) {
+            if (row.style.display !== 'none') {
+                row.querySelector('.col-no').textContent = no++;
+            }
+        });
+    }
+
+    // ── Export XLSX via PHP endpoint (PhpSpreadsheet server-side) ─
+    function doExportXlsx(e) {
+        e.preventDefault();
+        // Ambil sort & abjad aktif saat ini
+        var sortVal  = document.getElementById('sortSelect').value;
+        var abjadBtn = document.querySelector('.btn-abjad.active');
+        var abjadVal = abjadBtn ? abjadBtn.dataset.abjad : 'ALL';
+
+        var base = <?= json_encode(page_url('raport.leger_export', ['ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'bulan'=>$bulan])) ?>;
+        var url  = base + '&sort=' + encodeURIComponent(sortVal) + '&abjad=' + encodeURIComponent(abjadVal);
+        window.location.href = url;
+    }
+
+    // ── Zoom Print ────────────────────────────────────────────────
     (function() {
         var paper = document.querySelector('.leger-paper');
         if (!paper) return;
 
-        // Bungkus paper dalam div#leger-zoom-wrap
         var wrap = document.createElement('div');
         wrap.id = 'leger-zoom-wrap';
         paper.parentNode.insertBefore(wrap, paper);
         wrap.appendChild(paper);
 
-        // Ukuran kertas A4 landscape - margin @page 6mm tiap sisi
-        // area cetak: (297-12)mm × (210-12)mm = 285 × 198 mm
-        var DPR = window.devicePixelRatio || 1;
-        var PX_PER_MM = 96 / 25.4; // 1mm = ~3.78px pada 96dpi
-        var printW = 285 * PX_PER_MM; // px area cetak lebar
-        var printH = 198 * PX_PER_MM; // px area cetak tinggi
+        var PX_PER_MM = 96 / 25.4;
+        var printW = 285 * PX_PER_MM;
+        var printH = 198 * PX_PER_MM;
 
         var styleEl = document.getElementById('leger-zoom-style');
         if (!styleEl) {
@@ -779,35 +981,22 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         }
 
         function applyZoom() {
-            // Reset zoom dulu agar scrollWidth/Height terukur asli
             wrap.style.zoom = '';
             paper.style.width = '';
-
             var cw = paper.scrollWidth;
             var ch = paper.scrollHeight;
             if (!cw || !ch) return;
-
-            var zoomW = printW / cw;
-            var zoomH = printH / ch;
-            var zoom = Math.min(zoomW, zoomH, 1); // tidak pernah > 1
-
-            // Inject ke <style> khusus print — zoom bekerja di print engine
-            styleEl.textContent =
-                '@media print { #leger-zoom-wrap { zoom: ' + zoom + '; } }';
+            var zoom = Math.min(printW / cw, printH / ch, 1);
+            styleEl.textContent = '@media print { #leger-zoom-wrap { zoom: ' + zoom + '; } }';
         }
 
-        function resetZoom() {
-            styleEl.textContent = '';
-        }
+        function resetZoom() { styleEl.textContent = ''; }
 
         window.addEventListener('beforeprint', applyZoom);
         window.addEventListener('afterprint', resetZoom);
-
-        // matchMedia fallback (Chrome)
         if (window.matchMedia) {
             window.matchMedia('print').addEventListener('change', function(e) {
-                if (e.matches) applyZoom();
-                else resetZoom();
+                if (e.matches) applyZoom(); else resetZoom();
             });
         }
     })();

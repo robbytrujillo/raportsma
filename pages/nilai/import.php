@@ -170,9 +170,9 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
     $col_defs = [
         ['header'=>'No',         'field'=>'no',   'width'=>5,  'required'=>false,'type'=>'number'],
         ['header'=>'NIS',        'field'=>'nis',  'width'=>14, 'required'=>true, 'type'=>'text','format'=>'@',
-         'note'=>'Nomor Induk Siswa — jangan diubah'],
-        ['header'=>'Nama Siswa', 'field'=>'nama', 'width'=>28, 'required'=>false,'type'=>'text','format'=>'@',
-         'note'=>'Nama siswa — hanya referensi, tidak dibaca saat import'],
+         'note'=>'Nomor Induk Murid — jangan diubah'],
+        ['header'=>'Nama Murid', 'field'=>'nama', 'width'=>28, 'required'=>false,'type'=>'text','format'=>'@',
+         'note'=>'Nama murid — hanya referensi, tidak dibaca saat import'],
     ];
     // Tentukan posisi kolom nilai (1-based) untuk extra rows
     $col_nh1 = $col_nh2 = $col_nh3 = $col_tugas = $col_sts = $col_sas = 0;
@@ -281,7 +281,7 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
         ['Guru Pengampu',  $guru_pgm['nama_lengkap'] ?? '-'],
         ['Jenis Raport',   $jenis_label[$f_jenis] ?? $f_jenis],
         ['Periode',        $periode_str ?: '-'],
-        ['Jumlah Siswa',   count($siswa_bulk) . ' siswa'],
+        ['Jumlah Murid',   count($siswa_bulk) . ' murid'],
         ['Dibuat oleh',    'Raportku'],
     ];
     $bulk_info_row_count = (int)ceil(count($bulk_info_rows) / 2); // = 4
@@ -346,8 +346,8 @@ if (isset($_GET['download_template'])) {
         'title'    => 'Template Import Nilai - Raportku',
         'subtitle' => 'Kolom merah = wajib  |  Lihat sheet "Referensi" untuk nama mapel, kelas, dan ID tahun ajaran yang valid',
         'columns'  => [
-            ['header'=>'NIS Siswa',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text','format'=>'@',
-             'example'=>$nis_ex, 'note'=>'Nomor Induk Siswa (NIS)'],
+            ['header'=>'NIS Murid',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text','format'=>'@',
+             'example'=>$nis_ex, 'note'=>'Nomor Induk Murid (NIS)'],
             ['header'=>'Nama Mapel',      'field'=>'mapel_nama',      'width'=>26,'required'=>true,  'type'=>'text','format'=>'@',
              'example'=>$mapel_ex, 'note'=>'Nama mapel PERSIS sama dengan database (lihat Referensi)'],
             ['header'=>'Nama Kelas',      'field'=>'kelas_nama',      'width'=>16,'required'=>true,  'type'=>'text','format'=>'@',
@@ -744,7 +744,7 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
     <div class="page-header">
         <div>
             <h1 class="page-title">Import Nilai</h1>
-            <p class="page-subtitle">Download template per kelas/mapel dengan daftar siswa otomatis, lalu upload kembali
+            <p class="page-subtitle">Download template per kelas/mapel dengan daftar murid otomatis, lalu upload kembali
             </p>
         </div>
         <?php
@@ -771,7 +771,7 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                 <strong>Template</strong>
                 <span class="badge badge-orange" style="font-size:.68rem">Rekomendasi</span>
             </span>
-            <span class="text-xs text-gray-400">Daftar siswa sudah terisi otomatis</span>
+            <span class="text-xs text-gray-400">Daftar murid sudah terisi otomatis</span>
         </div>
         <div class="card-body">
             <!-- Filter pilih kelas/mapel/jenis/bulan -->
@@ -860,8 +860,8 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                     <div><span class="text-gray-400">Periode</span><br>
                         <strong><?= $f_jenis !== 'semester' && $f_bulan ? e(BULAN_ID[$f_bulan] ?? '-') : 'Semester' ?></strong>
                     </div>
-                    <div><span class="text-gray-400">Jumlah Siswa</span><br>
-                        <strong><?= $f_siswa_count ?> siswa</strong>
+                    <div><span class="text-gray-400">Jumlah Murid</span><br>
+                        <strong><?= $f_siswa_count ?> murid</strong>
                     </div>
                 </div>
             </div>
@@ -876,10 +876,10 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    Download Template (<?= $f_siswa_count ?> Siswa)
+                    Download Template (<?= $f_siswa_count ?> Murid)
                 </a>
                 <span class="text-xs text-gray-400">
-                    Template berisi daftar siswa kelas <strong><?= e($f_kelas_info['nama_kelas'] ?? '') ?></strong>
+                    Template berisi daftar murid kelas <strong><?= e($f_kelas_info['nama_kelas'] ?? '') ?></strong>
                     — tinggal isi kolom nilai
                 </span>
                 <?php elseif ($f_kelas && $f_mapel && $f_jenis !== 'semester' && !$f_bulan): ?>
@@ -889,7 +889,7 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                 <?php elseif (!$f_kelas || !$f_mapel): ?>
                 <div class="text-sm text-gray-400">
                     Pilih <strong>Kelas</strong> dan <strong>Mata Pelajaran</strong> untuk mengunduh template yang sudah
-                    berisi daftar siswa
+                    berisi daftar murid
                 </div>
                 <?php endif; ?>
             </div>
@@ -900,9 +900,9 @@ $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_k
                 <strong>✓ Cara pakai Template:</strong>
                 <ol style="padding-left:16px;margin:4px 0">
                     <li>Pilih Kelas, Mapel, Jenis Raport, dan Bulan di atas</li>
-                    <li>Klik <strong>Download Template</strong> — daftar siswa sudah terisi otomatis</li>
-                    <li>Isi kolom nilai (NH1, NH2, dst.) di baris masing-masing siswa</li>
-                    <li><strong>Jangan ubah</strong> kolom No, NIS, dan Nama Siswa</li>
+                    <li>Klik <strong>Download Template</strong> — daftar murid sudah terisi otomatis</li>
+                    <li>Isi kolom nilai (NH1, NH2, dst.) di baris masing-masing murid</li>
+                    <li><strong>Jangan ubah</strong> kolom No, NIS, dan Nama Murid</li>
                     <li>Upload file di bawah — pastikan pilih <strong>Mode Semua</strong></li>
                 </ol>
             </div>

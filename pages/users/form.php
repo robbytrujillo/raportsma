@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$roles = ['super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru','siswa'=>'Siswa'];
+$roles = ['super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru','siswa'=>'Murid'];
 $d = $user_data ?? [];
 ?>
 <div class="page-content" style="max-width:680px;margin:0 auto">

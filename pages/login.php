@@ -511,7 +511,7 @@ $sekolah_l = sekolah_info();
             <!-- Caption teks (di atas overlay) -->
             <div class="ll-caption">
                 <h2>Kelola Raport<br><span>Lebih Mudah</span> &amp; Efisien</h2>
-                <p>Manajemen nilai, data siswa, dan cetak raport secara digital dari mana saja.</p>
+                <p>Manajemen nilai, data murid, dan cetak raport secara digital dari mana saja.</p>
             </div>
 
             <!-- Color picker -->

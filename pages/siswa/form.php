@@ -15,7 +15,7 @@ $siswa_data = null;
 if ($is_edit) {
     $user_data  = db_row('SELECT * FROM users WHERE id = :id AND role = "siswa"', [':id' => $id]);
     $siswa_data = db_row('SELECT * FROM siswa WHERE user_id = :id', [':id' => $id]);
-    if (!$user_data) { flash('error','Siswa tidak ditemukan.'); header('Location: /siswa'); exit; }
+    if (!$user_data) { flash('error','Murid tidak ditemukan.'); header('Location: /siswa'); exit; }
 }
 
 $errors = [];
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          ':tpt'=>$tpt_lahir, ':al'=>$alamat, ':ay'=>$ayah, ':ib'=>$ibu]
                     );
                 }
-                flash('success','Data siswa diperbarui.');
+                flash('success','Data murid diperbarui.');
             } else {
                 $uid = db_execute(
                     'INSERT INTO users (nama_lengkap, username, email, role, password) VALUES (:n,:u,:e,"siswa",:pw)',
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [':uid'=>$uid, ':nis'=>$nis, ':nisn'=>$nisn, ':kid'=>$kelas_id, ':tl'=>$tgl_lahir?:null,
                      ':tpt'=>$tpt_lahir, ':al'=>$alamat, ':ay'=>$ayah, ':ib'=>$ibu]
                 );
-                flash('success','Siswa baru berhasil ditambahkan.');
+                flash('success','Murid baru berhasil ditambahkan.');
             }
             header('Location: /siswa'); exit;
         }
@@ -100,7 +100,7 @@ $s = $siswa_data ?? [];
 <div class="page-content" style="max-width:760px;margin:0 auto">
     <div class="page-header">
         <div>
-            <h1 class="page-title"><?= $is_edit ? 'Edit Siswa' : 'Tambah Siswa' ?></h1>
+            <h1 class="page-title"><?= $is_edit ? 'Edit Murid' : 'Tambah Murid' ?></h1>
         </div>
         <a href="/siswa" class="btn btn-secondary" style="border-radius: 30px">
             Kembali</a>
@@ -111,7 +111,7 @@ $s = $siswa_data ?? [];
     <?php endforeach; ?>
 
     <div class="card">
-        <div class="card-header">Data Siswa</div>
+        <div class="card-header">Data Murid</div>
         <div class="card-body">
             <form method="POST" action="/<?= $page_action ?><?= $is_edit?'?id='.$id:'' ?>">
                 <?= csrf_field() ?>
@@ -186,7 +186,7 @@ $s = $siswa_data ?? [];
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                             <polyline points="17 21 17 13 7 13 7 21" />
                         </svg>
-                        <?= $is_edit ? 'Simpan' : 'Tambah Siswa' ?>
+                        <?= $is_edit ? 'Simpan' : 'Tambah Murid' ?>
                     </button>
                     <a href="/siswa" class="btn btn-secondary" style="border-radius: 30px">Batal</a>
                 </div>

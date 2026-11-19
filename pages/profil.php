@@ -197,7 +197,8 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                         <?php endif; ?>
                     </div>
                     <div class="font-bold text-gray-800"><?= e($full_user['nama_lengkap']) ?></div>
-                    <div class="badge badge-orange mt-1 mb-2"><?= str_replace('_',' ', ucfirst($role)) ?></div>
+                    <?php $_rl_pr = ['siswa'=>'Murid','super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru']; ?>
+                    <div class="badge badge-orange mt-1 mb-2"><?= e($_rl_pr[$role] ?? str_replace('_',' ', ucfirst($role))) ?></div>
                     <div class="text-sm text-gray-400 mb-3">@<?= e($full_user['username']) ?></div>
 
                     <!-- Upload Foto -->
@@ -424,7 +425,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                 <div class="card-header">
                     <span>Panduan Tanda Tangan Digital</span>
                     <span class="badge badge-orange" style="font-size:.7rem">
-                        <?= str_replace('_',' ', ucfirst($role)) ?>
+                        <?= e(($_rl_pr ?? ['siswa'=>'Murid'])[$role] ?? str_replace('_',' ', ucfirst($role))) ?>
                     </span>
                 </div>
                 <div class="card-body text-sm" style="line-height:1.8">
@@ -478,7 +479,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
                         <div class="p-3 rounded-lg text-center" style="background:#f3f4f6">
                             <div style="font-size:1.4rem;margin-bottom:4px">??</div>
                             <strong>Ukuran ideal</strong><br>
-                            Maks 400×150 px, 2MB
+                            Maks 400ï¿½150 px, 2MB
                         </div>
                         <div class="p-3 rounded-lg text-center" style="background:#f3f4f6">
                             <div style="font-size:1.4rem;margin-bottom:4px">??</div>

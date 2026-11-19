@@ -71,7 +71,7 @@ $role_labels = [
     'admin'        => ['label'=>'Admin',         'class'=>'badge-orange'],
     'wali_kelas'   => ['label'=>'Wali Kelas',    'class'=>'badge-orange'],
     'guru'         => ['label'=>'Guru',           'class'=>'badge-blue'],
-    'siswa'        => ['label'=>'Siswa',          'class'=>'badge-green'],
+    'siswa'        => ['label'=>'Murid',          'class'=>'badge-green'],
     'kepala_sekolah'=>['label'=>'Kepala Sekolah', 'class'=>'badge-purple'],
 ];
 ?>

@@ -90,7 +90,7 @@ if ($kelas_id) {
     <div class="page-header">
         <div>
             <h1 class="page-title">Data Absensi</h1>
-            <p class="page-subtitle">Rekap kehadiran siswa per semester</p>
+            <p class="page-subtitle">Rekap kehadiran murid per semester</p>
         </div>
     </div>
 
@@ -147,7 +147,7 @@ if ($kelas_id) {
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Nama Siswa</th>
+                            <th>Nama Murid</th>
                             <th>NIS</th>
                             <th class="text-center" style="width:100px">Sakit</th>
                             <th class="text-center" style="width:100px">Izin</th>
@@ -197,7 +197,7 @@ if ($kelas_id) {
     <?php elseif ($kelas_id): ?>
     <div class="card">
         <div class="card-body empty-state">
-            <p>Belum ada siswa di kelas ini.</p>
+            <p>Belum ada murid di kelas ini.</p>
         </div>
     </div>
     <?php else: ?>

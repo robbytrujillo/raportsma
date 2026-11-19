@@ -207,10 +207,6 @@ if ($role === 'siswa') {
                         <div class="text-xs text-gray-400">Rata-rata</div>
                         <div class="font-bold text-lg text-orange-600"><?= number_format($avg, 2) ?></div>
                     </div>
-                    <div>
-                        <div class="text-xs text-gray-400">Predikat</div>
-                        <div class="font-bold text-lg <?= $pred_color ?>"><?= $pred_avg ?></div>
-                    </div>
                     <div class="ml-auto">
                         <div class="text-xs text-gray-400">Mapel</div>
                         <div class="font-semibold text-gray-700"><?= $r['jml_mapel'] ?></div>
@@ -360,8 +356,8 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Raport Siswa</h1>
-            <p class="page-subtitle">Lihat dan cetak raport siswa</p>
+            <h1 class="page-title">Raport Murid</h1>
+            <p class="page-subtitle">Lihat dan cetak raport murid</p>
         </div>
     </div>
 
@@ -420,16 +416,16 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
     <?php if ($kelas_id && !empty($siswa_raport)): ?>
     <div class="card">
         <div class="card-header">
-            <span>Daftar Siswa &mdash; Peringkat Kelas</span>
+            <span>Daftar Murid &mdash; Peringkat Kelas</span>
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="badge badge-orange"><?= ucfirst($jenis) ?></span>
 
                 <!-- Toggle Publikasi &mdash; hanya admin / super_admin -->
                 <?php if (is_admin_or_super()): ?>
                 <div class="flex items-center gap-2" style="margin-left:4px">
-                    <span class="text-sm font-medium text-gray-600">Terbitkan ke Siswa:</span>
+                    <span class="text-sm font-medium text-gray-600">Terbitkan ke Murid:</span>
                     <label class="toggle-switch"
-                        title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan raport ini ke siswa' ?>">
+                        title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan raport ini ke murid' ?>">
                         <input type="checkbox" id="togglePublikasi" <?= $is_published ? 'checked' : '' ?>
                             <?= (!$kelas_id || !$ta_id) ? 'disabled' : '' ?>>
                         <span class="toggle-slider"></span>
@@ -474,7 +470,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                         <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
                         <rect x="6" y="14" width="12" height="8" />
                     </svg>
-                    Cetak Semua (<?= count($siswa_raport) ?> Siswa)
+                    Cetak Semua (<?= count($siswa_raport) ?> Murid)
                 </a>
                 <?php else: ?>
                 <button type="button" onclick="document.getElementById('modalCetakDitolak').style.display='flex'"
@@ -485,7 +481,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                         <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
                         <rect x="6" y="14" width="12" height="8" />
                     </svg>
-                    Cetak Semua (<?= count($siswa_raport) ?> Siswa)
+                    Cetak Semua (<?= count($siswa_raport) ?> Murid)
                 </button>
                 <?php endif; ?>
                 <?php endif; ?>
@@ -503,13 +499,13 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path d="M20 6L9 17l-5-5" />
             </svg>
-            Raport ini <strong>sudah diterbitkan</strong> &mdash; siswa dapat melihat dan mencetak raport mereka.
+            Raport ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak raport mereka.
             <?php else: ?>
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <rect x="3" y="11" width="18" height="11" rx="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            Raport ini <strong>belum diterbitkan</strong> &mdash; siswa tidak dapat melihat raport mereka.
+            Raport ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat raport mereka.
             <?php endif; ?>
         </div>
         <?php endif; ?>
@@ -519,11 +515,10 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <thead>
                     <tr>
                         <th>Peringkat</th>
-                        <th>Nama Siswa</th>
+                        <th>Nama Murid</th>
                         <th>NIS</th>
                         <th>Mapel Dinilai</th>
                         <th>Rata-rata</th>
-                        <th>Predikat</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -546,12 +541,6 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                         <td class="text-gray-500"><?= e($s['nis']) ?></td>
                         <td class="text-center"><?= $s['jml_mapel'] ?></td>
                         <td class="font-bold text-orange-600"><?= number_format($s['avg_nilai'] ?? 0, 2) ?></td>
-                        <td>
-                            <span
-                                class="badge <?= $pred==='A'?'badge-green':($pred==='B'?'badge-blue':($pred==='C'?'badge-orange':'badge-red')) ?>">
-                                <?= $pred ?>
-                            </span>
-                        </td>
                         <td>
                             <div class="flex gap-1">
                                 <a href="/raport.view?siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
@@ -627,7 +616,7 @@ $modal_pesan = ($role === 'wali_kelas')
 </div>
 <?php endif; ?>
 
-<!-- Modal peringatan cetak semua — tampil untuk guru yang bukan walas kelas ini -->
+<!-- Modal peringatan cetak semua ï¿½ tampil untuk guru yang bukan walas kelas ini -->
 <?php if (!$cetak_boleh && $role !== 'siswa' && $kelas_id): ?>
 <?php
 $kelas_cetak_nama = '';
@@ -681,7 +670,7 @@ if ($kelas_id) {
 </div>
 <?php endif; ?>
 
-<!-- Modal: belum ada nilai — tampil untuk semua role yang boleh akses leger -->
+<!-- Modal: belum ada nilai ï¿½ tampil untuk semua role yang boleh akses leger -->
 <?php if ($leger_boleh && !$ada_nilai && $kelas_id): ?>
 <?php
     $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS (Tengah Semester)','semester'=>'Semester (SAS)'];
@@ -779,7 +768,7 @@ if ($kelas_id) {
                         statusBar.style.borderColor = '#bbf7d0';
                         statusBar.style.color = '#166534';
                         statusBar.innerHTML =
-                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Raport ini <strong>sudah diterbitkan</strong> &mdash; siswa dapat melihat dan mencetak raport mereka.';
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Raport ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak raport mereka.';
                     }
                 } else {
                     label.textContent = 'Belum Rilis';
@@ -789,7 +778,7 @@ if ($kelas_id) {
                         statusBar.style.borderColor = '#fed7aa';
                         statusBar.style.color = '#9a3412';
                         statusBar.innerHTML =
-                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Raport ini <strong>belum diterbitkan</strong> &mdash; siswa tidak dapat melihat raport mereka.';
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Raport ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat raport mereka.';
                     }
                 }
             })

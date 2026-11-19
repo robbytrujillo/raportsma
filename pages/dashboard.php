@@ -262,7 +262,8 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <?php endif; ?>
             </p>
         </div>
-        <span class="badge badge-orange text-sm"><?= str_replace('_',' ', ucfirst($role)) ?></span>
+        <?php $_rl_dash = ['siswa'=>'Murid','super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru']; ?>
+        <span class="badge badge-orange text-sm"><?= e($_rl_dash[$role] ?? str_replace('_',' ', ucfirst($role))) ?></span>
     </div>
 
     <!-- ── FILTER DASHBOARD SISWA ───────────────────────────── -->
@@ -465,7 +466,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 
         <?php if (in_array($role, ['admin', 'kepala_sekolah', 'guru', 'wali_kelas'])): ?>
-        <!-- Siswa -->
+        <!-- Murid -->
         <div class="stat-card">
             <div class="stat-icon" style="background:#fff7ed">
                 <svg width="24" height="24" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24">
@@ -477,7 +478,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             </div>
             <div>
                 <div class="stat-value text-orange-600"><?= $total_siswa ?></div>
-                <div class="stat-label">Total Siswa</div>
+                <div class="stat-label">Total Murid</div>
             </div>
         </div>
 
@@ -667,28 +668,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <text x="<?= $pad_left-8 ?>" y="<?= $gy+4 ?>" text-anchor="end" font-size="11"
                     fill="#9ca3af"><?= $gy_val ?></text>
                 <?php endfor; ?>
-                <!-- KKM line -->
-                <?php
-                  $kkm_y   = $pad_top + $chart_h*(1-$krit_c_val/$bar_max);
-                  $pill_w  = 66; $pill_h = 20;
-                  // pill di kanan, di luar area chart
-                  $pill_x  = $svg_w - $pill_w - 2;
-                  $pill_y  = $kkm_y - $pill_h/2;
-                  // garis dari pad_left sampai sebelum pill
-                  $line_x1 = $pad_left;
-                  $line_x2 = $pill_x - 4;
-                ?>
-                <!-- halo putih supaya garis kontras di atas bar -->
-                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>" stroke="#fff"
-                    stroke-width="4" stroke-dasharray="8,5" />
-                <!-- garis KKM merah tegas -->
-                <line x1="<?= $line_x1 ?>" y1="<?= $kkm_y ?>" x2="<?= $line_x2 ?>" y2="<?= $kkm_y ?>" stroke="#ef4444"
-                    stroke-width="2.5" stroke-dasharray="8,5" />
-                <!-- pill label KKM di kanan -->
-                <rect x="<?= $pill_x ?>" y="<?= $pill_y ?>" width="<?= $pill_w ?>" height="<?= $pill_h ?>" rx="10"
-                    fill="#ef4444" />
-                <text x="<?= $pill_x + $pill_w/2 ?>" y="<?= $kkm_y + 5 ?>" text-anchor="middle" font-size="10.5"
-                    font-weight="700" fill="#fff" letter-spacing="0.4">KKM <?= (int)$krit_c_val ?></text>
                 <!-- Bars -->
                 <?php foreach ($bar_data as $bi => $br):
           $bval  = (float)$br['avg_nilai'];
@@ -872,13 +851,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <?php endif; ?>
                 <?php endfor; ?>
 
-                <!-- KKM line -->
-                <?php $lc_ykkm = $lc_y($lc_kkm); ?>
-                <line x1="<?= $lc_pl ?>" y1="<?= $lc_ykkm ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $lc_ykkm ?>"
-                      stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3"/>
-                <text x="<?= $lc_w-$lc_pr-2 ?>" y="<?= $lc_ykkm-3 ?>" text-anchor="end"
-                      font-size="8" fill="#ef4444">KKM</text>
-
                 <!-- X axis base + labels -->
                 <line x1="<?= $lc_pl ?>" y1="<?= $lc_pt+$lc_ch ?>" x2="<?= $lc_w-$lc_pr ?>" y2="<?= $lc_pt+$lc_ch ?>"
                       stroke="#e5e7eb" stroke-width="1"/>
@@ -937,10 +909,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                     <span style="width:16px;height:3px;background:#22c55e;border-radius:2px;display:inline-block"></span>
                     Rata-rata semua mapel
                 </div>
-                <div style="display:flex;align-items:center;gap:5px">
-                    <span style="width:14px;height:2px;background:#ef4444;display:inline-block;border-top:1px dashed #ef4444"></span>
-                    KKM <?= $lc_kkm ?>
-                </div>
             </div>
         </div>
     </div><!-- /#card-line-chart -->
@@ -994,9 +962,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 </span>
                 <span style="display:flex;align-items:center;gap:5px">
                     <span style="width:14px;height:10px;background:#e5e7eb;border-radius:3px;display:inline-block;border:1px solid #d1d5db"></span> Terendah Kelas
-                </span>
-                <span style="display:flex;align-items:center;gap:5px;margin-left:auto">
-                    <span style="width:16px;height:2px;background:#ef4444;display:inline-block;border-top:1px dashed #ef4444"></span> KKM <?= (int)$pc_kkm ?>
                 </span>
             </div>
             <!-- Container chart — diisi JS -->
@@ -1076,22 +1041,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             }
             hdrTxt(labelW + barArea * 0.5, 'Nilai (0 – 100)', '#9ca3af');
 
-            // Garis KKM vertikal
-            var kkmX = labelW + px(kkm);
-            var kkmLine = document.createElementNS(ns, 'line');
-            kkmLine.setAttribute('x1', kkmX); kkmLine.setAttribute('y1', padTop - 4);
-            kkmLine.setAttribute('x2', kkmX); kkmLine.setAttribute('y2', svgH - padBot);
-            kkmLine.setAttribute('stroke', clrKkm); kkmLine.setAttribute('stroke-width', '1.5');
-            kkmLine.setAttribute('stroke-dasharray', '5,3');
-            svg.appendChild(kkmLine);
-            // Label KKM di atas garis
-            var kkmT = document.createElementNS(ns, 'text');
-            kkmT.setAttribute('x', kkmX); kkmT.setAttribute('y', padTop - 6);
-            kkmT.setAttribute('text-anchor', 'middle'); kkmT.setAttribute('font-size', '9');
-            kkmT.setAttribute('font-weight', '700'); kkmT.setAttribute('fill', clrKkm);
-            kkmT.textContent = 'KKM ' + kkm;
-            svg.appendChild(kkmT);
-
             rows.forEach(function(row, ri) {
                 var y0 = padTop + ri * rowH;
 
@@ -1151,19 +1100,6 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 if (row.min !== null)
                     mkBar(yStart + 2*(bH + bGap),   px(row.min), clrMin,  'Terendah: ' + row.min.toFixed(1));
 
-                // Indikator apakah nilai saya di atas KKM
-                if (row.saya !== null) {
-                    var abv = row.saya >= kkm;
-                    var dot = document.createElementNS(ns, 'circle');
-                    dot.setAttribute('cx', labelW - 8);
-                    dot.setAttribute('cy', y0 + rowH * 0.5);
-                    dot.setAttribute('r', '4');
-                    dot.setAttribute('fill', abv ? '#22c55e' : '#ef4444');
-                    var dt = document.createElementNS(ns, 'title');
-                    dt.textContent = abv ? 'Di atas KKM' : 'Di bawah KKM';
-                    dot.appendChild(dt);
-                    svg.appendChild(dot);
-                }
             });
 
             container.appendChild(svg);
@@ -1357,7 +1293,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Siswa</th>
+                        <th>Murid</th>
                         <th>Kelas</th>
                         <th>Mata Pelajaran</th>
                         <th>Jenis</th>
@@ -1399,7 +1335,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         <?php
     $quick = [
-      ['page'=>'siswa.create','label'=>'Tambah Siswa','icon'=>'<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>','color'=>'bg-orange-50 text-orange-600'],
+      ['page'=>'siswa.create','label'=>'Tambah Murid','icon'=>'<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>','color'=>'bg-orange-50 text-orange-600'],
       ['page'=>'guru.create','label'=>'Tambah Guru','icon'=>'<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/>','color'=>'bg-blue-50 text-blue-600'],
       ['page'=>'kelas.create','label'=>'Tambah Kelas','icon'=>'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>','color'=>'bg-green-50 text-green-600'],
       ['page'=>'mapel.create','label'=>'Tambah Mapel','icon'=>'<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>','color'=>'bg-purple-50 text-purple-600'],

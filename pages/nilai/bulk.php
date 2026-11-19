@@ -292,7 +292,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
     <div class="page-header">
         <div>
             <h1 class="page-title">Input Nilai Kelas</h1>
-            <p class="page-subtitle">Input nilai seluruh siswa dalam satu kelas sekaligus</p>
+            <p class="page-subtitle">Input nilai seluruh murid dalam satu kelas sekaligus</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <?php if ($ready): ?>
@@ -447,8 +447,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                         <?= $jenis==='semester' ? 'Akhir Semester' : e($bulan_opts[$bulan] ?? '-') ?></span>
                 </div>
                 <div class="flex gap-2">
-                    <span class="text-gray-400 w-36 flex-shrink-0">Jumlah Siswa</span>
-                    <span class="font-semibold">: <?= count($siswa_list) ?> siswa</span>
+                    <span class="text-gray-400 w-36 flex-shrink-0">Jumlah Murid</span>
+                    <span class="font-semibold">: <?= count($siswa_list) ?> murid</span>
                 </div>
             </div>
         </div>
@@ -537,7 +537,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                 <?php endif; ?>
                                 <tr>
                                     <th style="width:32px">No</th>
-                                    <th>Nama Siswa</th>
+                                    <th>Nama Murid</th>
                                     <?php if ($jenis === 'bulanan'): ?>
                                     <th style="width:68px">NH1</th>
                                     <th style="width:68px">NH2</th>
@@ -565,7 +565,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                             <tbody>
                                 <?php if (empty($siswa_list)): ?>
                                 <tr>
-                                    <td colspan="10" class="text-center py-8 text-gray-400">Tidak ada siswa di kelas
+                                    <td colspan="10" class="text-center py-8 text-gray-400">Tidak ada murid di kelas
                                         ini.</td>
                                 </tr>
                                 <?php endif; ?>
@@ -746,12 +746,12 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                             </svg>
                             Deskripsi per Kriteria
                         </span>
-                        <span class="text-xs text-gray-400">Otomatis ke deskripsi siswa</span>
+                        <span class="text-xs text-gray-400">Otomatis ke deskripsi murid</span>
                     </div>
                     <div class="card-body" style="padding:12px">
                         <p class="text-xs text-gray-400 mb-3">
-                            Isi deskripsi untuk setiap predikat. Saat simpan, siswa akan otomatis mendapat
-                            deskripsi sesuai predikatnya (jika deskripsi siswa dikosongkan).
+                            Isi deskripsi untuk setiap predikat. Saat simpan, murid akan otomatis mendapat
+                            deskripsi sesuai predikatnya (jika deskripsi murid dikosongkan).
                         </p>
 
                         <?php

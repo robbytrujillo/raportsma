@@ -300,7 +300,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             <div class="tb-meta">
                 <?= htmlspecialchars($ta['nama']) ?> · Sem. <?= $semester_lbl ?>
                 · <?= $jenis_label ?><?= $bulan_nama ? " &mdash; $bulan_nama" : '' ?>
-                · <strong><?= $total_siswa ?> siswa</strong>
+                · <strong><?= $total_siswa ?> murid</strong>
             </div>
         </div>
         <div class="tb-btns">
@@ -343,7 +343,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
                     <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
                     <rect x="6" y="14" width="12" height="8" />
                 </svg>
-                Cetak Semua (<?= $total_siswa ?> Siswa)
+                Cetak Semua (<?= $total_siswa ?> Murid)
             </button>
         </div>
     </div>
@@ -353,7 +353,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
         </svg>
-        Memuat raport <?= $total_siswa ?> siswa...
+        Memuat raport <?= $total_siswa ?> murid...
     </div>
 
     <!-- ── Raport setiap siswa ──────────────────────────────── -->

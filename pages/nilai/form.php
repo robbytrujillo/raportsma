@@ -197,7 +197,7 @@ $n = $nilai_data ?? [];
   <div class="page-header">
     <div>
       <h1 class="page-title"><?= $is_edit ? 'Edit Nilai' : 'Input Nilai' ?></h1>
-      <p class="page-subtitle">Masukkan nilai siswa per mata pelajaran</p>
+      <p class="page-subtitle">Masukkan nilai murid per mata pelajaran</p>
     </div>
     <a href="/nilai" class="btn btn-secondary">â† Kembali</a>
   </div>
@@ -224,7 +224,7 @@ $n = $nilai_data ?? [];
           </select>
         </div>
         <div class="form-group mb-0">
-          <button type="submit" class="btn btn-secondary">Muat Siswa & Mapel</button>
+          <button type="submit" class="btn btn-secondary">Muat Murid & Mapel</button>
         </div>
       </form>
     </div>
@@ -284,11 +284,11 @@ $n = $nilai_data ?? [];
             </select>
           </div>
 
-          <!-- Siswa -->
+          <!-- Murid -->
           <div class="form-group">
-            <label class="form-label">Siswa <span class="text-red-500">*</span></label>
+            <label class="form-label">Murid <span class="text-red-500">*</span></label>
             <select name="siswa_user_id" class="form-control" required>
-              <option value="">â€" Pilih Siswa â€"</option>
+              <option value="">â€" Pilih Murid â€"</option>
               <?php foreach ($siswa_list as $s): ?>
               <option value="<?= $s['id'] ?>" <?= ($n['siswa_user_id']??0)==$s['id']?'selected':'' ?>>
                 <?= e($s['nama_lengkap']) ?> (<?= e($s['nis']) ?>)

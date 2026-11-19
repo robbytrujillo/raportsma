@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
               AND tahun_ajaran_id=:ta AND jenis_raport=:jenis $bulan_cond",
             $params
         );
-        flash('success', "Berhasil menghapus $n data nilai untuk siswa tersebut.");
+        flash('success', "Berhasil menghapus $n data nilai untuk murid tersebut.");
     } else {
         flash('error', 'Parameter tidak lengkap.');
     }
@@ -157,7 +157,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
     <div class="page-header">
         <div>
             <h1 class="page-title">Manajemen Nilai Raport</h1>
-            <p class="page-subtitle">Hapus nilai per-siswa per-mapel tanpa mengganggu kelas lain</p>
+            <p class="page-subtitle">Hapus nilai per-murid per-mapel tanpa mengganggu kelas lain</p>
         </div>
         <a href="/raport.manage" class="btn btn-secondary" style="border-radius:30px">
             &larr; Manajemen Raport
@@ -192,11 +192,11 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <!-- Siswa -->
+                <!-- Murid -->
                 <div>
-                    <label class="form-label">Siswa <small class="text-gray-400">(opsional)</small></label>
+                    <label class="form-label">Murid <small class="text-gray-400">(opsional)</small></label>
                     <select name="siswa" class="form-control">
-                        <option value="">-- Semua Siswa --</option>
+                        <option value="">-- Semua Murid --</option>
                         <?php foreach ($siswa_list as $s): ?>
                         <option value="<?= $s['id'] ?>" <?= $s['id']==$siswa_id?'selected':'' ?>>
                             <?= e($s['nama_lengkap']) ?></option>
@@ -239,7 +239,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
             Kelas <strong><?= e($nama_kelas_sel) ?></strong>,
             Jenis <strong><?= e($jenis_label[$jenis] ?? $jenis) ?></strong>
             <?= $bulan ? ', Bulan <strong>' . e($bulan_names[$bulan] ?? $bulan) . '</strong>' : '' ?>
-            <?= $siswa_id && $nama_siswa_sel ? ', Siswa <strong>' . e($nama_siswa_sel) . '</strong>' : '' ?>
+            <?= $siswa_id && $nama_siswa_sel ? ', Murid <strong>' . e($nama_siswa_sel) . '</strong>' : '' ?>
         </div>
         <div style="font-size:.75rem;color:#ef4444;font-weight:600">
             ? Penghapusan bersifat permanen dan tidak dapat dibatalkan
@@ -254,7 +254,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                  style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" id="mnrSearch" placeholder="Cari nama siswa atau mapel�"
+            <input type="text" id="mnrSearch" placeholder="Cari nama murid atau mapel�"
                    style="width:100%;padding:7px 10px 7px 32px;border:1px solid #e5e7eb;border-radius:8px;
                           font-size:.875rem;outline:none;transition:border-color .2s"
                    onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='#e5e7eb'">
@@ -292,7 +292,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                                    style="width:15px;height:15px;cursor:pointer;accent-color:#f97316"
                                    title="Pilih semua">
                         </th>
-                        <th>Siswa</th>
+                        <th>Murid</th>
                         <?php if (in_array($jenis, ['bulanan','sts']) && !$bulan): ?><th>Bulan</th><?php endif; ?>
                         <th style="width:50px">Grp</th>
                         <th>Mapel</th>
@@ -420,13 +420,13 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                 </svg>
             </div>
             <div>
-                <h3 style="font-size:1rem;font-weight:700;color:#1f2937;margin:0">Hapus Semua Nilai Siswa</h3>
+                <h3 style="font-size:1rem;font-weight:700;color:#1f2937;margin:0">Hapus Semua Nilai Murid</h3>
                 <p id="mnrSiswaDesc" style="font-size:.82rem;color:#6b7280;margin:2px 0 0"></p>
             </div>
         </div>
         <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;
                     font-size:.82rem;color:#92400e;margin-bottom:16px">
-            Tindakan ini akan menghapus <strong>semua mapel</strong> milik siswa ini untuk periode yang dipilih.
+            Tindakan ini akan menghapus <strong>semua mapel</strong> milik murid ini untuk periode yang dipilih.
             Data tidak dapat dikembalikan.
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end">

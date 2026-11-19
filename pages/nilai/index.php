@@ -149,8 +149,8 @@ if (isset($_GET['export'])) {
         'title'    => 'Export Data Nilai -- Raportku',
         'subtitle' => 'Kolom merah = wajib saat re-import | Kolom [dalam kurung] = referensi saja, tidak dibaca saat import',
         'columns'  => [
-            ['header'=>'NIS Siswa',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text',  'format'=>'@',
-             'note'=>'NIS siswa -- wajib saat re-import ke halaman Import Nilai'],
+            ['header'=>'NIS Murid',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text',  'format'=>'@',
+             'note'=>'NIS murid -- wajib saat re-import ke halaman Import Nilai'],
             ['header'=>'Nama Mapel',      'field'=>'mapel_nama',      'width'=>26,'required'=>true,  'type'=>'text',  'format'=>'@',
              'note'=>'Nama mapel harus persis sama (case-insensitive)'],
             ['header'=>'Nama Kelas',      'field'=>'kelas_nama',      'width'=>16,'required'=>true,  'type'=>'text',  'format'=>'@',
@@ -177,7 +177,7 @@ if (isset($_GET['export'])) {
              'note'=>'Nilai SAS (untuk jenis=semester)'],
             ['header'=>'Catatan',         'field'=>'catatan',         'width'=>28,'required'=>false, 'type'=>'text',  'format'=>'@'],
             // Kolom referensi -- tidak dibaca saat import
-            ['header'=>'[Nama Siswa]',    'field'=>'nama_siswa',      'width'=>26,'required'=>false, 'type'=>'text',  'format'=>'@',
+            ['header'=>'[Nama Murid]',    'field'=>'nama_siswa',      'width'=>26,'required'=>false, 'type'=>'text',  'format'=>'@',
              'note'=>'Referensi saja -- tidak dibaca saat import'],
             ['header'=>'[Nilai Akhir]',   'field'=>'nilai_akhir',     'width'=>13,'required'=>false, 'type'=>'number',
              'note'=>'Referensi saja -- dihitung ulang otomatis saat import'],
@@ -248,7 +248,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
     <div class="page-header">
         <div>
             <h1 class="page-title">Data Nilai</h1>
-            <p class="page-subtitle">Input dan kelola nilai siswa</p>
+            <p class="page-subtitle">Input dan kelola nilai murid</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
@@ -339,7 +339,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                 <thead>
                     <tr>
                         <th style="width:36px">#</th>
-                        <th style="min-width:140px">Siswa</th>
+                        <th style="min-width:140px">Murid</th>
                         <th style="min-width:80px">Kelas</th>
                         <th style="min-width:130px">Mata Pelajaran</th>
                         <th style="width:90px">Jenis</th>

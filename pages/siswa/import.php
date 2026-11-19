@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                     $results[] = ['line'=>$line,'status'=>'error','msg'=>"$nama: " . $e->getMessage()];
                 }
             }
-            if ($successes > 0) flash('success', "$successes siswa berhasil diimport.");
+            if ($successes > 0) flash('success', "$successes murid berhasil diimport.");
         }
     }
     // PRG: simpan hasil ke session lalu redirect ke GET agar refresh tidak re-upload
@@ -142,8 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
 <div class="page-content" style="max-width:860px;margin:0 auto">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Import Data Siswa</h1>
-            <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan banyak siswa sekaligus</p>
+            <h1 class="page-title">Import Data Murid</h1>
+            <p class="page-subtitle">Upload file Excel (.xlsx) untuk menambahkan banyak murid sekaligus</p>
         </div>
         <a href="/siswa" class="btn btn-secondary" style="border-radius: 30px">Kembali</a>
     </div>
@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 <ol style="padding-left:18px;color:#374151">
                     <li>Klik <strong>Download Template Excel</strong> di atas</li>
                     <li>Buka file <code>.xlsx</code> di <strong>Microsoft Excel</strong></li>
-                    <li>Isi data siswa mulai baris ke-<strong>4</strong> (baris kuning = contoh, boleh dihapus)</li>
+                    <li>Isi data murid mulai baris ke-<strong>4</strong> (baris kuning = contoh, boleh dihapus)</li>
                     <li>Lihat sheet <strong>"Referensi"</strong> untuk daftar ID kelas</li>
                     <li>Simpan file (tetap format <code>.xlsx</code>)</li>
                     <li>Upload di form sebelah kanan</li>

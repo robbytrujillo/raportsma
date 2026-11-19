@@ -70,9 +70,10 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
           $guru_det = (!in_array($role, ['super_admin','admin','siswa','kepala_sekolah']))
               ? db_row('SELECT status FROM guru WHERE user_id = :id', [':id'=>$user['id']])
               : null;
+          $_role_labels = ['siswa'=>'Murid','super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru'];
           $status_label = $guru_det
               ? str_replace('_',' ', ucfirst($guru_det['status']))
-              : str_replace('_',' ', ucfirst($role));
+              : ($_role_labels[$role] ?? str_replace('_',' ', ucfirst($role)));
         ?>
         <div class="text-orange-200 text-xs capitalize"><?= e($status_label) ?></div>
       </div>
@@ -198,8 +199,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
       </svg>
-      <span class="sidebar-nav-label">Data Siswa</span>
-      <span class="sidebar-tooltip">Data Siswa</span>
+      <span class="sidebar-nav-label">Data Murid</span>
+      <span class="sidebar-tooltip">Data Murid</span>
     </a>
     <a href="/guru" data-page="guru">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -489,7 +490,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       </div>
       <div class="hidden sm:block text-right">
         <div class="text-sm font-semibold text-gray-800 leading-tight"><?= e($user['nama_lengkap']) ?></div>
-        <div class="text-xs text-orange-500 capitalize font-medium"><?= str_replace('_',' ', $role) ?></div>
+        <?php $_rl2 = ['siswa'=>'Murid','super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru']; ?>
+        <div class="text-xs text-orange-500 capitalize font-medium"><?= e($_rl2[$role] ?? str_replace('_',' ', $role)) ?></div>
       </div>
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
            viewBox="0 0 24 24" class="text-gray-400">

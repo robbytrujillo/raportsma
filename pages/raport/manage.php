@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/manage.php
- * Manajemen Raport — khusus super_admin.
+ * Manajemen Raport ï¿½ khusus super_admin.
  * Fitur:
  *   - Tampilkan semua periode nilai (kelas + TA + jenis + bulan)
  *   - Hapus semua nilai untuk satu periode (bulk delete)
@@ -242,7 +242,7 @@ $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
                         <th>Kelas</th>
                         <th>Jenis</th>
                         <th>Bulan</th>
-                        <th>Siswa</th>
+                        <th>Murid</th>
                         <th>Mapel</th>
                         <th>Total Nilai</th>
                         <th>Status</th>
