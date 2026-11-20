@@ -351,7 +351,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 </select>
             </div>
 
-            <!-- Jenis Raport -->
+            <!-- Jenis Rapor -->
             <div style="flex:1;min-width:140px">
                 <label
                     style="font-size:.74rem;font-weight:700;color:#9a3412;display:flex;align-items:center;gap:4px;margin-bottom:5px">
@@ -359,7 +359,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                     </svg>
-                    Jenis Raport
+                    Jenis Rapor
                 </label>
                 <select name="f_jenis" class="form-control" style="font-size:.85rem;border-color:#fed7aa"
                     onchange="this.form.submit()">
@@ -800,7 +800,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <div>
                     <div style="font-weight:700;font-size:.95rem;color:#1f2937">Tren Nilai per Bulan</div>
                     <div style="font-size:.75rem;color:#9ca3af">
-                        Raport Bulanan &bull;
+                        Rapor Bulanan &bull;
                         TA <?= e($filter_ta['nama'] ?? '') ?> &mdash; Sem. <?= $filter_sem_label ?>
                     </div>
                 </div>

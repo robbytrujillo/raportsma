@@ -384,9 +384,13 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <!-- Bulan (kecuali semester) -->
                     <?php if ($jenis !== 'semester'): ?>
                     <div class="form-group mb-0">
-                        <label class="form-label">Bulan</label>
-                        <select name="bulan" class="form-control" onchange="this.form.submit()">
-                            <option value="">-- Pilih --</option>
+                        <label class="form-label">
+                            Bulan <span class="text-red-500">*</span>
+                        </label>
+                        <select name="bulan" id="selectBulan" class="form-control"
+                            onchange="this.form.submit()"
+                            style="<?= (!$bulan && $kelas_id && $mapel_id) ? 'border-color:#ef4444;background:#fef2f2' : '' ?>">
+                            <option value="">-- Pilih Bulan --</option>
                             <?php foreach ($bulan_opts as $bk => $bv): ?>
                             <option value="<?= $bk ?>" <?= $bk==$bulan?'selected':'' ?>><?= $bv ?></option>
                             <?php endforeach; ?>
@@ -418,6 +422,23 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
     </div>
 
+    <?php elseif (in_array($jenis, ['bulanan','sts']) && !$bulan): ?>
+    <!-- Belum pilih bulan -->
+    <div class="card">
+        <div class="card-body empty-state">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                class="mx-auto mb-3" style="color:#f97316">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <p style="font-weight:600;font-size:1rem;margin-bottom:6px">Pilih Bulan Terlebih Dahulu</p>
+            <p class="text-gray-400 text-sm">Jenis rapor <strong><?= e($jenis_opts[$jenis]) ?></strong> memerlukan bulan.<br>
+            Pilih bulan di filter atas lalu klik <strong>Tampilkan</strong>.</p>
+        </div>
+    </div>
+
     <?php else: ?>
 
     <!-- â"€â"€ INFO HEADER (seperti format Excel) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
@@ -438,7 +459,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                         <?= e($guru_pengampu['nama_lengkap'] ?? $user['nama_lengkap']) ?></span>
                 </div>
                 <div class="flex gap-2">
-                    <span class="text-gray-400 w-36 flex-shrink-0">Jenis Raport</span>
+                    <span class="text-gray-400 w-36 flex-shrink-0">Jenis Rapor</span>
                     <span class="font-semibold">: <?= e($jenis_opts[$jenis] ?? $jenis) ?></span>
                 </div>
                 <div class="flex gap-2">

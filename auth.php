@@ -306,9 +306,9 @@ function get_predikat(float $nilai, float $krit_a = null, float $krit_b = null, 
  * Contoh: NH1=90 saja &rarr; NA=90 | NH1=90,NH2=80 &rarr; NA=85 | semua 4 &rarr; NA=(sum/4)
  */
 function hitung_nilai_bulanan(float $h1, float $h2, float $h3, float $tugas): float {
-    $komponen = array_filter([$h1, $h2, $h3, $tugas], fn($v) => $v > 0);
-    if (count($komponen) === 0) return 0;
-    return round(array_sum($komponen) / count($komponen), 2);
+    $sum = $h1 + $h2 + $h3 + $tugas;
+    if ($sum == 0) return 0;
+    return round($sum / 4, 2);
 }
 
 /**

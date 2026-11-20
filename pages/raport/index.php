@@ -115,7 +115,7 @@ if ($role === 'siswa') {
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Raport Saya</h1>
+            <h1 class="page-title">Rapor Saya</h1>
             <p class="page-subtitle">Nilai akademik per periode</p>
         </div>
     </div>
@@ -155,11 +155,11 @@ if ($role === 'siswa') {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
-        <span>Ada raport yang belum dirilis. Silakan tunggu pengumuman dari sekolah.</span>
+        <span>Ada rapor yang belum dirilis. Silakan tunggu pengumuman dari sekolah.</span>
     </div>
     <?php endif; ?>
 
-    <!-- Daftar Raport Tersedia -->
+    <!-- Daftar Rapor Tersedia -->
     <?php if (empty($raport_list)): ?>
     <div class="card">
         <div class="card-body empty-state">
@@ -168,8 +168,8 @@ if ($role === 'siswa') {
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <p style="font-weight:600;font-size:1.1rem;margin-bottom:4px">Raport Belum Dirilis</p>
-            <p style="color:#6b7280">Raport Anda sedang dalam proses penerbitan oleh sekolah.<br>Silakan cek kembali
+            <p style="font-weight:600;font-size:1.1rem;margin-bottom:4px">Rapor Belum Dirilis</p>
+            <p style="color:#6b7280">Rapor Anda sedang dalam proses penerbitan oleh sekolah.<br>Silakan cek kembali
                 nanti.</p>
             <?php else: ?>
             <p>Belum ada nilai yang tersedia.</p>
@@ -356,8 +356,8 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Raport Murid</h1>
-            <p class="page-subtitle">Lihat dan cetak raport murid</p>
+            <h1 class="page-title">Rapor Murid</h1>
+            <p class="page-subtitle">Lihat dan cetak rapor murid</p>
         </div>
     </div>
 
@@ -387,7 +387,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Jenis Raport</label>
+                    <label class="form-label">Jenis Rapor</label>
                     <select name="jenis" class="form-control" onchange="this.form.submit()">
                         <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
                         <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS &mdash; Tengah Semester
@@ -425,7 +425,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <div class="flex items-center gap-2" style="margin-left:4px">
                     <span class="text-sm font-medium text-gray-600">Terbitkan ke Murid:</span>
                     <label class="toggle-switch"
-                        title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan raport ini ke murid' ?>">
+                        title="<?= $is_published ? 'Klik untuk mencabut publikasi' : 'Klik untuk menerbitkan rapor ini ke murid' ?>">
                         <input type="checkbox" id="togglePublikasi" <?= $is_published ? 'checked' : '' ?>
                             <?= (!$kelas_id || !$ta_id) ? 'disabled' : '' ?>>
                         <span class="toggle-slider"></span>
@@ -444,7 +444,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 ?>
                 <button type="button"
                     onclick="<?= $ada_nilai ? "window.open('".htmlspecialchars($leger_url)."','_blank')" : "document.getElementById('modalLegerBelumNilai').style.display='flex'" ?>"
-                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini" style="border-radius:30px">
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Rapor kelas ini" style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M3 15h18M9 3v18" />
@@ -453,7 +453,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 </button>
                 <?php else: ?>
                 <button type="button" onclick="document.getElementById('modalLegerDitolak').style.display='flex'"
-                    class="btn btn-sm btn-secondary" title="Lihat Leger Raport kelas ini" style="border-radius:30px">
+                    class="btn btn-sm btn-secondary" title="Lihat Leger Rapor kelas ini" style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M3 9h18M3 15h18M9 3v18" />
@@ -463,7 +463,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <?php endif; ?>
                 <?php if ($cetak_boleh): ?>
                 <a href="/raport.print_kelas?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
-                    target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua raport kelas ini"
+                    target="_blank" class="btn btn-sm btn-primary" title="Buka halaman cetak semua rapor kelas ini"
                     style="border-radius:30px">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <polyline points="6 9 6 2 18 2 18 9" />
@@ -474,7 +474,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 </a>
                 <?php else: ?>
                 <button type="button" onclick="document.getElementById('modalCetakDitolak').style.display='flex'"
-                    class="btn btn-sm btn-primary" title="Cetak semua raport kelas ini"
+                    class="btn btn-sm btn-primary" title="Cetak semua rapor kelas ini"
                     style="border-radius:30px;opacity:.75">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <polyline points="6 9 6 2 18 2 18 9" />
@@ -499,13 +499,13 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path d="M20 6L9 17l-5-5" />
             </svg>
-            Raport ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak raport mereka.
+            Rapor ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak rapor mereka.
             <?php else: ?>
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <rect x="3" y="11" width="18" height="11" rx="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            Raport ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat raport mereka.
+            Rapor ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat rapor mereka.
             <?php endif; ?>
         </div>
         <?php endif; ?>
@@ -528,11 +528,11 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     <tr>
                         <td>
                             <?php if ($i === 0): ?>
-                            <span class="badge badge-orange">?? 1</span>
+                            <span class="badge badge-orange">&#127942; 1</span>
                             <?php elseif ($i === 1): ?>
-                            <span class="badge badge-gray">?? 2</span>
+                            <span class="badge badge-gray">&#129352; 2</span>
                             <?php elseif ($i === 2): ?>
-                            <span class="badge badge-gray">?? 3</span>
+                            <span class="badge badge-gray">&#129353; 3</span>
                             <?php else: ?>
                             <span class="font-bold text-gray-400"><?= $i+1 ?></span>
                             <?php endif; ?>
@@ -568,7 +568,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
             </svg>
-            <p>Pilih kelas dan jenis raport untuk menampilkan data.</p>
+            <p>Pilih kelas dan jenis rapor untuk menampilkan data.</p>
         </div>
     </div>
     <?php endif; ?>
@@ -585,7 +585,7 @@ if ($kelas_id && isset($kelas_row)) {
 }
 $modal_pesan = ($role === 'wali_kelas')
     ? 'Anda bukan Wali Kelas dari kelas <strong>' . htmlspecialchars($kelas_dipilih_nama) . '</strong>.<br><br>Leger hanya dapat dibuka oleh Wali Kelas dari kelas yang bersangkutan, serta Admin dan Kepala Sekolah.'
-    : 'Halaman <strong>Leger Raport</strong> hanya dapat diakses oleh<br><strong>Super Admin, Admin, Kepala Sekolah,</strong> dan <strong>Wali Kelas</strong>.<br><br>Akun Anda sebagai <strong>Guru</strong> tidak memiliki izin untuk membuka halaman ini.';
+    : 'Halaman <strong>Leger Rapor</strong> hanya dapat diakses oleh<br><strong>Super Admin, Admin, Kepala Sekolah,</strong> dan <strong>Wali Kelas</strong>.<br><br>Akun Anda sebagai <strong>Guru</strong> tidak memiliki izin untuk membuka halaman ini.';
 ?>
 <!-- Modal peringatan leger -->
 <div id="modalLegerDitolak" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);
@@ -650,14 +650,14 @@ if ($kelas_id) {
         <!-- Pesan -->
         <div style="font-size:.87rem;color:#57606a;line-height:1.7;margin-bottom:24px">
             <?php if ($guru_status === 'wali_kelas'): ?>
-            Maaf, Anda tidak berhak mencetak semua raport kelas
+            Maaf, Anda tidak berhak mencetak semua rapor kelas
             <strong><?= htmlspecialchars($kelas_cetak_nama) ?></strong>.<br><br>
-            Cetak semua raport hanya dapat dilakukan oleh <strong>Wali Kelas</strong> dari kelas yang
+            Cetak semua rapor hanya dapat dilakukan oleh <strong>Wali Kelas</strong> dari kelas yang
             bersangkutan<?= $walas_nama_cetak ? ', yaitu <strong> Ust. '.htmlspecialchars($walas_nama_cetak).'</strong>' : '' ?>.
             <?php else: ?>
-            Maaf, Anda tidak berhak mencetak semua raport kelas
+            Maaf, Anda tidak berhak mencetak semua rapor kelas
             <strong><?= htmlspecialchars($kelas_cetak_nama) ?></strong>.<br><br>
-            Fitur cetak semua raport hanya dapat digunakan oleh <strong>Wali Kelas</strong> terkait, serta
+            Fitur cetak semua rapor hanya dapat digunakan oleh <strong>Wali Kelas</strong> terkait, serta
             <strong>Admin</strong> dan <strong>Kepala Sekolah</strong>.
             <?php endif; ?>
         </div>
@@ -700,7 +700,7 @@ if ($kelas_id) {
         <div style="font-size:.87rem;color:#57606a;line-height:1.7;margin-bottom:24px">
             Leger tidak dapat ditampilkan karena <strong>belum ada nilai</strong> yang diinput
             untuk kelas <strong><?= htmlspecialchars($kelas_nama_leger) ?></strong>
-            jenis raport <strong><?= htmlspecialchars($jenis_label[$jenis] ?? $jenis) ?></strong>.<br><br>
+            jenis rapor <strong><?= htmlspecialchars($jenis_label[$jenis] ?? $jenis) ?></strong>.<br><br>
             Silakan input nilai terlebih dahulu melalui menu <strong>Input Nilai</strong>,
             kemudian buka kembali halaman Leger.
         </div>
@@ -768,7 +768,7 @@ if ($kelas_id) {
                         statusBar.style.borderColor = '#bbf7d0';
                         statusBar.style.color = '#166534';
                         statusBar.innerHTML =
-                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Raport ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak raport mereka.';
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Rapor ini <strong>sudah diterbitkan</strong> &mdash; murid dapat melihat dan mencetak rapor mereka.';
                     }
                 } else {
                     label.textContent = 'Belum Rilis';
@@ -778,7 +778,7 @@ if ($kelas_id) {
                         statusBar.style.borderColor = '#fed7aa';
                         statusBar.style.color = '#9a3412';
                         statusBar.innerHTML =
-                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Raport ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat raport mereka.';
+                            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Rapor ini <strong>belum diterbitkan</strong> &mdash; murid tidak dapat melihat rapor mereka.';
                     }
                 }
             })

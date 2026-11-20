@@ -1,5 +1,5 @@
 /**
- * script.js — Raportku Vanilla JavaScript
+ * script.js — Raporku Vanilla JavaScript
  * Berisi fungsi utilitas, UI interactions, dan AJAX helpers
  */
 

@@ -116,6 +116,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete') {
         db_execute('DELETE FROM guru_mapel_kelas WHERE id = :id', [':id'=>(int)$_POST['id']]);
         flash('success','Penugasan dihapus.');
+    } elseif ($action === 'duplikasi_penugasan') {
+        $ta_sumber = (int)($_POST['ta_sumber'] ?? 0);
+        $ta_tujuan = (int)($_POST['ta_tujuan'] ?? 0);
+
+        if (!$ta_sumber || !$ta_tujuan || $ta_sumber === $ta_tujuan) {
+            flash('error', 'Pilih tahun ajaran sumber dan tujuan yang berbeda.');
+            header('Location: /penugasan'); exit;
+        }
+
+        // Ambil semua kelas di tujuan beserta pasangannya di sumber (berdasarkan nama_kelas sama)
+        // Kelas baru di semester tujuan sudah harus ada (dari duplikasi kelas)
+        $kelas_map = [];  // kelas_id_lama => kelas_id_baru
+        $kelas_tujuan = db_query(
+            'SELECT k_tujuan.id as id_baru, k_sumber.id as id_lama
+             FROM kelas k_tujuan
+             INNER JOIN kelas k_sumber
+                ON k_sumber.nama_kelas = k_tujuan.nama_kelas
+               AND k_sumber.tahun_ajaran_id = :ta_sumber
+             WHERE k_tujuan.tahun_ajaran_id = :ta_tujuan',
+            [':ta_sumber' => $ta_sumber, ':ta_tujuan' => $ta_tujuan]
+        );
+        foreach ($kelas_tujuan as $km) {
+            $kelas_map[(int)$km['id_lama']] = (int)$km['id_baru'];
+        }
+
+        if (empty($kelas_map)) {
+            flash('error', 'Tidak ditemukan kelas di semester tujuan. Duplikasi kelas terlebih dahulu via menu Kelas.');
+            header('Location: /penugasan?ta=' . $ta_sumber); exit;
+        }
+
+        // Ambil semua penugasan dari semester sumber
+        $penugasan_sumber = db_query(
+            'SELECT * FROM guru_mapel_kelas WHERE tahun_ajaran_id = :ta',
+            [':ta' => $ta_sumber]
+        );
+
+        $dup_count  = 0;
+        $lewat_count = 0;
+        foreach ($penugasan_sumber as $p) {
+            $kelas_lama = (int)$p['kelas_id'];
+            if (!isset($kelas_map[$kelas_lama])) { $lewat_count++; continue; }
+
+            $kelas_baru = $kelas_map[$kelas_lama];
+            // Cek apakah penugasan sudah ada
+            $exist = db_row(
+                'SELECT id FROM guru_mapel_kelas
+                 WHERE guru_user_id=:g AND mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta',
+                [':g'=>$p['guru_user_id'], ':m'=>$p['mapel_id'], ':k'=>$kelas_baru, ':ta'=>$ta_tujuan]
+            );
+            if ($exist) { $lewat_count++; continue; }
+
+            try {
+                db_execute(
+                    'INSERT INTO guru_mapel_kelas (guru_user_id, mapel_id, kelas_id, tahun_ajaran_id)
+                     VALUES (:g, :m, :k, :ta)',
+                    [':g'=>$p['guru_user_id'], ':m'=>$p['mapel_id'], ':k'=>$kelas_baru, ':ta'=>$ta_tujuan]
+                );
+                $dup_count++;
+            } catch (\PDOException $e) {
+                $lewat_count++;
+            }
+        }
+
+        $msg = "Berhasil menduplikasi {$dup_count} penugasan ke semester tujuan.";
+        if ($lewat_count) $msg .= " ({$lewat_count} dilewati karena kelas tidak ditemukan atau sudah ada.)";
+        flash('success', $msg);
+        header('Location: /penugasan?ta=' . $ta_tujuan); exit;
     }
     header('Location: ' . $_back); exit;
 }
@@ -208,6 +275,13 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </svg>
                 Import
             </a>
+            <button onclick="Modal.open('modalDuplikasiPenugasan')" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+                Duplikasi Semester
+            </button>
             <button onclick="Modal.open('modalPenugasan')" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -442,5 +516,84 @@ function resetPenugasanModal() {
     document.getElementById('penugasanMapel').value  = '';
     document.getElementById('penugasanKelas').value  = '';
     document.getElementById('penugasanTA').value     = '<?= $ta_id ?>';
+}
+</script>
+
+<!-- Modal Duplikasi Penugasan -->
+<div class="modal-overlay" id="modalDuplikasiPenugasan">
+    <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+            <span>Duplikasi Penugasan ke Semester Lain</span>
+            <button onclick="Modal.close('modalDuplikasiPenugasan')"
+                class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <form method="POST" action="/penugasan">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="duplikasi_penugasan">
+            <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
+            <input type="hidden" name="_ret_q"   value="">
+            <input type="hidden" name="_ret_p"   value="1">
+            <input type="hidden" name="_ret_per" value="10">
+            <div class="modal-body">
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.85rem;color:#92400e;line-height:1.6">
+                    <strong>Apa yang diduplikasi:</strong> Penugasan guru (guru → mapel → kelas) dari semester sumber akan disalin ke semester tujuan.<br>
+                    <strong>Syarat:</strong> Kelas di semester tujuan harus sudah ada (duplikasi kelas terlebih dahulu via menu Kelas).<br>
+                    <strong>Tidak termasuk:</strong> nilai dan data raport.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sumber <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal">(penugasan akan disalin dari)</span>
+                    </label>
+                    <select name="ta_sumber" id="dupPenugasanSumber" class="form-control" required onchange="dupPenugasanUpdateInfo()">
+                        <option value="">-- Pilih Semester Sumber --</option>
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id ? 'selected' : '' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= $ta['is_aktif'] ? ' — Aktif' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tujuan <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal">(semester yang akan diisi)</span>
+                    </label>
+                    <select name="ta_tujuan" id="dupPenugasanTujuan" class="form-control" required onchange="dupPenugasanUpdateInfo()">
+                        <option value="">-- Pilih Semester Tujuan --</option>
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>">
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= $ta['is_aktif'] ? ' — Aktif' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div id="dupPenugasanWarning" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.84rem;color:#991b1b">
+                    ⚠️ Sumber dan tujuan tidak boleh sama.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="Modal.close('modalDuplikasiPenugasan')" class="btn btn-secondary"
+                    style="border-radius: 30px">Batal</button>
+                <button type="submit" id="dupPenugasanSubmit" class="btn btn-primary" style="border-radius: 30px">
+                    Duplikasi Sekarang
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function dupPenugasanUpdateInfo() {
+    var s = document.getElementById('dupPenugasanSumber').value;
+    var t = document.getElementById('dupPenugasanTujuan').value;
+    var warn = document.getElementById('dupPenugasanWarning');
+    var btn  = document.getElementById('dupPenugasanSubmit');
+    if (s && t && s === t) {
+        warn.style.display = 'block';
+        btn.disabled = true;
+    } else {
+        warn.style.display = 'none';
+        btn.disabled = false;
+    }
 }
 </script>

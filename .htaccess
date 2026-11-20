@@ -1,20 +1,32 @@
 # =============================================================================
 # .htaccess — Raportku
-# Kompatibel: Laragon (lokal) + cPanel Shared Hosting
+# Dioptimalkan untuk cPanel Shared Hosting (LiteSpeed / Apache)
 # =============================================================================
 
 # ── 1. SEMBUNYIKAN DAFTAR DIREKTORI ──────────────────────────────────────────
 Options -Indexes
-Options -MultiViews
 ServerSignature Off
 
-# ── 2. FRONT CONTROLLER (semua request → index.php) ──────────────────────────
-# RewriteBase di-set otomatis oleh Apache dari letak file ini.
-# Tidak perlu hardcode path — cocok baik di subdirektori maupun public_html/
+# ── 2. FORCE HTTPS ────────────────────────────────────────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ── 3. FRONT CONTROLLER (semua request → index.php) ──────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
 
     # Biarkan request ke file/folder yang benar-benar ada (CSS, JS, gambar)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Clean URL: /pagename → index.php?page=pagename
+    # Mendukung: /login, /dashboard, /nilai.bulk, dsb.
+    # Query string lain (ta=, kelas=, dll) diteruskan via QSA
+    RewriteRule ^([a-zA-Z0-9_.]+)$ index.php?page=$1 [L,QSA]
+    # Fallback untuk path lain → index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L,QSA]
@@ -107,13 +119,7 @@ ServerSignature Off
     php_value memory_limit        256M
 </IfModule>
 
-# ── 10. FORCE HTTPS — aktifkan hanya di production (hapus komentar) ──────────
-# <IfModule mod_rewrite.c>
-#     RewriteCond %{HTTPS} off
-#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# </IfModule>
-
-# ── 11. BLOKIR REQUEST MALFORMED / EXPLOIT UMUM ──────────────────────────────
+# ── 10. BLOKIR REQUEST MALFORMED / EXPLOIT UMUM ─────────────────────────────
 <IfModule mod_rewrite.c>
     # Blokir null byte injection
     RewriteCond %{QUERY_STRING} (%00|%0a|%0d) [NC]

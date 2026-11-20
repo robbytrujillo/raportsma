@@ -156,11 +156,11 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Manajemen Nilai Raport</h1>
+            <h1 class="page-title">Manajemen Nilai Rapor</h1>
             <p class="page-subtitle">Hapus nilai per-murid per-mapel tanpa mengganggu kelas lain</p>
         </div>
         <a href="/raport.manage" class="btn btn-secondary" style="border-radius:30px">
-            &larr; Manajemen Raport
+            &larr; Manajemen Rapor
         </a>
     </div>
 
@@ -203,9 +203,9 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <!-- Jenis Raport -->
+                <!-- Jenis Rapor -->
                 <div>
-                    <label class="form-label">Jenis Raport</label>
+                    <label class="form-label">Jenis Rapor</label>
                     <select name="jenis" class="form-control">
                         <option value="">-- Pilih Jenis --</option>
                         <option value="bulanan"  <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>

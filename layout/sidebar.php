@@ -141,8 +141,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
-      <span class="sidebar-nav-label">Raport</span>
-      <span class="sidebar-tooltip">Raport</span>
+      <span class="sidebar-nav-label">Rapor</span>
+      <span class="sidebar-tooltip">Rapor</span>
     </a>
 
     <?php if ($role === 'super_admin'): ?>
@@ -150,8 +150,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
       </svg>
-      <span class="sidebar-nav-label">Manajemen Raport</span>
-      <span class="sidebar-tooltip">Manajemen Raport</span>
+      <span class="sidebar-nav-label">Manajemen Rapor</span>
+      <span class="sidebar-tooltip">Manajemen Rapor</span>
     </a>
     <?php endif; ?>
 
@@ -162,8 +162,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <path d="M19 6l-1 14H6L5 6"/>
         <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
       </svg>
-      <span class="sidebar-nav-label">Kelola Nilai Raport</span>
-      <span class="sidebar-tooltip">Kelola Nilai Raport</span>
+      <span class="sidebar-nav-label">Kelola Nilai Rapor</span>
+      <span class="sidebar-tooltip">Kelola Nilai Rapor</span>
     </a>
     <?php endif; ?>
 
@@ -177,8 +177,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
-      <span class="sidebar-nav-label">Raport Saya</span>
-      <span class="sidebar-tooltip">Raport Saya</span>
+      <span class="sidebar-nav-label">Rapor Saya</span>
+      <span class="sidebar-tooltip">Rapor Saya</span>
     </a>
     <?php endif; ?>
 
@@ -233,6 +233,14 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Penugasan Guru</span>
       <span class="sidebar-tooltip">Penugasan Guru</span>
     </a>
+    <a href="/penugasan.review_kelas" data-page="penugasan.review_kelas">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 11l3 3L22 4"/><rect x="3" y="3" width="8" height="8" rx="1"/>
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5"/>
+      </svg>
+      <span class="sidebar-nav-label">Review Mapel Kelas</span>
+      <span class="sidebar-tooltip">Review Mapel Kelas</span>
+    </a>
     </div><!-- /.sb-group[manajemen] -->
 
     <!-- ── Pengaturan ────────────────── -->
@@ -270,8 +278,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <line x1="8" y1="13" x2="16" y2="13"/>
         <line x1="8" y1="17" x2="12" y2="17"/>
       </svg>
-      <span class="sidebar-nav-label">Jenis Raport</span>
-      <span class="sidebar-tooltip">Jenis Raport</span>
+      <span class="sidebar-nav-label">Jenis Rapor</span>
+      <span class="sidebar-tooltip">Jenis Rapor</span>
     </a>
     <a href="/sekolah" data-page="sekolah">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -372,6 +380,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     'kelas':'manajemen','kelas.create':'manajemen','kelas.edit':'manajemen','kelas.import':'manajemen',
     'mapel':'manajemen','mapel.create':'manajemen','mapel.edit':'manajemen','mapel.import':'manajemen',
     'penugasan':'manajemen','penugasan.create':'manajemen','penugasan.import':'manajemen',
+    'penugasan.review_kelas':'manajemen',
     'users':'pengaturan','users.create':'pengaturan','users.edit':'pengaturan',
     'tahun_ajaran':'pengaturan','jenis_raport':'pengaturan','sekolah':'pengaturan'
   };

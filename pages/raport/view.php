@@ -41,9 +41,9 @@ if ($role === 'siswa') {
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;color:#1f2937">Raport Belum Dirilis</h2>
-                    <p style="color:#6b7280;margin-bottom:20px">Raport ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
-                    <a href="/raport" class="btn btn-secondary">&larr; Kembali ke Raport</a>
+                    <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;color:#1f2937">Rapor Belum Dirilis</h2>
+                    <p style="color:#6b7280;margin-bottom:20px">Rapor ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
+                    <a href="/raport" class="btn btn-secondary">&larr; Kembali ke Rapor</a>
                 </div>
             </div>
         </div>'; return;
@@ -68,7 +68,7 @@ $pw_px = round(210 * $mm2px);
     <!-- Header preview -->
     <div class="preview-raport-header">
         <div class="preview-title">
-            <h1>Preview Raport</h1>
+            <h1>Preview Rapor</h1>
             <p><?= e($siswa['nama_lengkap']) ?> &mdash; <?= e($ta['nama'] ?? '') ?></p>
         </div>
         <div class="preview-actions">

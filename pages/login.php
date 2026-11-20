@@ -120,9 +120,9 @@ $sekolah_l = sekolah_info();
         position: absolute;
         inset: 0;
         background: linear-gradient(to top,
-            rgba(0, 0, 0, 0.60) 0%,
-            rgba(0, 0, 0, 0.20) 40%,
-            transparent 70%);
+                rgba(0, 0, 0, 0.60) 0%,
+                rgba(0, 0, 0, 0.20) 40%,
+                transparent 70%);
         opacity: 1;
     }
 
@@ -145,15 +145,15 @@ $sekolah_l = sekolah_info();
         letter-spacing: -0.4px;
         margin-bottom: 10px;
         text-shadow:
-            0 1px 3px rgba(0,0,0,0.95),
-            0 3px 12px rgba(0,0,0,0.75);
+            0 1px 3px rgba(0, 0, 0, 0.95),
+            0 3px 12px rgba(0, 0, 0, 0.75);
     }
 
     .ll-caption h2 span {
         color: #fde68a;
         text-shadow:
-            0 1px 3px rgba(0,0,0,0.95),
-            0 3px 12px rgba(0,0,0,0.75);
+            0 1px 3px rgba(0, 0, 0, 0.95),
+            0 3px 12px rgba(0, 0, 0, 0.75);
     }
 
     .ll-caption p {
@@ -163,8 +163,8 @@ $sekolah_l = sekolah_info();
         max-width: 320px;
         margin: 0 auto;
         text-shadow:
-            0 1px 3px rgba(0,0,0,0.95),
-            0 2px 8px rgba(0,0,0,0.65);
+            0 1px 3px rgba(0, 0, 0, 0.95),
+            0 2px 8px rgba(0, 0, 0, 0.65);
     }
 
     /* RIGHT PANEL — form */
@@ -510,17 +510,18 @@ $sekolah_l = sekolah_info();
 
             <!-- Caption teks (di atas overlay) -->
             <div class="ll-caption">
-                <h2>Kelola Raport<br><span>Lebih Mudah</span> &amp; Efisien</h2>
-                <p>Manajemen nilai, data murid, dan cetak raport secara digital dari mana saja.</p>
+                <h2>Kelola Rapor<br><span>Lebih Mudah</span> &amp; Efisien</h2>
+                <p>Input nilai, data murid, dan cetak rapor secara digital dari mana saja.</p>
             </div>
 
             <!-- Color picker -->
             <div class="ll-theme-picker" aria-label="Pilih tema warna">
                 <button class="ll-theme-btn" data-theme="orange" aria-label="Tema Orange" title="Orange"></button>
-                <button class="ll-theme-btn" data-theme="green"  aria-label="Tema Hijau"  title="Hijau"></button>
-                <button class="ll-theme-btn" data-theme="purple" aria-label="Tema Ungu"   title="Ungu"></button>
-                <button class="ll-theme-btn" data-theme="sky"    aria-label="Tema Biru Langit" title="Biru Langit"></button>
-                <button class="ll-theme-btn" data-theme="pink"   aria-label="Tema Pink"   title="Pink"></button>
+                <button class="ll-theme-btn" data-theme="green" aria-label="Tema Hijau" title="Hijau"></button>
+                <button class="ll-theme-btn" data-theme="purple" aria-label="Tema Ungu" title="Ungu"></button>
+                <button class="ll-theme-btn" data-theme="sky" aria-label="Tema Biru Langit"
+                    title="Biru Langit"></button>
+                <button class="ll-theme-btn" data-theme="pink" aria-label="Tema Pink" title="Pink"></button>
             </div>
 
         </div><!-- /login-left -->
@@ -550,7 +551,7 @@ $sekolah_l = sekolah_info();
                         <?php if (!empty($sekolah_l['nama_sekolah']) && $sekolah_l['nama_sekolah'] !== 'NAMA SEKOLAH'): ?>
                         <span class="login-brand-school"><?= e($sekolah_l['nama_sekolah']) ?></span>
                         <?php else: ?>
-                        <span class="login-brand-school">Sistem Manajemen Raport Digital</span>
+                        <span class="login-brand-school">Sistem Manajemen Rapor Digital</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -572,7 +573,8 @@ $sekolah_l = sekolah_info();
                 <?php endif; ?>
 
                 <!-- Form -->
-                <form method="POST" action="<?= htmlspecialchars(page_url('login')) ?>" id="loginForm" autocomplete="on">
+                <form method="POST" action="<?= htmlspecialchars(page_url('login')) ?>" id="loginForm"
+                    autocomplete="on">
                     <?= csrf_field() ?>
 
                     <!-- Username -->
@@ -654,8 +656,8 @@ $sekolah_l = sekolah_info();
         var validThemes = ['orange', 'green', 'purple', 'sky', 'pink'];
 
         // ── Apply saved theme ──────────────────────────────────────
-        var savedTheme = (typeof localStorage !== 'undefined' && localStorage.getItem('raportku_theme')) ||
-        'orange';
+        var savedTheme = (typeof localStorage !== 'undefined' && localStorage.getItem('raporku_theme')) ||
+            'orange';
         if (validThemes.indexOf(savedTheme) === -1) savedTheme = 'orange';
         // Hapus semua class tema dulu sebelum menambahkan yang baru
         validThemes.forEach(function(t) {
@@ -670,7 +672,7 @@ $sekolah_l = sekolah_info();
             });
             document.documentElement.classList.add('theme-' + theme);
             if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('raportku_theme', theme);
+                localStorage.setItem('raporku_theme', theme);
             }
             document.querySelectorAll('.ll-theme-btn').forEach(function(b) {
                 b.classList.toggle('active', b.getAttribute('data-theme') === theme);

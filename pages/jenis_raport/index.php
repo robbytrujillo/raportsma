@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/jenis_raport/index.php
- * Kelola jenis raport — superadmin & admin saja
+ * Kelola jenis raport ï¿½ superadmin & admin saja
  */
 require_role(['super_admin', 'admin']);
 
@@ -98,7 +98,7 @@ $tipe_badge = ['bulanan' => 'badge-blue', 'uts' => 'badge-purple', 'semester' =>
 $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester' => 'Format Semester'];
 ?>
 <style>
-/* -- Responsive overrides khusus halaman Jenis Raport -- */
+/* -- Responsive overrides khusus halaman Jenis Rapor -- */
 @media (max-width: 640px) {
     /* Kolom sekunder disembunyikan di mobile */
     .jr-col-kode,
@@ -120,8 +120,8 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
 <div class="page-content">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Jenis Raport</h1>
-            <p class="page-subtitle">Kelola jenis raport (Bulanan, UTS, Semester)</p>
+            <h1 class="page-title">Jenis Rapor</h1>
+            <p class="page-subtitle">Kelola jenis rapor (Bulanan, UTS, Semester)</p>
         </div>
         <button onclick="openModalJR()" class="btn btn-primary" style="border-radius:30px">+ Tambah</button>
     </div>
@@ -149,7 +149,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
     </div>
 
     <div class="card">
-        <div class="card-header">Daftar Jenis Raport</div>
+        <div class="card-header">Daftar Jenis Rapor</div>
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -184,7 +184,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                         <td class="jr-col-kode"><code style="font-size:.78rem;background:#f3f4f6;padding:2px 6px;border-radius:4px"><?= e($jr['kode']) ?></code></td>
                         <td><span class="badge <?= $tipe_badge[$jr['tipe']] ?? 'badge-gray' ?>"><?= $tipe_label[$jr['tipe']] ?? $jr['tipe'] ?></span></td>
                         <td class="jr-col-format"><span class="text-xs text-gray-500"><?= e($basis_label[$jr['tipe_basis'] ?? $jr['tipe']] ?? '-') ?></span></td>
-                        <td class="jr-col-judul text-xs text-gray-600"><?= $jr['judul_cetak'] ? e($jr['judul_cetak']) : '<span class="text-gray-300">—</span>' ?></td>
+                        <td class="jr-col-judul text-xs text-gray-600"><?= $jr['judul_cetak'] ? e($jr['judul_cetak']) : '<span class="text-gray-300">ï¿½</span>' ?></td>
                         <td class="jr-col-urutan text-center"><?= (int)$jr['urutan'] ?></td>
                         <td>
                             <?php if ($jr['is_aktif']): ?>
@@ -233,7 +233,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
 <div class="modal-overlay" id="modalJR">
     <div class="modal" style="max-width:460px;display:flex;flex-direction:column;max-height:90vh;overflow:hidden">
         <div class="modal-header" style="flex-shrink:0">
-            <span id="modalJRTitle">Tambah Jenis Raport</span>
+            <span id="modalJRTitle">Tambah Jenis Rapor</span>
             <button onclick="Modal.close('modalJR')"
                 class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
@@ -245,9 +245,9 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
             <div class="modal-body" style="overflow-y:auto;flex:1;min-height:0">
 
                 <div class="form-group">
-                    <label class="form-label">Nama Jenis Raport <span class="text-red-500">*</span></label>
+                    <label class="form-label">Nama Jenis Rapor <span class="text-red-500">*</span></label>
                     <input type="text" name="nama" id="jrNama" class="form-control" required
-                        placeholder="contoh: Raport Bulanan Diniyah">
+                        placeholder="contoh: Rapor Bulanan Diniyah">
                 </div>
 
                 <div class="form-group">
@@ -281,7 +281,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
                     <label class="form-label">Judul Cetak Kustom</label>
                     <input type="text" name="judul_cetak" id="jrJudulCetak" class="form-control"
                         placeholder="Kosongkan = gunakan judul otomatis">
-                    <div class="text-xs text-gray-400 mt-1">Contoh: <em>LAPORAN BULANAN DINIYAH (PERIODE: %s)</em> — tulis <code>%s</code> untuk sisipkan bulan/semester otomatis.</div>
+                    <div class="text-xs text-gray-400 mt-1">Contoh: <em>LAPORAN BULANAN DINIYAH (PERIODE: %s)</em> ï¿½ tulis <code>%s</code> untuk sisipkan bulan/semester otomatis.</div>
                 </div>
 
                 <div class="form-group">
@@ -317,7 +317,7 @@ $basis_label = ['bulanan' => 'Format Bulanan', 'uts' => 'Format UTS', 'semester'
 
 <script>
 function openModalJR() {
-    document.getElementById('modalJRTitle').textContent = 'Tambah Jenis Raport';
+    document.getElementById('modalJRTitle').textContent = 'Tambah Jenis Rapor';
     document.getElementById('jrId').value           = '';
     document.getElementById('jrNama').value         = '';
     document.getElementById('jrKode').value         = '';
@@ -331,7 +331,7 @@ function openModalJR() {
 }
 
 function editJR(data) {
-    document.getElementById('modalJRTitle').textContent = 'Edit Jenis Raport';
+    document.getElementById('modalJRTitle').textContent = 'Edit Jenis Rapor';
     document.getElementById('jrId').value           = data.id;
     document.getElementById('jrNama').value         = data.nama;
     document.getElementById('jrKode').value         = data.kode;

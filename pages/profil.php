@@ -490,7 +490,7 @@ $need_ttd = in_array($role, ['guru','wali_kelas','kepala_sekolah','admin']);
 
                     <!-- Preview posisi di raport -->
                     <div class="divider"></div>
-                    <p class="font-semibold text-sm mb-2">Posisi di Halaman Raport</p>
+                    <p class="font-semibold text-sm mb-2">Posisi di Halaman Rapor</p>
                     <div
                         style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:#fafafa;font-size:.78rem">
                         <table style="width:100%;font-family:'Times New Roman',serif">

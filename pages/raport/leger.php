@@ -1,7 +1,7 @@
 <?php
 /**
  * pages/raport/leger.php
- * Leger Raport — tabel rekap semua siswa × semua mapel dalam satu kelas.
+ * Leger Rapor — tabel rekap semua siswa × semua mapel dalam satu kelas.
  * Akses: super_admin, admin, kepala_sekolah, wali_kelas (kelasnya sendiri saja).
  * Guru biasa dan siswa: ditolak dengan redirect (peringatan ditampilkan sebagai
  * modal overlay di halaman raport/index.php saat tombol diklik).
@@ -54,29 +54,30 @@ $jenis_label  = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'][$jeni
 $bulan_nama   = (in_array($jenis, ['bulanan','sts']) && $bulan) ? (BULAN_ID[$bulan] ?? '') : '';
 $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 
-// ── Daftar mapel yang ada nilainya di kelas ini ───────────────
-// Urutan: kelompok → urutan parent (jika sub-mapel) → urutan mapel → nama_mapel
-// Identik dengan logika raport_template.php
-$bulan_cond_m  = '';
-$mapel_params  = [':kid' => $kelas_id, ':ta' => $ta_id, ':jenis' => $jenis];
-if (in_array($jenis, ['bulanan','sts']) && $bulan) {
-    $bulan_cond_m = 'AND n.bulan = :bulan';
-    $mapel_params[':bulan'] = $bulan;
-}
+// ── Daftar mapel dari PENUGASAN GURU (selalu tampil meski belum ada nilai) ──
+// Sumber: guru_mapel_kelas, bukan dari tabel nilai.
+// Urutan: kelompok → urutan parent → urutan mapel → nama_mapel
 $mapel_raw = db_query(
     "SELECT DISTINCT m.id, m.nama_mapel, m.urutan, m.kelompok, m.parent_id,
             p.nama_mapel as parent_nama, p.kelompok as parent_kelompok,
             p.urutan as parent_urutan
-     FROM nilai n
-     INNER JOIN mapel m ON m.id = n.mapel_id
-     LEFT JOIN mapel p ON p.id = m.parent_id
-     WHERE n.kelas_id = :kid
-       AND n.tahun_ajaran_id = :ta
-       AND n.jenis_raport = :jenis
-       $bulan_cond_m
+     FROM guru_mapel_kelas gmk
+     INNER JOIN mapel m ON m.id = gmk.mapel_id
+     LEFT  JOIN mapel p ON p.id = m.parent_id
+     WHERE gmk.kelas_id = :kid AND gmk.tahun_ajaran_id = :ta
      ORDER BY m.kelompok, m.urutan, m.nama_mapel",
-    $mapel_params
+    [':kid' => $kelas_id, ':ta' => $ta_id]
 );
+
+// Ambil data parent langsung dari DB agar urutan induk selalu akurat
+$_parent_ids_lg = array_filter(array_unique(array_column($mapel_raw, 'parent_id')));
+$_parent_db_lg  = [];
+if (!empty($_parent_ids_lg)) {
+    $in_lg = implode(',', array_map('intval', $_parent_ids_lg));
+    foreach (db_query("SELECT id, nama_mapel, kelompok, urutan FROM mapel WHERE id IN ($in_lg)") as $pr) {
+        $_parent_db_lg[$pr['id']] = $pr;
+    }
+}
 
 // Susun ulang sesuai logika raport: kelompok → urutan (parent jika sub-mapel) → urutan sub
 $_singles            = [];
@@ -88,10 +89,12 @@ foreach ($mapel_raw as $mi) {
         $pid = (int)$mi['parent_id'];
         $_children_by_parent[$pid][] = $mi;
         if (!isset($_parent_meta[$pid])) {
+            // Prioritas: data parent langsung dari DB → fallback ke JOIN
+            $pd = $_parent_db_lg[$pid] ?? null;
             $_parent_meta[$pid] = [
-                'kelompok' => $mi['parent_kelompok'] ?? $mi['kelompok'],
-                'urutan'   => (int)($mi['parent_urutan'] ?? 0),
-                'nama'     => $mi['parent_nama'] ?? '',
+                'kelompok' => $pd['kelompok'] ?? $mi['parent_kelompok'] ?? $mi['kelompok'],
+                'urutan'   => isset($pd['urutan']) ? (int)$pd['urutan'] : (int)($mi['parent_urutan'] ?? 0),
+                'nama'     => $pd['nama_mapel']  ?? $mi['parent_nama']  ?? '',
             ];
         }
     } else {
@@ -131,7 +134,7 @@ foreach ($_slots as $slot) {
     }
 }
 
-// ── Daftar siswa diurutkan berdasarkan rata-rata (untuk peringkat) ──
+// ── Daftar siswa — default sort nama A-Z, peringkat dihitung dari avg nilai ──
 $bulan_cond_s  = '';
 $siswa_params  = [':kid' => $kelas_id, ':kid2' => $kelas_id, ':ta' => $ta_id, ':jenis' => $jenis];
 if (in_array($jenis, ['bulanan','sts']) && $bulan) {
@@ -150,13 +153,22 @@ $siswa_list = db_query(
                        $bulan_cond_s
      WHERE s.kelas_id = :kid2
      GROUP BY u.id, u.nama_lengkap, s.nis, s.nisn
-     ORDER BY avg_nilai DESC",
+     ORDER BY u.nama_lengkap ASC",
     $siswa_params
 );
 
+// Hitung peringkat dari avg (urut DESC) — simpan sebagai rank_map[siswa_id] = rank
+$_rank_sorted = $siswa_list;
+usort($_rank_sorted, fn($a,$b) => (float)$b['avg_nilai'] <=> (float)$a['avg_nilai']);
+$rank_map = [];
+foreach ($_rank_sorted as $_ri => $_rs) {
+    $rank_map[(int)$_rs['id']] = $_ri + 1;
+}
+$total_siswa = count($siswa_list);
+
 if (empty($mapel_list)) {
     http_response_code(404);
-    echo 'Tidak ada nilai untuk filter yang dipilih.'; exit;
+    echo 'Belum ada penugasan guru untuk kelas ini.'; exit;
 }
 
 // ── Ambil semua nilai sekaligus (1 query) ───────────────────
@@ -229,7 +241,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leger Raport <?= htmlspecialchars($kelas['nama_kelas']) ?> | <?= htmlspecialchars($ta['nama']) ?>
+    <title>Leger Rapor <?= htmlspecialchars($kelas['nama_kelas']) ?> | <?= htmlspecialchars($ta['nama']) ?>
     </title>
     <!-- SheetJS lokal (hanya dipakai sebagai fallback; export utama via PHP server-side) -->
     <style>
@@ -669,7 +681,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
     <!-- ── Toolbar ── -->
     <div class="leger-toolbar">
         <div>
-            <div class="tb-title">Leger Raport | <?= htmlspecialchars($kelas['nama_kelas']) ?></div>
+            <div class="tb-title">Leger Rapor | <?= htmlspecialchars($kelas['nama_kelas']) ?></div>
             <div class="tb-meta">
                 <?= htmlspecialchars($ta['nama']) ?> &middot; Sem. <?= $semester_lbl ?>
                 &middot; <?= $jenis_label ?><?= $bulan_nama ? " &mdash; $bulan_nama" : '' ?>
@@ -722,12 +734,26 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                 <?php endforeach; ?>
             </div>
             <div class="filter-sep"></div>
+            <label>Filter Peringkat:</label>
+            <select class="sort-select" id="rankFilter" onchange="filterRank(this.value)" style="min-width:120px">
+                <option value="ALL">Semua Peringkat</option>
+                <?php
+                $rank_steps = [1,6,11,16,21,26,31,36];
+                foreach ($rank_steps as $rs):
+                    $re = $rs + 4;
+                    if ($rs > $total_siswa) break;
+                    $re_label = min($re, $total_siswa);
+                ?>
+                <option value="<?= $rs ?>-<?= $re_label ?>">Peringkat <?= $rs ?>–<?= $re_label ?></option>
+                <?php endforeach; ?>
+            </select>
+            <div class="filter-sep"></div>
             <label>Urut:</label>
             <select class="sort-select" id="sortSelect" onchange="sortTable(this.value)">
+                <option value="nama_asc" selected>Nama (A→Z)</option>
+                <option value="nama_desc">Nama (Z→A)</option>
                 <option value="rank_asc">Peringkat (1→<?= $total_siswa ?>)</option>
                 <option value="rank_desc">Peringkat (<?= $total_siswa ?>→1)</option>
-                <option value="nama_asc">Nama (A→Z)</option>
-                <option value="nama_desc">Nama (Z→A)</option>
                 <option value="rata_desc">Rata-rata (↓)</option>
                 <option value="rata_asc">Rata-rata (↑)</option>
             </select>
@@ -736,7 +762,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         <!-- Kepala surat -->
         <div class="leger-header">
             <div class="judul">
-                Leger Raport <?= strtoupper($jenis_label) ?><?= $bulan_nama ? ' ' . strtoupper($bulan_nama) : '' ?><br>
+                Leger Rapor <?= strtoupper($jenis_label) ?><?= $bulan_nama ? ' ' . strtoupper($bulan_nama) : '' ?><br>
                 <?= strtoupper(htmlspecialchars($sekolah['nama_sekolah'] ?? 'NAMA SEKOLAH')) ?><br>
                 Tahun Pelajaran <?= htmlspecialchars($ta['nama']) ?> Semester <?= $semester_lbl ?>
             </div>
@@ -805,11 +831,11 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                 </thead>
                 <tbody id="legerTbody">
                     <?php foreach ($siswa_list as $i => $s):
-            $peringkat   = $i + 1;
             $sid         = (int)$s['id'];
+            $peringkat   = $rank_map[$sid] ?? ($i + 1);
             $siswa_nilai = $nilai_map[$sid] ?? [];
 
-            // Hitung total & rata-rata dari nilai yang ada di mapel_list
+            // Rata-rata hanya dari mapel yang sudah terisi (nilai > 0)
             $total_val   = 0;
             $jml_mapel   = 0;
             foreach ($mapel_list as $m) {
@@ -822,7 +848,7 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                     <tr data-nama="<?= htmlspecialchars(strtoupper($s['nama_lengkap'])) ?>"
                         data-rank="<?= $peringkat ?>"
                         data-rata="<?= $rata ?>">
-                        <td class="col-no"><?= $peringkat ?></td>
+                        <td class="col-no"><?= $i + 1 ?></td>
                         <td class="col-nisn" style="font-size:9px"><?= htmlspecialchars($s['nisn'] ?? $s['nis']) ?></td>
                         <td class="col-nama"><?= htmlspecialchars($s['nama_lengkap']) ?></td>
                         <?php foreach ($mapel_list as $m):
@@ -895,25 +921,42 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         sekolah : <?= json_encode($sekolah['nama_sekolah'] ?? '') ?>
     };
 
+    // ── Fungsi inti: tampilkan baris sesuai filter aktif ─────────
+    function applyFilters() {
+        var abjadBtn = document.querySelector('.btn-abjad.active');
+        var abjad    = abjadBtn ? abjadBtn.dataset.abjad : 'ALL';
+        var rankSel  = document.getElementById('rankFilter');
+        var rankVal  = rankSel ? rankSel.value : 'ALL';
+
+        var rankMin = 0, rankMax = 99999;
+        if (rankVal !== 'ALL') {
+            var parts = rankVal.split('-');
+            rankMin = parseInt(parts[0]); rankMax = parseInt(parts[1]);
+        }
+
+        var tbody = document.getElementById('legerTbody');
+        tbody.querySelectorAll('tr').forEach(function(row) {
+            var nama     = row.dataset.nama || '';
+            var rank     = parseInt(row.dataset.rank) || 0;
+            var showAbjad = (abjad === 'ALL') || nama.startsWith(abjad);
+            var showRank  = (rankVal === 'ALL') || (rank >= rankMin && rank <= rankMax);
+            row.style.display = (showAbjad && showRank) ? '' : 'none';
+        });
+        renumberVisible();
+    }
+
     // ── Filter Abjad ──────────────────────────────────────────────
     function filterAbjad(btn) {
         document.querySelectorAll('.btn-abjad').forEach(function(b) {
             b.classList.remove('active');
         });
         btn.classList.add('active');
+        applyFilters();
+    }
 
-        var abjad = btn.dataset.abjad;
-        var tbody = document.getElementById('legerTbody');
-        var rows  = tbody.querySelectorAll('tr');
-        rows.forEach(function(row) {
-            if (abjad === 'ALL') {
-                row.style.display = '';
-            } else {
-                var nama = row.dataset.nama || '';
-                row.style.display = nama.startsWith(abjad) ? '' : 'none';
-            }
-        });
-        renumberVisible();
+    // ── Filter Peringkat ──────────────────────────────────────────
+    function filterRank(val) {
+        applyFilters();
     }
 
     // ── Sort Tabel ────────────────────────────────────────────────

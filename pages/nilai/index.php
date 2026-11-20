@@ -146,7 +146,7 @@ if (isset($_GET['export'])) {
                  7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
     require_once __DIR__ . '/../../excel.php';
     xlsx_template('export_nilai_' . date('Ymd') . '.xlsx', [
-        'title'    => 'Export Data Nilai -- Raportku',
+        'title'    => 'Export Data Nilai -- Raporku',
         'subtitle' => 'Kolom merah = wajib saat re-import | Kolom [dalam kurung] = referensi saja, tidak dibaca saat import',
         'columns'  => [
             ['header'=>'NIS Murid',       'field'=>'siswa_nis',       'width'=>14,'required'=>true,  'type'=>'text',  'format'=>'@',
@@ -159,7 +159,7 @@ if (isset($_GET['export'])) {
              'note'=>'ID tahun ajaran -- wajib saat re-import'],
             ['header'=>'[Tahun Ajaran]',  'field'=>'ta_label',        'width'=>22,'required'=>false, 'type'=>'text',  'format'=>'@',
              'note'=>'Referensi saja -- tidak dibaca saat import'],
-            ['header'=>'Jenis Raport',    'field'=>'jenis_raport',    'width'=>14,'required'=>true,  'type'=>'dropdown',
+            ['header'=>'Jenis Rapor',    'field'=>'jenis_raport',    'width'=>14,'required'=>true,  'type'=>'dropdown',
              'dropdown'=>['bulanan','sts','semester'],
              'note'=>'Pilih: bulanan / sts / semester'],
             ['header'=>'Bulan',           'field'=>'bulan',           'width'=>8, 'required'=>false, 'type'=>'number',
@@ -306,7 +306,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Jenis Raport</label>
+                    <label class="form-label">Jenis Rapor</label>
                     <select name="jenis" class="form-control">
                         <option value="">Semua</option>
                         <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>

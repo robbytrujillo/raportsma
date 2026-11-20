@@ -81,28 +81,40 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
     . ($bulan_id_map_ex[(int)date('n', $tgl_ts)] ?? date('F', $tgl_ts))
     . ' ' . date('Y', $tgl_ts);
 
-// ── Mapel list ──────────────────────────────────────────────────
-$bulan_cond_m = '';
-$mapel_params = [':kid'=>$kelas_id,':ta'=>$ta_id,':jenis'=>$jenis];
-if (in_array($jenis,['bulanan','sts']) && $bulan) {
-    $bulan_cond_m = 'AND n.bulan = :bulan';
-    $mapel_params[':bulan'] = $bulan;
-}
+// ── Mapel list dari PENUGASAN GURU (selalu tampil meski belum ada nilai) ──
 $mapel_raw = db_query(
     "SELECT DISTINCT m.id, m.nama_mapel, m.urutan, m.kelompok, m.parent_id,
             p.nama_mapel as parent_nama, p.kelompok as parent_kelompok, p.urutan as parent_urutan
-     FROM nilai n
-     INNER JOIN mapel m ON m.id = n.mapel_id
-     LEFT JOIN mapel p ON p.id = m.parent_id
-     WHERE n.kelas_id=:kid AND n.tahun_ajaran_id=:ta AND n.jenis_raport=:jenis $bulan_cond_m
-     ORDER BY m.kelompok, m.urutan, m.nama_mapel", $mapel_params);
+     FROM guru_mapel_kelas gmk
+     INNER JOIN mapel m ON m.id = gmk.mapel_id
+     LEFT  JOIN mapel p ON p.id = m.parent_id
+     WHERE gmk.kelas_id=:kid AND gmk.tahun_ajaran_id=:ta
+     ORDER BY m.kelompok, m.urutan, m.nama_mapel",
+    [':kid'=>$kelas_id,':ta'=>$ta_id]);
+
+// Ambil data parent langsung dari DB agar urutan akurat
+$_pids_ex = array_filter(array_unique(array_column($mapel_raw,'parent_id')));
+$_pdb_ex  = [];
+if (!empty($_pids_ex)) {
+    $in_ex = implode(',', array_map('intval', $_pids_ex));
+    foreach (db_query("SELECT id,nama_mapel,kelompok,urutan FROM mapel WHERE id IN ($in_ex)") as $pr) {
+        $_pdb_ex[$pr['id']] = $pr;
+    }
+}
 
 $_singles = []; $_children_by_parent = []; $_parent_meta = [];
 foreach ($mapel_raw as $mi) {
     if ($mi['parent_id'] !== null) {
         $pid = (int)$mi['parent_id'];
         $_children_by_parent[$pid][] = $mi;
-        if (!isset($_parent_meta[$pid])) $_parent_meta[$pid] = ['kelompok'=>$mi['parent_kelompok']??$mi['kelompok'],'urutan'=>(int)($mi['parent_urutan']??0),'nama'=>$mi['parent_nama']??''];
+        if (!isset($_parent_meta[$pid])) {
+            $pd = $_pdb_ex[$pid] ?? null;
+            $_parent_meta[$pid] = [
+                'kelompok' => $pd['kelompok'] ?? $mi['parent_kelompok'] ?? $mi['kelompok'],
+                'urutan'   => isset($pd['urutan']) ? (int)$pd['urutan'] : (int)($mi['parent_urutan']??0),
+                'nama'     => $pd['nama_mapel']  ?? $mi['parent_nama']  ?? '',
+            ];
+        }
     } else {
         $_singles[] = $mi;
     }
@@ -114,9 +126,9 @@ usort($_slots, function($a,$b){ $kg=strcmp($a['kelompok']??'',$b['kelompok']??''
 $mapel_list = [];
 foreach ($_slots as $slot) foreach ($slot['items'] as $mi) $mapel_list[] = $mi;
 
-if (empty($mapel_list)) { http_response_code(404); echo 'Tidak ada nilai.'; exit; }
+if (empty($mapel_list)) { http_response_code(404); echo 'Belum ada penugasan guru untuk kelas ini.'; exit; }
 
-// ── Siswa list ──────────────────────────────────────────────────
+// ── Siswa list (default sort nama A-Z, peringkat dihitung terpisah) ──
 $bulan_cond_s = '';
 $siswa_params = [':kid'=>$kelas_id,':kid2'=>$kelas_id,':ta'=>$ta_id,':jenis'=>$jenis];
 if (in_array($jenis,['bulanan','sts']) && $bulan) { $bulan_cond_s='AND n.bulan=:bulan'; $siswa_params[':bulan']=$bulan; }
@@ -125,7 +137,13 @@ $siswa_list = db_query(
      FROM users u INNER JOIN siswa s ON s.user_id=u.id
      LEFT JOIN nilai n ON n.siswa_user_id=u.id AND n.kelas_id=:kid AND n.tahun_ajaran_id=:ta AND n.jenis_raport=:jenis $bulan_cond_s
      WHERE s.kelas_id=:kid2
-     GROUP BY u.id,u.nama_lengkap,s.nis,s.nisn ORDER BY avg_nilai DESC", $siswa_params);
+     GROUP BY u.id,u.nama_lengkap,s.nis,s.nisn ORDER BY u.nama_lengkap ASC", $siswa_params);
+
+// Hitung rank_map dari avg DESC
+$_rs2 = $siswa_list;
+usort($_rs2, fn($a,$b) => (float)$b['avg_nilai'] <=> (float)$a['avg_nilai']);
+$rank_map_ex = [];
+foreach ($_rs2 as $_ri => $_rs) { $rank_map_ex[(int)$_rs['id']] = $_ri + 1; }
 
 // ── Nilai map ───────────────────────────────────────────────────
 $bulan_cond_v = '';
@@ -138,8 +156,8 @@ foreach ($all_nilai as $r) $nilai_map[$r['siswa_user_id']][$r['mapel_id']] = (fl
 // ── Hitung total/rata untuk setiap siswa ───────────────────────
 $rows_data = [];
 foreach ($siswa_list as $i => $s) {
-    $peringkat  = $i + 1;
     $sid        = (int)$s['id'];
+    $peringkat  = $rank_map_ex[$sid] ?? ($i + 1);
     $sn         = $nilai_map[$sid] ?? [];
     $total_val  = 0; $jml = 0;
     $nilai_per_mapel = [];

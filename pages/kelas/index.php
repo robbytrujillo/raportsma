@@ -1,6 +1,6 @@
 <?php
 /**
- * pages/kelas/index.php + form.php combined ‚Ä" admin
+ * pages/kelas/index.php + form.php combined ÔøΩ" admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
@@ -8,7 +8,7 @@ $user = current_user();
 $_exp_uf   = get_user_unit_filter($user);
 $_exp_usql = $_exp_uf['sql']; // mis. "AND k.unit = 'putri'" atau ""
 
-// ‚"Ä‚"Ä Export CSV ‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä
+// ÔøΩ"ÔøΩÔøΩ"ÔøΩ Export CSV ÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩ
 // Export XLSX -- kolom sesuai template import kelas.
 if (isset($_GET['export'])) {
     $rows = db_query(
@@ -21,7 +21,7 @@ if (isset($_GET['export'])) {
          ORDER BY ta.id DESC, k.tingkat, k.nama_kelas"
     );
     xlsx_template('export_kelas_' . date('Ymd') . '.xlsx', [
-        'title'    => 'Export Data Kelas -- Raportku',
+        'title'    => 'Export Data Kelas -- Raporku',
         'subtitle' => 'Kolom merah = wajib saat re-import | Kolom [dalam kurung] = referensi saja',
         'columns'  => [
             ['header'=>'Nama Kelas',      'field'=>'nama_kelas',      'width'=>20,'required'=>true,  'type'=>'text','format'=>'@'],
@@ -45,7 +45,7 @@ if (isset($_GET['export'])) {
     ]);
 }
 
-// ‚"Ä‚"Ä Handle ALL POST actions BEFORE any output ‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä
+// ÔøΩ"ÔøΩÔøΩ"ÔøΩ Handle ALL POST actions BEFORE any output ÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩ
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /kelas'); exit; }
 
@@ -81,6 +81,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header("Location: /kelas?ta=$ta_id"); exit;
     }
+
+    // ‚îÄ‚îÄ Duplikasi kelas ke semester lain ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ
+    if ($action === 'duplikasi') {
+        $ta_sumber = (int)($_POST['ta_sumber'] ?? 0);
+        $ta_tujuan = (int)($_POST['ta_tujuan'] ?? 0);
+
+        if (!$ta_sumber || !$ta_tujuan) {
+            flash('error', 'Pilih tahun ajaran sumber dan tujuan.');
+            header('Location: /kelas'); exit;
+        }
+        if ($ta_sumber === $ta_tujuan) {
+            flash('error', 'Tahun ajaran sumber dan tujuan tidak boleh sama.');
+            header('Location: /kelas?ta=' . $ta_sumber); exit;
+        }
+
+        // Ambil semua kelas dari sumber (filter unit jika ada)
+        $_dup_uf   = get_user_unit_filter(current_user());
+        $_dup_usql = $_dup_uf['sql'];
+        $kelas_sumber = db_query(
+            "SELECT * FROM kelas WHERE tahun_ajaran_id = :ta {$_dup_usql}",
+            [':ta' => $ta_sumber]
+        );
+
+        if (empty($kelas_sumber)) {
+            flash('error', 'Tidak ada kelas di tahun ajaran sumber.');
+            header('Location: /kelas?ta=' . $ta_sumber); exit;
+        }
+
+        $duplikasi_count = 0;
+        $lewat_count     = 0;
+        foreach ($kelas_sumber as $k) {
+            // Lewati jika nama kelas sudah ada di tujuan
+            $exist = db_row(
+                'SELECT id FROM kelas WHERE nama_kelas = :n AND tahun_ajaran_id = :ta',
+                [':n' => $k['nama_kelas'], ':ta' => $ta_tujuan]
+            );
+            if ($exist) { $lewat_count++; continue; }
+
+            db_execute(
+                'INSERT INTO kelas (nama_kelas, tingkat, wali_kelas_id, tahun_ajaran_id, unit)
+                 VALUES (:n, :t, :w, :ta, :u)',
+                [
+                    ':n'  => $k['nama_kelas'],
+                    ':t'  => $k['tingkat'],
+                    ':w'  => $k['wali_kelas_id'],
+                    ':ta' => $ta_tujuan,
+                    ':u'  => $k['unit'] ?? 'campuran',
+                ]
+            );
+            $duplikasi_count++;
+        }
+
+        $msg = "Berhasil menduplikasi {$duplikasi_count} kelas ke tahun ajaran tujuan.";
+        if ($lewat_count) $msg .= " ({$lewat_count} kelas dilewati karena sudah ada.)";
+        flash('success', $msg);
+        header('Location: /kelas?ta=' . $ta_tujuan); exit;
+    }
 }
 
 // Ambil daftar tahun ajaran dan guru yang bisa jadi wali kelas
@@ -89,7 +146,7 @@ $wali_list  = db_query("SELECT u.id, u.nama_lengkap FROM users u WHERE u.role IN
 $ta_aktif   = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_filter  = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 
-// ‚"Ä‚"Ä Paginasi ‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä‚"Ä
+// ÔøΩ"ÔøΩÔøΩ"ÔøΩ Paginasi ÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩÔøΩ"ÔøΩ
 $per_opts = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
@@ -140,6 +197,13 @@ $qstr_k = http_build_query(['page'=>'kelas','ta'=>$ta_filter,'per'=>$per]);
                 </svg>
                 Import CSV
             </a>
+            <button onclick="Modal.open('modalDuplikasiKelas')" class="btn btn-secondary" style="border-radius: 30px">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+                Duplikasi Semester
+            </button>
             <button onclick="Modal.open('modalKelas')" class="btn btn-primary" style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -339,5 +403,79 @@ function editKelas(data) {
     document.getElementById('kelasWali').value = data.wali_kelas_id || '';
     document.getElementById('kelasTa').value = data.tahun_ajaran_id;
     Modal.open('modalKelas');
+}
+</script>
+
+<!-- Modal Duplikasi Semester -->
+<div class="modal-overlay" id="modalDuplikasiKelas">
+    <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+            <span>Duplikasi Kelas ke Semester Lain</span>
+            <button onclick="Modal.close('modalDuplikasiKelas')"
+                class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <form method="POST" action="/kelas">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="duplikasi">
+            <div class="modal-body">
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.85rem;color:#92400e;line-height:1.6">
+                    <strong>Apa yang diduplikasi:</strong> Semua kelas (nama, tingkat, unit, wali kelas) dari semester sumber akan disalin ke semester tujuan.<br>
+                    <strong>Tidak termasuk:</strong> nilai, absensi, dan data raport ‚Äî data tersebut tetap terikat pada semester asalnya.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sumber <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal">(kelas yang akan disalin dari)</span>
+                    </label>
+                    <select name="ta_sumber" id="dupSumber" class="form-control" required onchange="duplikasiUpdateInfo()">
+                        <option value="">-- Pilih Semester Sumber --</option>
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_filter ? 'selected' : '' ?>>
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= $ta['is_aktif'] ? ' ‚Äî Aktif' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tujuan <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal">(semester yang akan diisi)</span>
+                    </label>
+                    <select name="ta_tujuan" id="dupTujuan" class="form-control" required onchange="duplikasiUpdateInfo()">
+                        <option value="">-- Pilih Semester Tujuan --</option>
+                        <?php foreach ($ta_list as $ta): ?>
+                        <option value="<?= $ta['id'] ?>">
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= $ta['is_aktif'] ? ' ‚Äî Aktif' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div id="dupWarning" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.84rem;color:#991b1b">
+                    ‚ö†Ô∏è Sumber dan tujuan tidak boleh sama.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="Modal.close('modalDuplikasiKelas')" class="btn btn-secondary"
+                    style="border-radius: 30px">Batal</button>
+                <button type="submit" id="dupSubmit" class="btn btn-primary" style="border-radius: 30px">
+                    Duplikasi Sekarang
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function duplikasiUpdateInfo() {
+    var s = document.getElementById('dupSumber').value;
+    var t = document.getElementById('dupTujuan').value;
+    var warn = document.getElementById('dupWarning');
+    var btn  = document.getElementById('dupSubmit');
+    if (s && t && s === t) {
+        warn.style.display = 'block';
+        btn.disabled = true;
+    } else {
+        warn.style.display = 'none';
+        btn.disabled = false;
+    }
 }
 </script>

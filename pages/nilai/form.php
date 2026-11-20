@@ -297,9 +297,9 @@ $n = $nilai_data ?? [];
             </select>
           </div>
 
-          <!-- Jenis Raport -->
+          <!-- Jenis Rapor -->
           <div class="form-group">
-            <label class="form-label">Jenis Raport <span class="text-red-500">*</span></label>
+            <label class="form-label">Jenis Rapor <span class="text-red-500">*</span></label>
             <select name="jenis_raport" class="form-control" required id="jenisRaportSelect">
               <option value="bulanan" <?= ($n['jenis_raport']??'bulanan')==='bulanan'?'selected':'' ?>>
                 Bulanan (NH1 + NH2 + NH3 + Tugas)

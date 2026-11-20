@@ -65,6 +65,65 @@ $nilai_list = db_query(
     $nilai_params
 );
 
+// ── Tambahkan mapel dari penugasan guru yang belum ada nilainya ─────────────
+// Patokan: guru_mapel_kelas (penugasan guru) untuk kelas & TA ini.
+// Mapel yang sudah ditugaskan ke kelas SELALU muncul di raport,
+// dengan nilai_akhir = 0 dan deskripsi kosong jika belum diisi guru.
+$penugasan_mapel = db_query(
+    "SELECT DISTINCT m.id as mapel_id, m.nama_mapel, m.kelompok, m.kode_mapel,
+                     m.parent_id, m.sub_label, m.urutan
+     FROM guru_mapel_kelas gmk
+     INNER JOIN mapel m ON m.id = gmk.mapel_id
+     WHERE gmk.kelas_id = :kid AND gmk.tahun_ajaran_id = :ta
+     ORDER BY m.kelompok, m.urutan, m.nama_mapel",
+    [':kid' => $kelas_id_historis, ':ta' => $ta_id]
+);
+
+// Index nilai yang sudah ada berdasarkan mapel_id agar pencarian O(1)
+$mapel_id_terisi = array_flip(array_column($nilai_list, 'mapel_id'));
+
+// Tambahkan baris kosong (nilai 0) untuk mapel yang belum diisi
+$bulan_default = (in_array($jenis, ['bulanan','sts']) && $bulan) ? $bulan : null;
+foreach ($penugasan_mapel as $pm) {
+    if (isset($mapel_id_terisi[$pm['mapel_id']])) continue; // sudah ada nilainya
+    $nilai_list[] = [
+        'id'             => null,
+        'siswa_user_id'  => $siswa_uid,
+        'mapel_id'       => $pm['mapel_id'],
+        'kelas_id'       => $kelas_id_historis,
+        'tahun_ajaran_id'=> $ta_id,
+        'guru_user_id'   => null,
+        'jenis_raport'   => $jenis,
+        'bulan'          => $bulan_default,
+        'nilai_harian_1' => 0,
+        'nilai_harian_2' => 0,
+        'nilai_harian_3' => 0,
+        'nilai_tugas'    => 0,
+        'nilai_sts'      => 0,
+        'nilai_sas'      => 0,
+        'nilai_akhir'    => 0,
+        'predikat'       => null,
+        'catatan'        => '',
+        'deskripsi'      => '',
+        // kolom dari mapel
+        'nama_mapel'     => $pm['nama_mapel'],
+        'kelompok'       => $pm['kelompok'],
+        'kode_mapel'     => $pm['kode_mapel'],
+        'parent_id'      => $pm['parent_id'],
+        'sub_label'      => $pm['sub_label'],
+        'urutan'         => $pm['urutan'],
+    ];
+}
+
+// Urutkan ulang: kelompok → urutan → nama_mapel
+usort($nilai_list, function($a, $b) {
+    $kg = strcmp($a['kelompok'] ?? '', $b['kelompok'] ?? '');
+    if ($kg !== 0) return $kg;
+    $ur = ($a['urutan'] ?? 0) <=> ($b['urutan'] ?? 0);
+    if ($ur !== 0) return $ur;
+    return strcmp($a['nama_mapel'] ?? '', $b['nama_mapel'] ?? '');
+});
+
 // Absensi
 $absensi = db_row(
     'SELECT * FROM absensi WHERE siswa_user_id = :uid AND kelas_id = :kid AND tahun_ajaran_id = :ta',
@@ -127,7 +186,10 @@ foreach ($rank_data as $i => $r) {
     if ($r['user_id'] == $siswa_uid) { $peringkat = $i + 1; break; }
 }
 
-// Rata-rata nilai
-$avg_nilai = count($nilai_list) > 0
-    ? round(array_sum(array_column($nilai_list, 'nilai_akhir')) / count($nilai_list), 2)
+// Rata-rata nilai — hanya dari baris yang sudah benar-benar diisi guru (id !== null).
+// Baris placeholder dari penugasan (id = null) tidak ikut dihitung agar rata-rata
+// tidak terdistorsi oleh mapel yang belum diinput nilainya.
+$nilai_terisi = array_filter($nilai_list, fn($r) => $r['id'] !== null);
+$avg_nilai = count($nilai_terisi) > 0
+    ? round(array_sum(array_column($nilai_terisi, 'nilai_akhir')) / count($nilai_terisi), 2)
     : 0;

@@ -108,7 +108,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> &mdash; <?= htmlspecialchars($ta['nama']) ?>
+    <title>Cetak Rapor Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> &mdash; <?= htmlspecialchars($ta['nama']) ?>
     </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -295,7 +295,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
     <div class="print-toolbar">
         <div class="tb-left">
             <div class="tb-title">
-                Cetak Raport Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>
+                Cetak Rapor Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>
             </div>
             <div class="tb-meta">
                 <?= htmlspecialchars($ta['nama']) ?> · Sem. <?= $semester_lbl ?>
@@ -353,10 +353,10 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
         </svg>
-        Memuat raport <?= $total_siswa ?> murid...
+        Memuat rapor <?= $total_siswa ?> murid...
     </div>
 
-    <!-- ── Raport setiap siswa ──────────────────────────────── -->
+    <!-- ── Rapor setiap siswa ──────────────────────────────── -->
     <?php
 // Kepala sekolah (shared, sama untuk semua)
 $kepsek_shared = db_row('SELECT * FROM users WHERE role = "kepala_sekolah" LIMIT 1');

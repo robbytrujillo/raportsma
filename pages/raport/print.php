@@ -50,15 +50,15 @@ if ($role === 'siswa') {
     );
     if (!$pub_chk || !(int)$pub_chk['is_published']) {
         http_response_code(403);
-        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Raport Belum Dirilis</title>
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rapor Belum Dirilis</title>
         <style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f3f4f6}
         .box{background:#fff;border-radius:16px;padding:40px 32px;text-align:center;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.1)}
         h2{margin:12px 0 8px;color:#1f2937}p{color:#6b7280;margin-bottom:20px}
         a{display:inline-block;padding:8px 20px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none}</style></head>
         <body><div class="box">
         <svg width="56" height="56" fill="none" stroke="#f97316" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <h2>Raport Belum Dirilis</h2>
-        <p>Raport ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
+        <h2>Rapor Belum Dirilis</h2>
+        <p>Rapor ini sedang dalam proses penerbitan oleh sekolah. Silakan cek kembali nanti.</p>
         <a href="javascript:history.back()">&larr; Kembali</a>
         </div></body></html>';
         exit;
@@ -71,7 +71,7 @@ if ($role === 'siswa') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
+    <title>Rapor &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?></title>
     <!-- Favicon -->
     <?php if (!empty($sekolah_l['logo'])): ?>
     <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
@@ -194,7 +194,7 @@ if ($role === 'siswa') {
     <?php if (!$embed): ?>
     <div class="print-toolbar no-print">
       <div class="print-toolbar-title">
-        Raport &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
+        Rapor &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
       </div>
       <div class="print-toolbar-actions">
 
@@ -259,7 +259,7 @@ if ($role === 'siswa') {
     }
     </script>
 
-    <!-- Konten Raport — scale-to-fit wrapper for mobile preview -->
+    <!-- Konten Rapor — scale-to-fit wrapper for mobile preview -->
     <div class="print-scale-outer" id="printScaleOuter">
       <div class="print-scale-wrap" id="printScaleWrap">
         <?php include __DIR__ . '/raport_template.php'; ?>

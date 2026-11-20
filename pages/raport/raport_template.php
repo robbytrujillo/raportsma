@@ -459,8 +459,9 @@ $row_no = 0;
             <?php elseif ($row['type'] === 'child'): ?>
             <!-- ── Baris Sub-Mapel &mdash; kolom Pred dihapus ── -->
             <?php
-          $n    = $row['nilai'];
-          $na   = (float)($n['nilai_akhir'] ?? 0);
+          $n        = $row['nilai'];
+          $na       = (float)($n['nilai_akhir'] ?? 0);
+          $has_data = ($n['id'] !== null);  // false = nilai belum diisi guru
           // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
         ?>
@@ -473,18 +474,19 @@ $row_no = 0;
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-                    <?= $na > 0 ? number_format($na, 0) : '' ?>
+                    <?= $has_data ? number_format($na, 0) : '0' ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
-                    <?= htmlspecialchars($desk) ?>
+                    <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
             </tr>
 
             <?php elseif ($row['type'] === 'single'): ?>
             <!-- ── Baris Mapel Mandiri &mdash; kolom Pred dihapus ── -->
             <?php
-          $n    = $row['nilai'];
-          $na   = (float)($n['nilai_akhir'] ?? 0);
+          $n        = $row['nilai'];
+          $na       = (float)($n['nilai_akhir'] ?? 0);
+          $has_data = ($n['id'] !== null);  // false = nilai belum diisi guru
           // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
           $row_no++;
@@ -498,10 +500,10 @@ $row_no = 0;
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-                    <?= $na > 0 ? number_format($na, 0) : '' ?>
+                    <?= $has_data ? number_format($na, 0) : '0' ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
-                    <?= htmlspecialchars($desk) ?>
+                    <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
             </tr>
 

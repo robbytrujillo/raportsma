@@ -21,25 +21,26 @@ $page_titles = [
     'mapel'        => 'Mata Pelajaran',
     'mapel.create' => 'Tambah Mata Pelajaran',
     'mapel.edit'   => 'Edit Mata Pelajaran',
-    'penugasan'    => 'Penugasan Guru',
-    'penugasan.create'=> 'Tambah Penugasan',
+    'penugasan'              => 'Penugasan Guru',
+    'penugasan.create'       => 'Tambah Penugasan',
+    'penugasan.review_kelas' => 'Review Mapel per Kelas',
     'nilai'        => 'Daftar Nilai',
     'nilai.input'  => 'Form Nilai',
     'nilai.bulk'   => 'Input Nilai Kelas',
-    'raport'              => 'Raport Murid',
-    'raport.view'         => 'Detail Raport',
-    'raport.manage'       => 'Manajemen Raport',
-    'raport.manage_nilai' => 'Manajemen Nilai Raport',
+    'raport'              => 'Rapor Murid',
+    'raport.view'         => 'Detail Rapor',
+    'raport.manage'       => 'Manajemen Rapor',
+    'raport.manage_nilai' => 'Manajemen Nilai Rapor',
     'siswa'        => 'Data Murid',
     'siswa.create' => 'Tambah Murid',
     'siswa.edit'   => 'Edit Murid',
     'profil'       => 'Profil & Tanda Tangan',
     'absensi'      => 'Data Absensi',
     'tahun_ajaran' => 'Tahun Ajaran',
-    'jenis_raport' => 'Jenis Raport',
+    'jenis_raport' => 'Jenis Rapor',
     'sekolah'      => 'Pengaturan Sekolah',
 ];
-$page_title = $page_titles[$page] ?? 'Raportku';
+$page_title = $page_titles[$page] ?? 'Raporku';
 
 // Inisial avatar dari nama lengkap
 $initials = '';
