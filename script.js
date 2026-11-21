@@ -482,7 +482,7 @@ function initResponsiveTables() {
 /* ============================================================
    16. Theme Switcher
    ============================================================ */
-const THEME_KEY = 'raportku_theme';
+const THEME_KEY = 'raporku_theme';
 const THEMES    = ['orange', 'green', 'purple', 'sky', 'pink'];
 
 function applyTheme(theme) {

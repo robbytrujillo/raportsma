@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         } elseif ($p_jenis === 'sts') {
             $na = round($sts, 2);
         } else {
-            // Gunakan hanya kolom yang diaktifkan guru (checkbox); defaultnya semua aktif
+            // Gunakan hanya kolom yang diaktifkan guru (checkbox)
             $aktif_nh1   = (int)($_POST['aktif_nh1']   ?? 1);
             $aktif_nh2   = (int)($_POST['aktif_nh2']   ?? 1);
             $aktif_nh3   = (int)($_POST['aktif_nh3']   ?? 1);
@@ -160,6 +160,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
              ':guru'=>$user['id'], ':j'=>$p_jenis, ':b'=>$p_bulan,
              ':h1'=>$h1,':h2'=>$h2,':h3'=>$h3,':tug'=>$tug,':sts'=>$sts,':sas'=>$sas,
              ':na'=>$na, ':pred'=>$pred, ':desk'=>$desk_siswa, ':cat'=>$catatan]
+        );
+    }
+
+    // 3. Simpan state kolom aktif ke DB (hanya untuk jenis bulanan)
+    if ($p_jenis === 'bulanan') {
+        $aktif_nh1   = (int)($_POST['aktif_nh1']   ?? 1);
+        $aktif_nh2   = (int)($_POST['aktif_nh2']   ?? 1);
+        $aktif_nh3   = (int)($_POST['aktif_nh3']   ?? 1);
+        $aktif_tugas = (int)($_POST['aktif_tugas'] ?? 1);
+        db_execute(
+            'INSERT INTO nilai_kolom_aktif
+                (kelas_id, mapel_id, tahun_ajaran_id, jenis_raport, bulan,
+                 aktif_nh1, aktif_nh2, aktif_nh3, aktif_tugas, updated_by)
+             VALUES (:k,:m,:ta,:j,:b,:n1,:n2,:n3,:tg,:uid)
+             ON DUPLICATE KEY UPDATE
+                aktif_nh1=VALUES(aktif_nh1), aktif_nh2=VALUES(aktif_nh2),
+                aktif_nh3=VALUES(aktif_nh3), aktif_tugas=VALUES(aktif_tugas),
+                updated_by=VALUES(updated_by)',
+            [':k'=>$p_kelas,':m'=>$p_mapel,':ta'=>$p_ta,':j'=>$p_jenis,
+             ':b'=>$p_bulan,':n1'=>$aktif_nh1,':n2'=>$aktif_nh2,
+             ':n3'=>$aktif_nh3,':tg'=>$aktif_tugas,':uid'=>$user['id']]
         );
     }
 
@@ -275,6 +296,49 @@ if ($kelas_id && $mapel_id) {
          ':j'=>$jenis,':b'=>$bulan?:null,':b2'=>$bulan?:null]
     );
     foreach ($drows as $d) $deskripsi_kriteria[$d['kriteria']] = $d['deskripsi'];
+}
+
+// Baca state kolom aktif dari DB (jika pernah disimpan guru)
+$kolom_aktif_db = null;
+if ($kelas_id && $mapel_id && $jenis === 'bulanan') {
+    $kolom_aktif_db = db_row(
+        'SELECT * FROM nilai_kolom_aktif
+         WHERE kelas_id=:k AND mapel_id=:m AND tahun_ajaran_id=:ta
+           AND jenis_raport=:j AND (bulan=:b OR (:b2 IS NULL AND bulan IS NULL))',
+        [':k'=>$kelas_id,':m'=>$mapel_id,':ta'=>$ta_id,
+         ':j'=>$jenis,':b'=>$bulan?:null,':b2'=>$bulan?:null]
+    );
+}
+
+if ($kolom_aktif_db) {
+    // State tersimpan eksplisit di DB → pakai langsung
+    $db_aktif_nh1   = (int)$kolom_aktif_db['aktif_nh1'];
+    $db_aktif_nh2   = (int)$kolom_aktif_db['aktif_nh2'];
+    $db_aktif_nh3   = (int)$kolom_aktif_db['aktif_nh3'];
+    $db_aktif_tugas = (int)$kolom_aktif_db['aktif_tugas'];
+} elseif (!empty($existing_nilai)) {
+    // Belum ada di nilai_kolom_aktif (input dari versi lama) →
+    // Infer dari data nilai yang sudah tersimpan:
+    // kolom aktif = kolom yang nilai rata-ratanya > 0 di antara siswa yang sudah diinput.
+    // Jika SEMUA siswa bernilai 0 di suatu kolom, kolom itu dianggap tidak aktif.
+    $sum_nh1 = $sum_nh2 = $sum_nh3 = $sum_tug = 0;
+    foreach ($existing_nilai as $nv) {
+        $sum_nh1 += (float)($nv['nilai_harian_1'] ?? 0);
+        $sum_nh2 += (float)($nv['nilai_harian_2'] ?? 0);
+        $sum_nh3 += (float)($nv['nilai_harian_3'] ?? 0);
+        $sum_tug += (float)($nv['nilai_tugas']     ?? 0);
+    }
+    $db_aktif_nh1   = $sum_nh1 > 0 ? 1 : 0;
+    $db_aktif_nh2   = $sum_nh2 > 0 ? 1 : 0;
+    $db_aktif_nh3   = $sum_nh3 > 0 ? 1 : 0;
+    $db_aktif_tugas = $sum_tug > 0 ? 1 : 0;
+    // Jika semua nol (belum ada nilai sama sekali), aktifkan semua sebagai default
+    if (!$db_aktif_nh1 && !$db_aktif_nh2 && !$db_aktif_nh3 && !$db_aktif_tugas) {
+        $db_aktif_nh1 = $db_aktif_nh2 = $db_aktif_nh3 = $db_aktif_tugas = 1;
+    }
+} else {
+    // Belum ada nilai sama sekali → default semua aktif
+    $db_aktif_nh1 = $db_aktif_nh2 = $db_aktif_nh3 = $db_aktif_tugas = 1;
 }
 
 $bulan_opts = BULAN_ID;
@@ -487,11 +551,11 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <input type="hidden" name="siswa_ids[]" value="<?= $s['id'] ?>">
         <?php endforeach; ?>
         <?php if ($jenis === 'bulanan'): ?>
-        <!-- Kolom aktif diinjeksi JS sebelum submit; defaultnya semua aktif -->
-        <input type="hidden" id="hid_nh1" name="aktif_nh1" value="1">
-        <input type="hidden" id="hid_nh2" name="aktif_nh2" value="1">
-        <input type="hidden" id="hid_nh3" name="aktif_nh3" value="1">
-        <input type="hidden" id="hid_tugas" name="aktif_tugas" value="1">
+        <!-- Kolom aktif: nilai dari DB (atau default 1 jika belum pernah disimpan) -->
+        <input type="hidden" id="hid_nh1"   name="aktif_nh1"   value="<?= $db_aktif_nh1 ?>">
+        <input type="hidden" id="hid_nh2"   name="aktif_nh2"   value="<?= $db_aktif_nh2 ?>">
+        <input type="hidden" id="hid_nh3"   name="aktif_nh3"   value="<?= $db_aktif_nh3 ?>">
+        <input type="hidden" id="hid_tugas" name="aktif_tugas" value="<?= $db_aktif_tugas ?>">
         <?php endif; ?>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -520,6 +584,17 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                 </svg>
                                 Isi Rata-rata
                             </button>
+                            <?php if (!empty($siswa_list) && $kelas_id && $mapel_id): ?>
+                            <button type="button" onclick="bukaReviewNilai()" class="btn btn-sm btn-secondary"
+                                style="border-radius: 30px; border-color:#6366f1; color:#6366f1">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                Review Nilai
+                            </button>
+                            <?php endif; ?>
                             <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 30px">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
                                     viewBox="0 0 24 24">
@@ -545,8 +620,17 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                     <th style="text-align:center;padding:4px 2px">
                                         <label
                                             style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">
+                                            <?php
+                                            $chk_checked = match($col) {
+                                                'nh1'   => $db_aktif_nh1,
+                                                'nh2'   => $db_aktif_nh2,
+                                                'nh3'   => $db_aktif_nh3,
+                                                'tugas' => $db_aktif_tugas,
+                                                default => 1,
+                                            };
+                                            ?>
                                             <input type="checkbox" id="chk_<?= $col ?>" class="kolom-aktif-chk"
-                                                data-col="<?= $col ?>" checked
+                                                data-col="<?= $col ?>" <?= $chk_checked ? 'checked' : '' ?>
                                                 style="width:14px;height:14px;cursor:pointer;accent-color:#f97316">
                                             <span
                                                 style="font-size:.65rem;color:#6b7280;font-weight:500"><?= $lbl ?></span>
@@ -655,7 +739,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
                                     <!-- Nilai Akhir (readonly, dihitung JS) -->
                                     <td>
-                                        <input type="number" id="na_<?= $s['id'] ?>" value="<?= $na > 0 ? $na : '' ?>"
+                                        <input type="number" id="na_<?= $s['id'] ?>" value="<?= $nv !== null ? $na : '' ?>"
                                             class="form-control text-center font-bold text-orange-600"
                                             style="padding:4px 2px;font-size:.85rem;background:#fff7ed;border-color:#fed7aa"
                                             readonly tabindex="-1">
@@ -825,6 +909,102 @@ $ready = $kelas_id && $mapel_id && $ta_id;
     <?php endif; ?>
 </div>
 
+<!-- ══ Modal Review Nilai ═══════════════════════════════════════════════ -->
+<?php if (!empty($siswa_list) && $kelas_id && $mapel_id): ?>
+<div id="modalReviewNilai" style="display:none;position:fixed;inset:0;z-index:1050;
+    background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;border-radius:14px;width:100%;max-width:800px;
+        max-height:90vh;display:flex;flex-direction:column;
+        box-shadow:0 20px 60px rgba(0,0,0,.2)">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;
+            padding:16px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0">
+            <div>
+                <div style="font-weight:700;font-size:1rem;color:#1f2328;display:flex;align-items:center;gap:6px">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Review Nilai &amp; Deskripsi
+                </div>
+                <div style="font-size:.78rem;color:#57606a;margin-top:3px">
+                    <?= e($kelas_info['nama_kelas'] ?? '') ?>
+                    &mdash; <?= e($mapel_info['nama_mapel'] ?? '') ?>
+                    <?php if ($jenis === 'bulanan' && $bulan): ?>
+                    &mdash; <?= BULAN_ID[$bulan] ?? "Bulan $bulan" ?>
+                    <?php elseif ($jenis === 'sts'): ?>
+                    &mdash; STS
+                    <?php elseif ($jenis === 'semester'): ?>
+                    &mdash; Semester
+                    <?php endif; ?>
+                </div>
+            </div>
+            <button onclick="tutupReviewNilai()"
+                style="background:none;border:none;cursor:pointer;color:#9ca3af;
+                font-size:1.6rem;line-height:1;padding:4px 8px">&times;</button>
+        </div>
+
+        <!-- Statistik ringkas -->
+        <div id="reviewStats" style="display:flex;gap:10px;padding:12px 20px;
+            background:#f7f8fa;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;flex-shrink:0"></div>
+
+        <!-- Filter -->
+        <div style="padding:10px 20px;border-bottom:1px solid #f3f4f6;
+            display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span style="font-size:.78rem;color:#57606a;white-space:nowrap">Tampilkan:</span>
+            <select id="reviewFilter" onchange="renderReviewTabel()"
+                style="font-size:.78rem;padding:5px 10px;border:1px solid #e5e7eb;
+                border-radius:8px;background:#fff;color:#1f2328;cursor:pointer">
+                <option value="semua">Semua siswa</option>
+                <option value="nilai_kosong">Nilai belum diinput</option>
+                <option value="desk_kosong">Deskripsi belum diisi</option>
+                <option value="lengkap">Nilai &amp; Deskripsi sudah lengkap</option>
+            </select>
+            <span id="reviewJumlah" style="font-size:.75rem;color:#9ca3af;margin-left:4px"></span>
+        </div>
+
+        <!-- Tabel -->
+        <div style="overflow-y:auto;flex:1;padding:0 20px 16px">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin-top:12px">
+                <thead>
+                    <tr style="background:#f7f8fa;position:sticky;top:0;z-index:1">
+                        <th style="text-align:left;padding:7px 10px;font-weight:600;color:#57606a;
+                            border-bottom:2px solid #e5e7eb;white-space:nowrap;width:36px">#</th>
+                        <th style="text-align:left;padding:7px 10px;font-weight:600;color:#57606a;
+                            border-bottom:2px solid #e5e7eb">Nama Murid</th>
+                        <th style="text-align:center;padding:7px 10px;font-weight:600;color:#57606a;
+                            border-bottom:2px solid #e5e7eb;white-space:nowrap;width:90px">Nilai Akhir</th>
+                        <th style="text-align:center;padding:7px 10px;font-weight:600;color:#57606a;
+                            border-bottom:2px solid #e5e7eb;width:70px">Predikat</th>
+                        <th style="text-align:left;padding:7px 10px;font-weight:600;color:#57606a;
+                            border-bottom:2px solid #e5e7eb">Deskripsi</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewTbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;
+            justify-content:flex-end;gap:8px;flex-shrink:0">
+            <button onclick="tutupReviewNilai()" class="btn btn-secondary" style="border-radius:30px">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* Data siswa dari PHP — dipakai fungsi bukaReviewNilai() */
+const REVIEW_SISWA = <?= json_encode(array_values(array_map(fn($s) => [
+    'id'   => (int)$s['id'],
+    'nama' => $s['nama_lengkap'],
+    'nis'  => $s['nis'],
+], $siswa_list))) ?>;
+</script>
+<?php endif; ?>
+
+
+
 <script>
 /* â"€â"€ Konfigurasi kriteria dari server â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 const KRIT = {
@@ -861,7 +1041,7 @@ function getKolomAktif() {
 /**
  * Hitung nilai akhir satu baris siswa
  */
-function hitungBaris(sid) {
+function hitungBaris(sid, isInit = false) {
     let na = 0;
     if (JENIS === 'bulanan') {
         const kolomAktif = getKolomAktif();
@@ -882,7 +1062,16 @@ function hitungBaris(sid) {
 
     // Tampilkan nilai akhir
     const naEl = document.getElementById(`na_${sid}`);
-    if (naEl) naEl.value = na > 0 ? na.toFixed(2) : '';
+    if (naEl) {
+        // Saat init: jika field sudah diisi dari DB (ada value), recalc tapi tetap tampilkan.
+        // Jika field kosong (belum diinput guru), biarkan kosong — jangan tampilkan "0".
+        // Saat user edit (isInit=false): selalu tampilkan hasil kalkulasi.
+        if (isInit && naEl.value === '') {
+            // kosong dari DB → biarkan kosong, skip update
+        } else {
+            naEl.value = na.toFixed(2);
+        }
+    }
 
     // Predikat
     let pred = 'D';
@@ -892,7 +1081,9 @@ function hitungBaris(sid) {
 
     const predEl = document.getElementById(`pred_${sid}`);
     if (predEl) {
-        predEl.textContent = na > 0 ? pred : '-';
+        // Saat init & kosong: biarkan '-'
+        const showPred = isInit ? (naEl && naEl.value !== '') : true;
+        predEl.textContent = (na > 0 && showPred) ? pred : '-';
         // predEl.textContent = na > 0 ? pred : 'â€"';
         predEl.className = 'font-bold ' + {
             A: 'text-green-600',
@@ -1138,41 +1329,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tugas: 'hid_tugas'
         };
 
-        // ── Key localStorage unik per konteks penilaian ──────────────────
-        const LS_KEY =
-            'kolom_aktif_<?= (int)$ta_id ?>_<?= (int)$kelas_id ?>_<?= (int)$mapel_id ?>_<?= e($jenis) ?>_<?= (int)$bulan ?>';
-
-        // ── Jika redirect dari import, override localStorage dengan state template
-        <?php
-        $imp_nh1   = isset($_GET['aktif_nh1'])   ? (int)$_GET['aktif_nh1']   : -1;
-        $imp_nh2   = isset($_GET['aktif_nh2'])   ? (int)$_GET['aktif_nh2']   : -1;
-        $imp_nh3   = isset($_GET['aktif_nh3'])   ? (int)$_GET['aktif_nh3']   : -1;
-        $imp_tugas = isset($_GET['aktif_tugas']) ? (int)$_GET['aktif_tugas'] : -1;
-        if ($imp_nh1 >= 0): ?>
-            (function() {
-                const importState = {
-                    nh1: <?= $imp_nh1 ? 'true' : 'false' ?>,
-                    nh2: <?= $imp_nh2 ? 'true' : 'false' ?>,
-                    nh3: <?= $imp_nh3 ? 'true' : 'false' ?>,
-                    tugas: <?= $imp_tugas ? 'true' : 'false' ?>
-                };
-                try {
-                    localStorage.setItem(LS_KEY, JSON.stringify(importState));
-                } catch (e) {}
-            })();
-        <?php endif; ?>
-
-        /** Simpan state checkbox saat ini ke localStorage */
-        function simpanStateKolom() {
-            const state = {};
-            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
-                state[chk.dataset.col] = chk.checked;
-            });
-            try {
-                localStorage.setItem(LS_KEY, JSON.stringify(state));
-            } catch (e) {}
-        }
-
         /** Terapkan disable/style ke kolom berdasarkan checked */
         function terapkanKolom(col, checked) {
             const field = fieldMap[col];
@@ -1184,24 +1340,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // ── Restore state dari localStorage (sebelum hitungBaris) ────────
-        let savedState = null;
-        try {
-            const raw = localStorage.getItem(LS_KEY);
-            if (raw) savedState = JSON.parse(raw);
-        } catch (e) {}
-
-        if (savedState) {
-            document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
-                const col = chk.dataset.col;
-                const checked = savedState[col] !== undefined ? !!savedState[col] : true;
-                chk.checked = checked;
-                terapkanKolom(col, checked);
-                // Sync hidden input juga
-                const hid = document.getElementById(hidMap[col]);
-                if (hid) hid.value = checked ? '1' : '0';
-            });
-        }
+        // ── Terapkan state awal dari PHP (sudah di-inject via checked attribute) ──
+        document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
+            terapkanKolom(chk.dataset.col, chk.checked);
+        });
 
         /** Update href tombol Import Excel dengan state kolom aktif saat ini */
         function updateImportLink() {
@@ -1218,10 +1360,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 '&aktif_nh3=' + (state.nh3 ?? 1) +
                 '&aktif_tugas=' + (state.tugas ?? 1);
         }
-        // Update link segera setelah state di-restore dari localStorage
+        // Update link sesuai state awal
         updateImportLink();
 
-        // ── Checkbox change: disable kolom + recalc + simpan ─────────────
+        // ── Checkbox change: disable kolom + recalc ──────────────────────
         document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
             chk.addEventListener('change', function() {
                 terapkanKolom(this.dataset.col, this.checked);
@@ -1229,25 +1371,157 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('[id^="row_"]').forEach(row => {
                     hitungBaris(parseInt(row.id.replace('row_', '')));
                 });
-                simpanStateKolom();
                 updateImportLink();
             });
         });
 
-        // ── Sebelum submit: sync hidden inputs + simpan state ────────────
+        // ── Sebelum submit: sync hidden inputs ───────────────────────────
         document.getElementById('formBulk')?.addEventListener('submit', function() {
             document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
                 const hid = document.getElementById(hidMap[chk.dataset.col]);
                 if (hid) hid.value = chk.checked ? '1' : '0';
             });
-            simpanStateKolom();
         });
     }
 
     // ── Hitung semua baris (setelah state kolom di-restore) ──────────────
     document.querySelectorAll('[id^="row_"]').forEach(row => {
         const sid = row.id.replace('row_', '');
-        hitungBaris(parseInt(sid));
+        hitungBaris(parseInt(sid), true); // isInit=true: jangan tampilkan "0" untuk baris kosong
     });
+});
+
+/* ══ Review Nilai: buka / tutup / render ════════════════════════════════
+   Membaca state langsung dari DOM (nilai & deskripsi yang sedang ada di
+   halaman, termasuk yang baru diketik tapi belum disimpan).
+   REVIEW_SISWA di-inject PHP di atas (array [{id, nama, nis}]).
+════════════════════════════════════════════════════════════════════════ */
+function bukaReviewNilai() {
+    const modal = document.getElementById('modalReviewNilai');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    document.getElementById('reviewFilter').value = 'semua';
+    renderReviewTabel();
+}
+
+function tutupReviewNilai() {
+    const modal = document.getElementById('modalReviewNilai');
+    if (modal) modal.style.display = 'none';
+}
+
+function renderReviewTabel() {
+    if (typeof REVIEW_SISWA === 'undefined') return;
+    const filter  = document.getElementById('reviewFilter')?.value ?? 'semua';
+    const tbody   = document.getElementById('reviewTbody');
+    const statsEl = document.getElementById('reviewStats');
+    const jmlEl   = document.getElementById('reviewJumlah');
+    if (!tbody) return;
+
+    const PRED_COLOR = { A:'#16a34a', B:'#2563eb', C:'#ca8a04', D:'#dc2626', '-':'#9ca3af' };
+
+    // ── Kumpulkan data terkini dari DOM per siswa ──────────────────────
+    const rows = REVIEW_SISWA.map(s => {
+        const sid = s.id;
+
+        // Nilai akhir dari input readonly #na_SID
+        const naEl  = document.getElementById('na_' + sid);
+        const naVal = naEl ? naEl.value.trim() : '';
+        const na    = naVal !== '' ? parseFloat(naVal) : null;
+
+        // Predikat dari span #pred_SID
+        const predEl = document.getElementById('pred_' + sid);
+        const pred   = predEl ? predEl.textContent.trim() : '-';
+
+        // Deskripsi dari textarea #deskArea_SID
+        const taEl = document.getElementById('deskArea_' + sid);
+        const desk = taEl ? taEl.value.trim() : '';
+
+        return { id: sid, nama: s.nama, nis: s.nis, na, pred, desk };
+    });
+
+    // ── Statistik ringkas ──────────────────────────────────────────────
+    const total      = rows.length;
+    const nilaiIsi   = rows.filter(r => r.na !== null).length;
+    const deskIsi    = rows.filter(r => r.desk !== '').length;
+    const lengkap    = rows.filter(r => r.na !== null && r.desk !== '').length;
+    const nilaiKosong= total - nilaiIsi;
+    const deskKosong = total - deskIsi;
+
+    const stat = (label, val, total, color) =>
+        `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;
+            padding:8px 14px;text-align:center;min-width:110px">
+            <div style="font-size:1.2rem;font-weight:700;color:${color}">${val}</div>
+            <div style="font-size:.7rem;color:#57606a;margin-top:1px">${label}</div>
+            ${total !== null ? `<div style="font-size:.68rem;color:#9ca3af">dari ${total} siswa</div>` : ''}
+        </div>`;
+
+    statsEl.innerHTML =
+        stat('Total Siswa',      total,       null,  '#1f2328') +
+        stat('Nilai Terisi',     nilaiIsi,    total, '#16a34a') +
+        stat('Nilai Kosong',     nilaiKosong, total, nilaiKosong > 0 ? '#dc2626' : '#9ca3af') +
+        stat('Deskripsi Terisi', deskIsi,     total, '#2563eb') +
+        stat('Deskripsi Kosong', deskKosong,  total, deskKosong > 0 ? '#d97706' : '#9ca3af') +
+        stat('Lengkap',          lengkap,     total, lengkap === total ? '#16a34a' : '#6366f1');
+
+    // ── Filter ─────────────────────────────────────────────────────────
+    let filtered = rows;
+    if (filter === 'nilai_kosong') filtered = rows.filter(r => r.na === null);
+    else if (filter === 'desk_kosong') filtered = rows.filter(r => r.desk === '');
+    else if (filter === 'lengkap') filtered = rows.filter(r => r.na !== null && r.desk !== '');
+
+    if (jmlEl) jmlEl.textContent = filtered.length + ' siswa';
+
+    // ── Render baris ───────────────────────────────────────────────────
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;
+            color:#9ca3af;font-size:.85rem">Tidak ada siswa untuk filter ini.</td></tr>`;
+        return;
+    }
+
+    const rowsHTML = filtered.map((r, i) => {
+        // Nilai akhir
+        const nilaiHtml = r.na !== null
+            ? `<span style="font-weight:700;color:#ea580c">${r.na.toFixed(2)}</span>`
+            : `<span style="color:#dc2626;font-size:.75rem;font-weight:600">&#9888; Belum diinput</span>`;
+
+        // Predikat
+        const predColor = PRED_COLOR[r.pred] ?? '#9ca3af';
+        const predHtml  = r.pred && r.pred !== '-'
+            ? `<span style="font-weight:700;color:${predColor};font-size:.9rem">${r.pred}</span>`
+            : `<span style="color:#9ca3af">-</span>`;
+
+        // Deskripsi
+        let deskHtml;
+        if (r.desk !== '') {
+            // Tampilkan teks deskripsi (maks 80 karakter)
+            const preview = r.desk.length > 80 ? r.desk.slice(0, 80) + '…' : r.desk;
+            deskHtml = `<span style="color:#1f2328">${preview.replace(/</g,'&lt;')}</span>`;
+        } else {
+            deskHtml = `<span style="color:#d97706;font-size:.75rem;font-weight:600">
+                &#9888; Belum diisi &mdash;
+                <span style="color:#9ca3af;font-weight:400">klik ikon dokumen di baris siswa untuk mengisi</span>
+            </span>`;
+        }
+
+        const oddBg = i % 2 === 0 ? '#fff' : '#f9fafb';
+        return `<tr style="background:${oddBg}">
+            <td style="padding:8px 10px;color:#9ca3af;font-size:.75rem;border-bottom:1px solid #f3f4f6">${i+1}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #f3f4f6">
+                <div style="font-weight:600;color:#1f2328">${r.nama.replace(/</g,'&lt;')}</div>
+                <div style="font-size:.72rem;color:#9ca3af">${r.nis ? r.nis : ''}</div>
+            </td>
+            <td style="padding:8px 10px;text-align:center;border-bottom:1px solid #f3f4f6">${nilaiHtml}</td>
+            <td style="padding:8px 10px;text-align:center;border-bottom:1px solid #f3f4f6">${predHtml}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #f3f4f6;font-size:.8rem">${deskHtml}</td>
+        </tr>`;
+    }).join('');
+
+    tbody.innerHTML = rowsHTML;
+}
+
+/* Tutup modal jika klik overlay (luar kotak) */
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('modalReviewNilai');
+    if (modal && e.target === modal) tutupReviewNilai();
 });
 </script>

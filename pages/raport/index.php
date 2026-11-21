@@ -278,6 +278,14 @@ if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     );
 }
 
+// Validasi kelas_id: pastikan kelas yang dipilih ada dalam daftar yang diizinkan untuk user ini
+if ($kelas_id) {
+    $allowed_kelas_ids = array_column($kelas_list, 'id');
+    if (!in_array($kelas_id, array_map('intval', $allowed_kelas_ids))) {
+        $kelas_id = 0; // reset jika kelas tidak diizinkan (mis. URL manipulation)
+    }
+}
+
 // Daftar siswa di kelas yang dipilih beserta nilai rata-rata
 $siswa_raport = [];
 if ($kelas_id) {

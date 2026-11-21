@@ -159,6 +159,36 @@ function run_auto_migrations(): void {
         $pdo->exec("ALTER TABLE guru ADD COLUMN unit ENUM('putra','putri','campuran') NOT NULL DEFAULT 'campuran' AFTER status");
     }
 
+    // v9: tabel untuk menyimpan state kolom aktif (checkbox NH1/NH2/NH3/Tugas)
+    // per konteks input nilai bulk — agar konsisten di semua perangkat & user
+    $pdo->exec("CREATE TABLE IF NOT EXISTS nilai_kolom_aktif (
+        id              INT AUTO_INCREMENT PRIMARY KEY,
+        kelas_id        INT NOT NULL,
+        mapel_id        INT NOT NULL,
+        tahun_ajaran_id INT NOT NULL,
+        jenis_raport    ENUM('bulanan','sts','semester') NOT NULL DEFAULT 'bulanan',
+        bulan           TINYINT DEFAULT NULL,
+        aktif_nh1       TINYINT(1) NOT NULL DEFAULT 1,
+        aktif_nh2       TINYINT(1) NOT NULL DEFAULT 1,
+        aktif_nh3       TINYINT(1) NOT NULL DEFAULT 1,
+        aktif_tugas     TINYINT(1) NOT NULL DEFAULT 1,
+        updated_by      INT DEFAULT NULL,
+        updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_nka (kelas_id, mapel_id, tahun_ajaran_id, jenis_raport, bulan),
+        FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+        FOREIGN KEY (mapel_id) REFERENCES mapel(id) ON DELETE CASCADE,
+        FOREIGN KEY (tahun_ajaran_id) REFERENCES tahun_ajaran(id) ON DELETE CASCADE,
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // v10: pastikan setiap kepala_sekolah punya guru record (untuk penyimpanan unit)
+    // Unit default = 'putra'. Super admin perlu edit akun kepsek putri untuk mengubahnya.
+    $pdo->exec("INSERT IGNORE INTO guru (user_id, unit, status)
+        SELECT u.id, 'putra', 'guru'
+        FROM users u
+        LEFT JOIN guru g ON g.user_id = u.id
+        WHERE u.role = 'kepala_sekolah' AND g.id IS NULL");
+
     // v6: seed data awal jenis_raport jika masih kosong
     $cnt = (int)$pdo->query('SELECT COUNT(*) FROM jenis_raport')->fetchColumn();
     if ($cnt === 0) {
@@ -180,27 +210,23 @@ function run_auto_migrations(): void {
  *
  * Mengembalikan array dengan dua kunci:
  *   'sql'    — cuplikan SQL WHERE untuk ditambahkan ke query kelas,
- *              mis. "AND k.unit IN ('putri','campuran')"
+ *              mis. "AND k.unit = 'putri'"
  *              atau "" (string kosong) jika tidak ada filter.
- *   'units'  — array nilai unit yang boleh diakses, mis. ['putri','campuran']
+ *   'units'  — array nilai unit yang boleh diakses, mis. ['putri']
  *              atau [] jika akses penuh (tidak perlu filter).
  *
  * Aturan:
- *   super_admin                → akses semua, tidak ada filter
- *   kepala_sekolah unit putra  → akses semua (putra + putri + campuran)
- *   kepala_sekolah unit putri  → hanya putri + campuran
- *   kepala_sekolah unit campuran → akses semua
- *   admin / guru / wali_kelas unit putra  → putra + campuran
- *   admin / guru / wali_kelas unit putri  → putri + campuran
- *   admin / guru / wali_kelas unit campuran → akses semua
- *   siswa                      → tidak relevan, kembalikan kosong
+ *   super_admin                           → akses semua, tidak ada filter
+ *   semua role dengan unit putra          → hanya kelas putra
+ *   semua role dengan unit putri          → hanya kelas putri
+ *   semua role dengan unit campuran       → disamakan putra (pengaman)
  *
  * Parameter $alias = alias tabel kelas di query, default 'k'.
  */
 function get_user_unit_filter(array $user, string $alias = 'k'): array {
     $role = $user['role'] ?? 'siswa';
 
-    // super_admin: bebas penuh — termasuk kelas campuran
+    // super_admin: bebas penuh
     if ($role === 'super_admin') {
         return ['sql' => '', 'units' => []];
     }
@@ -209,15 +235,13 @@ function get_user_unit_filter(array $user, string $alias = 'k'): array {
     $guru_row  = db_row('SELECT unit FROM guru WHERE user_id = :uid', [':uid' => $user['id']]);
     $user_unit = $guru_row['unit'] ?? 'putra'; // default putra jika belum diset
 
-    // campuran di tabel guru → hanya super_admin yang harusnya punya ini,
-    // tapi jika non-super_admin dapat unit campuran, perlakukan sama seperti putra
-    // agar tidak ada celah akses. Tetap filter ke putra.
+    // campuran di tabel guru → non-super_admin tidak boleh dapat akses campuran,
+    // perlakukan sama seperti putra agar tidak ada celah akses.
     if ($user_unit === 'campuran') {
         $user_unit = 'putra';
     }
 
-    // kepala_sekolah unit putra → akses semua kecuali campuran
-    // (kepsek putra memimpin seluruh putra, namun tidak melihat kelas campuran)
+    // unit putra → kelas putra saja
     if ($user_unit === 'putra') {
         return [
             'sql'   => "AND {$alias}.unit = 'putra'",
@@ -225,7 +249,7 @@ function get_user_unit_filter(array $user, string $alias = 'k'): array {
         ];
     }
 
-    // unit putri → putri saja
+    // unit putri → kelas putri saja
     return [
         'sql'   => "AND {$alias}.unit = 'putri'",
         'units' => ['putri'],

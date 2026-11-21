@@ -96,6 +96,14 @@ if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
 $where  = ['n.tahun_ajaran_id = :ta'];
 $params = [':ta' => $ta_id];
 
+
+// Terapkan filter unit ke query nilai (kelas k di-JOIN di semua query nilai di bawah)
+if ($_unit_sql !== '') {
+    // $_unit_sql berbentuk "AND k.unit = 'putra'" — strip "AND " agar cocok dengan array $where
+    $where[] = preg_replace('/^\s*AND\s+/i', '', $_unit_sql);
+}
+
+
 if (in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     // Admin & kepala sekolah: lihat semua
 } elseif ($guru_status === 'wali_kelas') {

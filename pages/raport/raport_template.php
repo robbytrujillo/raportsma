@@ -474,7 +474,7 @@ $row_no = 0;
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-                    <?= $has_data ? number_format($na, 0) : '0' ?>
+                    <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>
@@ -500,7 +500,7 @@ $row_no = 0;
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
-                    <?= $has_data ? number_format($na, 0) : '0' ?>
+                    <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>

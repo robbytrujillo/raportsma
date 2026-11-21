@@ -301,14 +301,16 @@ function get_predikat(float $nilai, float $krit_a = null, float $krit_b = null, 
 }
 
 /**
- * Hitung nilai akhir BULANAN &mdash; fleksibel.
- * Rata-rata dihitung hanya dari komponen yang terisi (nilai > 0).
- * Contoh: NH1=90 saja &rarr; NA=90 | NH1=90,NH2=80 &rarr; NA=85 | semua 4 &rarr; NA=(sum/4)
+ * Hitung nilai akhir BULANAN — hanya komponen yang terisi (> 0) yang dihitung.
+ * Contoh: NH1=96, NH2=0, NH3=0, Tugas=95 → (96+95)/2 = 95.5
+ * Ini mencerminkan intent guru: kolom yang tidak diisi tidak masuk rata-rata.
+ * Untuk mengatur kolom mana yang aktif secara eksplisit, gunakan form Input Nilai Kelas
+ * (bulk.php) yang mendukung checkbox kolom aktif.
  */
 function hitung_nilai_bulanan(float $h1, float $h2, float $h3, float $tugas): float {
-    $sum = $h1 + $h2 + $h3 + $tugas;
-    if ($sum == 0) return 0;
-    return round($sum / 4, 2);
+    $komponen = array_filter([$h1, $h2, $h3, $tugas], fn($v) => $v > 0);
+    if (count($komponen) === 0) return 0;
+    return round(array_sum($komponen) / count($komponen), 2);
 }
 
 /**

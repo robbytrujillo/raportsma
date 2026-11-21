@@ -110,6 +110,9 @@ $routes = [
 
     // Pengaturan Sekolah
     'sekolah'         => 'pages/sekolah/index.php',
+
+    // Tools admin
+    'tools.recalc_nilai' => 'pages/tools/recalc_nilai.php',
 ];
 
 // ── Tentukan file halaman yang akan di-include ─────────────────

@@ -99,7 +99,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     <!-- Apply saved theme BEFORE first paint to prevent flash of orange -->
     <script>
     (function(){
-        var t=localStorage.getItem('raportku_theme');
+        var t=localStorage.getItem('raporku_theme');
         if(t==='green'||t==='purple'||t==='orange'||t==='sky'||t==='pink')
             document.documentElement.classList.add('theme-'+t);
     })();
