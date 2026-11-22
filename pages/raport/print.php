@@ -39,6 +39,17 @@ if (!$siswa) {
     http_response_code(404); echo 'Siswa tidak ditemukan.'; exit;
 }
 
+// Kepala sekolah hanya bisa cetak raport siswa dari unitnya
+if ($role === 'kepala_sekolah') {
+    $_unit_f_p = get_user_unit_filter($user_ses);
+    if (!empty($_unit_f_p['units'])) {
+        $kelas_unit_siswa = db_row('SELECT unit FROM kelas WHERE id = :id', [':id' => $siswa['kelas_id'] ?? 0])['unit'] ?? 'campuran';
+        if (!in_array($kelas_unit_siswa, $_unit_f_p['units'])) {
+            http_response_code(403); echo 'Akses ditolak: siswa tidak berada di unit Anda.'; exit;
+        }
+    }
+}
+
 // Gate: siswa hanya bisa cetak jika raport sudah dipublikasi
 if ($role === 'siswa') {
     $pub_bulan_p = (in_array($jenis,['bulanan','sts']) && $bulan) ? $bulan : null;

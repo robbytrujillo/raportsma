@@ -55,6 +55,15 @@ if (!in_array($role, ['admin','super_admin','kepala_sekolah'])) {
     if (!$kelas_check) {
         http_response_code(403); echo 'Anda tidak memiliki akses ke kelas ini.'; exit;
     }
+} elseif ($role === 'kepala_sekolah') {
+    // Kepala sekolah hanya bisa cetak kelas di unitnya
+    $_unit_f_pk = get_user_unit_filter($user_ses);
+    if (!empty($_unit_f_pk['units'])) {
+        $kelas_unit_pk = db_row('SELECT unit FROM kelas WHERE id = :id', [':id' => $kelas_id])['unit'] ?? 'campuran';
+        if (!in_array($kelas_unit_pk, $_unit_f_pk['units'])) {
+            http_response_code(403); echo 'Akses ditolak: kelas ini tidak berada di unit Anda.'; exit;
+        }
+    }
 }
 
 // Ambil data kelas & TA

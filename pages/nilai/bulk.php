@@ -79,9 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         $h2   = (float)($_POST["h2_$sid"]    ?? 0);
         $h3   = (float)($_POST["h3_$sid"]    ?? 0);
         $tug  = (float)($_POST["tugas_$sid"] ?? 0);
-        $sts  = (float)($_POST["sts_$sid"]        ?? 0);
-        $kumu = (float)($_POST["kumulatif_$sid"]  ?? 0);
-        $sas  = (float)($_POST["sas_$sid"]        ?? 0);
+        $sts       = (float)($_POST["sts_$sid"]        ?? 0);
+        $kumu_raw  = $_POST["kumulatif_$sid"] ?? '';  // raw string untuk cek apakah benar-benar dikosongkan
+        $kumu      = $kumu_raw !== '' ? (float)$kumu_raw : null; // null = belum diisi
+        $sas       = (float)($_POST["sas_$sid"]        ?? 0);
         $desk_siswa = trim($_POST["deskripsi_$sid"] ?? '');
         $catatan    = trim($_POST["catatan_$sid"]   ?? '');
 
@@ -89,8 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         if ($p_jenis === 'semester') {
             $na = round($sas, 2);
         } elseif ($p_jenis === 'sts') {
-            // nilai_akhir = kumulatif (jika diisi), fallback ke sts saja
-            $na = round($kumu > 0 ? $kumu : $sts, 2);
+            // nilai_akhir = kumulatif jika guru mengisinya (termasuk jika diisi 0)
+            // fallback ke sts hanya jika field kumulatif benar-benar kosong/tidak dikirim
+            $na = round($kumu !== null ? $kumu : $sts, 2);
         } else {
             // Gunakan hanya kolom yang diaktifkan guru (checkbox)
             $aktif_nh1   = (int)($_POST['aktif_nh1']   ?? 1);
@@ -1067,10 +1069,11 @@ function hitungBaris(sid, isInit = false) {
             nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length :
             0;
     } else if (JENIS === 'sts') {
-        const stsVal  = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
-        const kumuVal = parseFloat(document.querySelector(`[name="kumulatif_${sid}"]`)?.value) || 0;
-        // nilai_akhir = kumulatif jika diisi, fallback ke sts
-        na = kumuVal > 0 ? kumuVal : stsVal;
+        const stsVal   = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
+        const kumuRaw  = document.querySelector(`[name="kumulatif_${sid}"]`)?.value ?? '';
+        // nilai_akhir = kumulatif jika guru mengisi field (termasuk jika diisi 0),
+        // fallback ke sts hanya jika field kumulatif benar-benar kosong/tidak diisi
+        na = kumuRaw.trim() !== '' ? (parseFloat(kumuRaw) || 0) : stsVal;
     } else {
         na = parseFloat(document.querySelector(`[name="sas_${sid}"]`)?.value) || 0;
     }

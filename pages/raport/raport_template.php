@@ -349,7 +349,7 @@ $row_no = 0;
             elseif ($is_bulanan): ?>
             <?= sprintf($lbl['judul_bulanan'], $bulan_label) ?>
             <?php elseif ($is_sts): ?>
-            <?= sprintf($lbl['judul_sts'], $bulan_label ? ' &mdash; ' . $bulan_label : '') ?>
+            <?= sprintf($lbl['judul_sts'], '') ?>
             <?php else: ?>
             <?= sprintf($lbl['judul_semester'], strtoupper($semester_lbl_loc)) ?>
             <?php endif; ?>
@@ -367,7 +367,7 @@ $row_no = 0;
             <td style="width:12px">:</td>
             <td style="font-weight:600"><?= htmlspecialchars($siswa['nama_lengkap'] ?? '') ?></td>
         </tr>
-        <?php if (!$is_bulanan && ($siswa['nis'] || $siswa['nisn'])): ?>
+        <?php if (!$is_bulanan && !$is_sts && ($siswa['nis'] || $siswa['nisn'])): ?>
         <tr>
             <td style="padding:1px 0;font-weight:600"><?= $lbl['nis_nisn'] ?></td>
             <td>:</td>
@@ -384,14 +384,14 @@ $row_no = 0;
             <td>:</td>
             <td><?= $semester_lbl_loc ?></td>
         </tr>
-        <?php if ($is_global && $is_bulanan): ?>
+        <?php if ($is_global && ($is_bulanan || $is_sts)): ?>
         <tr>
             <td style="padding:1px 0;font-weight:600">Performance Indicators</td>
             <td>:</td>
             <td><?= (int)$krit_c ?></td>
         </tr>
         <?php endif; ?>
-        <?php if ($peringkat !== '-' && !$is_bulanan): ?>
+        <?php if ($peringkat !== '-' && !$is_bulanan && !$is_sts): ?>
         <tr>
             <td style="padding:1px 0;font-weight:600"><?= $lbl['peringkat'] ?></td>
             <td>:</td>
@@ -620,8 +620,8 @@ $row_no = 0;
             </table>
         </div>
 
-        <?php if (!$is_bulanan): ?>
-        <!-- ── KETIDAKHADIRAN &mdash; hanya untuk STS & Semester ── -->
+        <?php if (!$is_bulanan && !$is_sts): ?>
+        <!-- ── KETIDAKHADIRAN — hanya untuk Semester ── -->
         <div style="margin-top:10px;font-family:'Times New Roman',serif;font-size:10pt">
             <table style="border:1px solid #000;border-collapse:collapse;width:auto">
                 <thead>

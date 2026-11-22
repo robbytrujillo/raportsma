@@ -39,6 +39,15 @@ if ($role === 'wali_kelas') {
         header('Location: ' . page_url('raport'));
         exit;
     }
+} elseif ($role === 'kepala_sekolah') {
+    // Kepala sekolah hanya bisa akses leger kelas di unitnya
+    $_unit_f_lg = get_user_unit_filter($user_ses);
+    if (!empty($_unit_f_lg['units'])) {
+        $kelas_unit_lg = db_row('SELECT unit FROM kelas WHERE id = :id', [':id' => $kelas_id])['unit'] ?? 'campuran';
+        if (!in_array($kelas_unit_lg, $_unit_f_lg['units'])) {
+            http_response_code(403); echo 'Akses ditolak: kelas ini tidak berada di unit Anda.'; exit;
+        }
+    }
 }
 
 // Data kelas & TA (ambil lengkap termasuk tanda_tangan wali kelas untuk TTD)

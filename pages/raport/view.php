@@ -24,6 +24,17 @@ if (!$siswa) {
     echo '<div class="page-content"><div class="alert alert-danger">Siswa tidak ditemukan.</div></div>'; return;
 }
 
+// Kepala sekolah hanya bisa melihat raport siswa dari unitnya
+if ($role === 'kepala_sekolah') {
+    $_unit_f_v = get_user_unit_filter($user_ses);
+    if (!empty($_unit_f_v['units'])) {
+        $kelas_unit_siswa = db_row('SELECT unit FROM kelas WHERE id = :id', [':id' => $siswa['kelas_id'] ?? 0])['unit'] ?? 'campuran';
+        if (!in_array($kelas_unit_siswa, $_unit_f_v['units'])) {
+            echo '<div class="page-content"><div class="alert alert-danger">Akses ditolak: siswa tidak berada di unit Anda.</div></div>'; return;
+        }
+    }
+}
+
 // Gate: siswa hanya bisa lihat jika raport sudah dipublikasi
 if ($role === 'siswa') {
     $pub_bulan_v = (in_array($jenis,['bulanan','sts']) && $bulan) ? $bulan : null;

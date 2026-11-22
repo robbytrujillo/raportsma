@@ -34,6 +34,15 @@ if ($role === 'wali_kelas') {
     $kelas_check = db_row('SELECT id FROM kelas WHERE id = :kid AND wali_kelas_id = :uid',
         [':kid' => $kelas_id, ':uid' => $user_ses['id']]);
     if (!$kelas_check) { http_response_code(403); echo 'Akses ditolak.'; exit; }
+} elseif ($role === 'kepala_sekolah') {
+    // Kepala sekolah hanya bisa export leger kelas di unitnya
+    $_unit_f_le = get_user_unit_filter($user_ses);
+    if (!empty($_unit_f_le['units'])) {
+        $kelas_unit_le = db_row('SELECT unit FROM kelas WHERE id = :id', [':id' => $kelas_id])['unit'] ?? 'campuran';
+        if (!in_array($kelas_unit_le, $_unit_f_le['units'])) {
+            http_response_code(403); echo 'Akses ditolak: kelas ini tidak berada di unit Anda.'; exit;
+        }
+    }
 }
 
 $kelas = db_row('SELECT k.*, u.nama_lengkap as wali_nama FROM kelas k LEFT JOIN users u ON u.id = k.wali_kelas_id WHERE k.id = :id', [':id' => $kelas_id]);
