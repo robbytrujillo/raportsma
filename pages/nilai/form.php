@@ -62,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $h3   = (float)($_POST['nilai_harian_3'] ?? 0);
         $tug  = (float)($_POST['nilai_tugas'] ?? 0);
         $sts  = (float)($_POST['nilai_sts'] ?? 0);
+        $kumu = (float)($_POST['nilai_kumulatif'] ?? 0);
         $sas  = (float)($_POST['nilai_sas'] ?? 0);
         $catatan  = trim($_POST['catatan'] ?? '');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($jenis === 'semester') {
             $nilai_akhir = hitung_nilai_semester($sas);
         } elseif ($jenis === 'sts') {
-            $nilai_akhir = hitung_nilai_sts($sts);
+            $nilai_akhir = hitung_nilai_sts($sts, $kumu);
         } else {
             // bulanan: hanya NH1+NH2+NH3 + Tugas (tanpa STS)
             $nilai_akhir = hitung_nilai_bulanan($h1, $h2, $h3, $tug);
@@ -85,7 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $p = [
                 ':siswa'=>$siswa_id, ':mapel'=>$mapel_id, ':kelas'=>$kelas_id, ':ta'=>$ta_id,
                 ':guru'=>$user['id'], ':jenis'=>$jenis, ':bulan'=>$bulan,
-                ':h1'=>$h1, ':h2'=>$h2, ':h3'=>$h3, ':tug'=>$tug, ':sts'=>$sts, ':sas'=>$sas,
+                ':h1'=>$h1, ':h2'=>$h2, ':h3'=>$h3, ':tug'=>$tug,
+                ':sts'=>$sts, ':kumu'=>$kumu, ':sas'=>$sas,
                 ':na'=>$nilai_akhir, ':pred'=>$predikat, ':cat'=>$catatan, ':desk'=>$deskripsi,
             ];
 
@@ -94,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'UPDATE nilai SET siswa_user_id=:siswa, mapel_id=:mapel, kelas_id=:kelas,
                      tahun_ajaran_id=:ta, guru_user_id=:guru, jenis_raport=:jenis, bulan=:bulan,
                      nilai_harian_1=:h1, nilai_harian_2=:h2, nilai_harian_3=:h3,
-                     nilai_tugas=:tug, nilai_sts=:sts, nilai_sas=:sas,
+                     nilai_tugas=:tug, nilai_sts=:sts, nilai_kumulatif=:kumu, nilai_sas=:sas,
                      nilai_akhir=:na, predikat=:pred, catatan=:cat, deskripsi=:desk
                      WHERE id=:id',
                     array_merge($p, [':id'=>$id])
@@ -105,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     db_execute(
                         'INSERT INTO nilai (siswa_user_id,mapel_id,kelas_id,tahun_ajaran_id,guru_user_id,
                           jenis_raport,bulan,nilai_harian_1,nilai_harian_2,nilai_harian_3,
-                          nilai_tugas,nilai_sts,nilai_sas,nilai_akhir,predikat,catatan,deskripsi)
-                         VALUES (:siswa,:mapel,:kelas,:ta,:guru,:jenis,:bulan,:h1,:h2,:h3,:tug,:sts,:sas,:na,:pred,:cat,:desk)',
+                          nilai_tugas,nilai_sts,nilai_kumulatif,nilai_sas,nilai_akhir,predikat,catatan,deskripsi)
+                         VALUES (:siswa,:mapel,:kelas,:ta,:guru,:jenis,:bulan,:h1,:h2,:h3,:tug,:sts,:kumu,:sas,:na,:pred,:cat,:desk)',
                         $p
                     );
                     flash('success','Nilai berhasil disimpan.');
@@ -305,7 +307,7 @@ $n = $nilai_data ?? [];
                 Bulanan (NH1 + NH2 + NH3 + Tugas)
               </option>
               <option value="sts" <?= ($n['jenis_raport']??'')==='sts'?'selected':'' ?>>
-                STS â€" Sumatif Tengah Semester
+                ASTS &mdash; Asesmen Sumatif Tengah Semester
               </option>
               <option value="semester" <?= ($n['jenis_raport']??'')==='semester'?'selected':'' ?>>
                 Semester / SAS â€" Sumatif Akhir Semester
@@ -358,17 +360,23 @@ $n = $nilai_data ?? [];
           </div>
         </div>
 
-        <!-- â"€â"€ FIELD STS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
+        <!-- FIELD ASTS -->
         <div id="groupSts">
           <p class="text-sm font-semibold text-gray-600 mb-3">
-            Komponen Nilai STS
-            <span class="text-xs text-gray-400 font-normal ml-1">â€" Nilai Akhir = Nilai STS</span>
+            Komponen Nilai ASTS
+            <span class="text-xs text-gray-400 font-normal ml-1">&mdash; Nilai Akhir = Kumulatif (jika diisi)</span>
           </p>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div class="form-group">
-              <label class="form-label">Nilai STS</label>
+              <label class="form-label">Nilai ASTS</label>
               <input type="number" name="nilai_sts" class="form-control" min="0" max="100" step="0.01"
                 value="<?= $n['nilai_sts'] ?? 0 ?>">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nilai Kumulatif</label>
+              <input type="number" name="nilai_kumulatif" class="form-control" min="0" max="100" step="0.01"
+                value="<?= $n['nilai_kumulatif'] ?? 0 ?>">
+              <p class="text-xs text-gray-400 mt-1">Rata-rata semester berjalan. Predikat &amp; deskripsi mengacu nilai ini.</p>
             </div>
           </div>
         </div>

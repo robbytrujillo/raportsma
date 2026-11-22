@@ -22,10 +22,10 @@ $errors    = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'recalc') {
     if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: /tools.recalc_nilai'); exit; }
 
-    // Ambil semua record bulanan (bukan semester/sts — sts hanya 1 komponen)
+    // Ambil semua record bulanan dan sts
     $rows = db_query(
         "SELECT id, nilai_harian_1, nilai_harian_2, nilai_harian_3, nilai_tugas,
-                nilai_sts, nilai_sas, jenis_raport, nilai_akhir
+                nilai_sts, nilai_kumulatif, nilai_sas, jenis_raport, nilai_akhir
          FROM nilai
          WHERE jenis_raport IN ('bulanan', 'sts')"
     );
@@ -37,9 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'recal
         $h3    = (float)$r['nilai_harian_3'];
         $tug   = (float)$r['nilai_tugas'];
         $sts   = (float)$r['nilai_sts'];
+        $kumu  = (float)($r['nilai_kumulatif'] ?? 0);
 
         if ($jenis === 'sts') {
-            $na_baru = round($sts, 2);
+            // nilai_akhir = kumulatif jika diisi, fallback ke sts (kompatibel data lama)
+            $na_baru = round($kumu > 0 ? $kumu : $sts, 2);
         } else {
             // bulanan: rata-rata hanya dari komponen yang > 0 (intent guru)
             $komponen = array_filter([$h1, $h2, $h3, $tug], fn($v) => $v > 0);
@@ -79,7 +81,7 @@ $preview_rows = db_query(
             ta.nama as ta_nama, ta.semester,
             n.jenis_raport, n.bulan,
             n.nilai_harian_1, n.nilai_harian_2, n.nilai_harian_3,
-            n.nilai_tugas, n.nilai_sts, n.nilai_akhir as na_lama
+            n.nilai_tugas, n.nilai_sts, n.nilai_kumulatif, n.nilai_akhir as na_lama
      FROM nilai n
      LEFT JOIN users u ON u.id = n.siswa_user_id
      LEFT JOIN mapel m ON m.id = n.mapel_id
@@ -96,9 +98,10 @@ foreach ($preview_rows as &$pr) {
     $h3   = (float)$pr['nilai_harian_3'];
     $tug  = (float)$pr['nilai_tugas'];
     $sts  = (float)$pr['nilai_sts'];
+    $kumu = (float)($pr['nilai_kumulatif'] ?? 0);
 
     if ($pr['jenis_raport'] === 'sts') {
-        $na_baru = round($sts, 2);
+        $na_baru = round($kumu > 0 ? $kumu : $sts, 2);
     } else {
         $komponen = array_filter([$h1, $h2, $h3, $tug], fn($v) => $v > 0);
         $na_baru  = count($komponen) > 0

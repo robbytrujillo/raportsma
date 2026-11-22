@@ -314,11 +314,14 @@ function hitung_nilai_bulanan(float $h1, float $h2, float $h3, float $tugas): fl
 }
 
 /**
- * Hitung nilai akhir STS (Sumatif Tengah Semester)
- * Komponen: Nilai STS saja
+ * Hitung nilai akhir ASTS (Asesmen Sumatif Tengah Semester)
+ * nilai_akhir = nilai kumulatif (jika ada), fallback ke nilai_sts saja
+ * Deskripsi dan predikat berdasarkan nilai kumulatif.
  */
-function hitung_nilai_sts(float $sts): float {
-    return round($sts, 2);
+function hitung_nilai_sts(float $sts, float $kumulatif = 0): float {
+    // Jika kumulatif diisi, nilai_akhir = kumulatif
+    // Jika tidak, nilai_akhir = sts (kompatibel mundur dengan data lama)
+    return round($kumulatif > 0 ? $kumulatif : $sts, 2);
 }
 
 /**

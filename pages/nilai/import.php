@@ -111,7 +111,7 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
         [':kid'=>$f_kelas]
     );
 
-    $jenis_label = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'STS – Tengah Semester','semester'=>'Semester (SAS)'];
+    $jenis_label = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'ASTS – Tengah Semester','semester'=>'Semester (SAS)'];
     $bulan_nama  = ($f_bulan > 0) ? (BULAN_ID[$f_bulan] ?? '') : '';
     $periode_str = ($f_jenis !== 'semester' && $f_bulan > 0) ? $bulan_nama : ($f_jenis === 'semester' ? 'Semester' : '');
 
@@ -182,7 +182,7 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
         $col_nh3   = count($col_defs) + 1; $col_defs[] = ['header'=>'NH3',  'field'=>'nh3',  'width'=>10,'required'=>false,'type'=>'number','note'=>'Nilai Harian 3'];
         $col_tugas = count($col_defs) + 1; $col_defs[] = ['header'=>'Tugas','field'=>'tugas','width'=>10,'required'=>false,'type'=>'number','note'=>'Nilai Tugas'];
     } elseif ($f_jenis === 'sts') {
-        $col_sts   = count($col_defs) + 1; $col_defs[] = ['header'=>'Nilai STS','field'=>'sts','width'=>12,'required'=>true,'type'=>'number','note'=>'Nilai STS langsung'];
+        $col_sts   = count($col_defs) + 1; $col_defs[] = ['header'=>'Nilai ASTS','field'=>'sts','width'=>12,'required'=>true,'type'=>'number','note'=>'Nilai ASTS (ujian tengah semester)'];
     } else {
         $col_sas   = count($col_defs) + 1; $col_defs[] = ['header'=>'Nilai SAS','field'=>'sas','width'=>12,'required'=>true,'type'=>'number','note'=>'Nilai SAS langsung'];
     }
@@ -363,7 +363,7 @@ if (isset($_GET['download_template'])) {
             ['header'=>'Nilai Harian 2',  'field'=>'nh2',             'width'=>13,'required'=>false, 'type'=>'number','example'=>88],
             ['header'=>'Nilai Harian 3',  'field'=>'nh3',             'width'=>13,'required'=>false, 'type'=>'number','example'=>90],
             ['header'=>'Nilai Tugas',     'field'=>'tugas',           'width'=>12,'required'=>false, 'type'=>'number','example'=>80],
-            ['header'=>'Nilai STS',       'field'=>'sts',             'width'=>12,'required'=>false, 'type'=>'number','example'=>0],
+            ['header'=>'Nilai ASTS',      'field'=>'sts',             'width'=>12,'required'=>false, 'type'=>'number','example'=>0],
             ['header'=>'Nilai SAS',       'field'=>'sas',             'width'=>12,'required'=>false, 'type'=>'number','example'=>0],
             ['header'=>'Catatan',         'field'=>'catatan',         'width'=>28,'required'=>false, 'type'=>'text','format'=>'@','example'=>''],
         ],
@@ -734,7 +734,7 @@ if ($f_kelas && $f_mapel) {
     );
 }
 $f_siswa_count = $f_kelas ? (int)(db_row('SELECT COUNT(*) as n FROM siswa WHERE kelas_id=:k',[':k'=>$f_kelas])['n'] ?? 0) : 0;
-$jenis_opts    = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'STS – Tengah Semester','semester'=>'Semester (SAS)'];
+$jenis_opts    = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'ASTS – Tengah Semester','semester'=>'Semester (SAS)'];
 $bulk_ready    = $f_kelas && $f_mapel && ($f_jenis === 'semester' || $f_bulan > 0);
 $bulk_url      = '/nilai.import?download_bulk=1&f_ta='.$f_ta_id.'&f_kelas='.$f_kelas.'&f_mapel='.$f_mapel.'&f_jenis='.$f_jenis.'&f_bulan='.$f_bulan
                . '&aktif_nh1='.$f_aktif_nh1.'&aktif_nh2='.$f_aktif_nh2.'&aktif_nh3='.$f_aktif_nh3.'&aktif_tugas='.$f_aktif_tugas;

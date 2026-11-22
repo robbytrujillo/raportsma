@@ -50,7 +50,7 @@ if (!$kelas || !$ta) {
 }
 
 $sekolah      = sekolah_info();
-$jenis_label  = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'][$jenis] ?? ucfirst($jenis);
+$jenis_label  = ['bulanan'=>'Bulanan','sts'=>'ASTS','semester'=>'Semester'][$jenis] ?? ucfirst($jenis);
 $bulan_nama   = (in_array($jenis, ['bulanan','sts']) && $bulan) ? (BULAN_ID[$bulan] ?? '') : '';
 $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 

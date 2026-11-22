@@ -186,7 +186,7 @@ $offset        = ($page_n - 1) * $per_page;
 $periodes      = array_slice($all_periodes, $offset, $per_page);
 
 $bulan_names = BULAN_ID;
-$jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
+$jenis_label = ['bulanan'=>'Bulanan','sts'=>'ASTS','semester'=>'Semester'];
 $qstr_base   = http_build_query(['page'=>'raport.manage','ta'=>$ta_id,'kelas'=>$kelas_id]);
 ?>
 <div class="page-content">

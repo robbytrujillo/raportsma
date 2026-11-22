@@ -189,6 +189,13 @@ function run_auto_migrations(): void {
         LEFT JOIN guru g ON g.user_id = u.id
         WHERE u.role = 'kepala_sekolah' AND g.id IS NULL");
 
+    // v11: tambah kolom nilai_kumulatif ke tabel nilai (untuk jenis ASTS)
+    // Kolom ini menyimpan nilai kumulatif (rata-rata semester berjalan) di samping nilai ASTS
+    $cols_nilai = $pdo->query("SHOW COLUMNS FROM nilai")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('nilai_kumulatif', $cols_nilai)) {
+        $pdo->exec("ALTER TABLE nilai ADD COLUMN nilai_kumulatif DECIMAL(5,2) DEFAULT 0 AFTER nilai_sts");
+    }
+
     // v6: seed data awal jenis_raport jika masih kosong
     $cnt = (int)$pdo->query('SELECT COUNT(*) FROM jenis_raport')->fetchColumn();
     if ($cnt === 0) {

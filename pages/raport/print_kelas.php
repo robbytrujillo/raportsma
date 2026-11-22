@@ -98,7 +98,7 @@ if (empty($siswa_list)) {
 $total_siswa = count($siswa_list);
 
 // Label jenis & bulan untuk judul toolbar
-$jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'][$jenis] ?? $jenis;
+$jenis_label = ['bulanan'=>'Bulanan','sts'=>'ASTS','semester'=>'Semester'][$jenis] ?? $jenis;
 $bulan_nama  = (in_array($jenis,['bulanan','sts']) && $bulan) ? (BULAN_ID[$bulan] ?? '') : '';
 $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 ?>

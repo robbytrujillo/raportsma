@@ -79,8 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         $h2   = (float)($_POST["h2_$sid"]    ?? 0);
         $h3   = (float)($_POST["h3_$sid"]    ?? 0);
         $tug  = (float)($_POST["tugas_$sid"] ?? 0);
-        $sts  = (float)($_POST["sts_$sid"]   ?? 0);
-        $sas  = (float)($_POST["sas_$sid"]   ?? 0);
+        $sts  = (float)($_POST["sts_$sid"]        ?? 0);
+        $kumu = (float)($_POST["kumulatif_$sid"]  ?? 0);
+        $sas  = (float)($_POST["sas_$sid"]        ?? 0);
         $desk_siswa = trim($_POST["deskripsi_$sid"] ?? '');
         $catatan    = trim($_POST["catatan_$sid"]   ?? '');
 
@@ -88,7 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         if ($p_jenis === 'semester') {
             $na = round($sas, 2);
         } elseif ($p_jenis === 'sts') {
-            $na = round($sts, 2);
+            // nilai_akhir = kumulatif (jika diisi), fallback ke sts saja
+            $na = round($kumu > 0 ? $kumu : $sts, 2);
         } else {
             // Gunakan hanya kolom yang diaktifkan guru (checkbox)
             $aktif_nh1   = (int)($_POST['aktif_nh1']   ?? 1);
@@ -140,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
                 (siswa_user_id, mapel_id, kelas_id, tahun_ajaran_id, guru_user_id,
                  jenis_raport, bulan,
                  nilai_harian_1, nilai_harian_2, nilai_harian_3,
-                 nilai_tugas, nilai_sts, nilai_sas,
+                 nilai_tugas, nilai_sts, nilai_kumulatif, nilai_sas,
                  nilai_akhir, predikat, deskripsi, catatan)
              VALUES
-                (:sid,:m,:k,:ta,:guru,:j,:b,:h1,:h2,:h3,:tug,:sts,:sas,:na,:pred,:desk,:cat)
+                (:sid,:m,:k,:ta,:guru,:j,:b,:h1,:h2,:h3,:tug,:sts,:kumu,:sas,:na,:pred,:desk,:cat)
              ON DUPLICATE KEY UPDATE
                 guru_user_id    = VALUES(guru_user_id),
                 nilai_harian_1  = VALUES(nilai_harian_1),
@@ -151,6 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
                 nilai_harian_3  = VALUES(nilai_harian_3),
                 nilai_tugas     = VALUES(nilai_tugas),
                 nilai_sts       = VALUES(nilai_sts),
+                nilai_kumulatif = VALUES(nilai_kumulatif),
                 nilai_sas       = VALUES(nilai_sas),
                 nilai_akhir     = VALUES(nilai_akhir),
                 predikat        = VALUES(predikat),
@@ -158,7 +161,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
                 catatan         = VALUES(catatan)',
             [':sid'=>$sid, ':m'=>$p_mapel, ':k'=>$p_kelas, ':ta'=>$p_ta,
              ':guru'=>$user['id'], ':j'=>$p_jenis, ':b'=>$p_bulan,
-             ':h1'=>$h1,':h2'=>$h2,':h3'=>$h3,':tug'=>$tug,':sts'=>$sts,':sas'=>$sas,
+             ':h1'=>$h1,':h2'=>$h2,':h3'=>$h3,':tug'=>$tug,
+             ':sts'=>$sts,':kumu'=>$kumu,':sas'=>$sas,
              ':na'=>$na, ':pred'=>$pred, ':desk'=>$desk_siswa, ':cat'=>$catatan]
         );
     }
@@ -344,7 +348,7 @@ if ($kolom_aktif_db) {
 $bulan_opts = BULAN_ID;
 $jenis_opts = [
     'bulanan'  => 'Bulanan (NH + Tugas)',
-    'sts'      => 'STS / Sumatif Tengah Semester',
+    'sts'      => 'ASTS / Asesmen Sumatif Tengah Semester',
     'semester' => 'Semester / SAS',
 ];
 $ready = $kelas_id && $mapel_id && $ta_id;
@@ -649,7 +653,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                     <th style="width:68px">NH3</th>
                                     <th style="width:68px">Tugas</th>
                                     <?php elseif ($jenis === 'sts'): ?>
-                                    <th style="width:90px">Nilai STS</th>
+                                    <th style="width:82px">ASTS</th>
+                                    <th style="width:82px">Kumulatif</th>
                                     <?php else: ?>
                                     <th style="width:90px">Nilai SAS</th>
                                     <?php endif; ?>
@@ -725,6 +730,14 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                             class="nilai-input form-control text-center"
                                             style="padding:4px 2px;font-size:.8rem" data-sid="<?= $s['id'] ?>"
                                             data-field="sts" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="kumulatif_<?= $s['id'] ?>" min="0" max="100" step="0.01"
+                                            value="<?= $nv['nilai_kumulatif'] ?? 0 ?>"
+                                            class="nilai-input form-control text-center"
+                                            style="padding:4px 2px;font-size:.8rem;background:#f0f9ff;border-color:#bae6fd"
+                                            data-sid="<?= $s['id'] ?>"
+                                            data-field="kumulatif" onchange="hitungBaris(<?= $s['id'] ?>)">
                                     </td>
 
                                     <?php else: ?>
@@ -934,7 +947,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <?php if ($jenis === 'bulanan' && $bulan): ?>
                     &mdash; <?= BULAN_ID[$bulan] ?? "Bulan $bulan" ?>
                     <?php elseif ($jenis === 'sts'): ?>
-                    &mdash; STS
+                    &mdash; ASTS
                     <?php elseif ($jenis === 'semester'): ?>
                     &mdash; Semester
                     <?php endif; ?>
@@ -1054,7 +1067,10 @@ function hitungBaris(sid, isInit = false) {
             nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length :
             0;
     } else if (JENIS === 'sts') {
-        na = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
+        const stsVal  = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
+        const kumuVal = parseFloat(document.querySelector(`[name="kumulatif_${sid}"]`)?.value) || 0;
+        // nilai_akhir = kumulatif jika diisi, fallback ke sts
+        na = kumuVal > 0 ? kumuVal : stsVal;
     } else {
         na = parseFloat(document.querySelector(`[name="sas_${sid}"]`)?.value) || 0;
     }
@@ -1302,8 +1318,10 @@ function isiSemuaRata() {
                 if (el) el.value = num;
             });
         } else if (JENIS === 'sts') {
-            const el = document.querySelector(`[name="sts_${sid}"]`);
-            if (el) el.value = num;
+            const elSts  = document.querySelector(`[name="sts_${sid}"]`);
+            const elKumu = document.querySelector(`[name="kumulatif_${sid}"]`);
+            if (elSts)  elSts.value  = num;
+            if (elKumu) elKumu.value = num;
         } else {
             const el = document.querySelector(`[name="sas_${sid}"]`);
             if (el) el.value = num;

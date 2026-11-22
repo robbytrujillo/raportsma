@@ -150,7 +150,7 @@ if ($kelas_id && $jenis && ($siswa_id || true)) {
 }
 
 $bulan_names = BULAN_ID;
-$jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS','semester'=>'Semester'];
+$jenis_label = ['bulanan'=>'Bulanan','sts'=>'ASTS','semester'=>'Semester'];
 $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'siswa'=>$siswa_id,'jenis'=>$jenis,'bulan'=>$bulan]);
 ?>
 <div class="page-content">
@@ -209,7 +209,7 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                     <select name="jenis" class="form-control">
                         <option value="">-- Pilih Jenis --</option>
                         <option value="bulanan"  <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-                        <option value="sts"      <?= $jenis==='sts'     ?'selected':'' ?>>STS</option>
+                        <option value="sts"      <?= $jenis==='sts'     ?'selected':'' ?>>ASTS</option>
                         <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester</option>
                     </select>
                 </div>
@@ -491,7 +491,7 @@ function mnr_hapusSiswa(siswaId, kelasId, taId, jenis, bulan, namaSiswa) {
     document.getElementById('mnr_jenis').value    = jenis;
     document.getElementById('mnr_bulan').value    = bulan || '';
 
-    var jenisLabel = {bulanan:'Bulanan',sts:'STS',semester:'Semester'};
+    var jenisLabel = {bulanan:'Bulanan',sts:'ASTS',semester:'Semester'};
     var bulanNames = <?= json_encode(array_map('strval', BULAN_ID)) ?>;
     var bDesc = bulan && bulanNames[bulan] ? ' � ' + bulanNames[bulan] : '';
     document.getElementById('mnrSiswaDesc').textContent =

@@ -65,7 +65,7 @@ $is_global      = stripos($nama_kelas_raw, 'global') !== false;
 // Digunakan di seluruh template: jika $is_global pakai EN, jika tidak pakai ID
 $lbl = $is_global ? [
     'judul_bulanan'   => ' (PERIOD: %s)',
-    'judul_sts'       => 'MID-SEMESTER REPORT%s',
+    'judul_sts'       => 'MID SEMESTER REPORT%s',
     'judul_semester'  => 'SEMESTER %s ACADEMIC REPORT',
     'tahun_pelajaran' => 'ACADEMIC YEAR %s',
     'nama_siswa'      => 'Name of Student',
@@ -80,6 +80,8 @@ $lbl = $is_global ? [
     'siswa'           => 'students',
     'mata_pelajaran'  => 'Lesson Subject',
     'angka'           => 'Number',
+    'asts_col'        => 'Mid Semester',
+    'kumulatif_col'   => 'Cumulative',
     'deskripsi'       => 'Description',
     'kelompok'        => 'Group',          // "Group A", "Group B", dll
     'kelompok_c_pil'  => 'Group C (Elective)',
@@ -98,7 +100,7 @@ $lbl = $is_global ? [
     'tgl_format'      => 'en',             // format tanggal bahasa Inggris
 ] : [
     'judul_bulanan'   => 'LAPORAN BULANAN (PERIODE : %s)',
-    'judul_sts'       => 'LAPORAN SUMATIF TENGAH SEMESTER%s',
+    'judul_sts'       => 'LAPORAN ASESMEN SUMATIF TENGAH SEMESTER%s',
     'judul_semester'  => 'LAPORAN HASIL BELAJAR SEMESTER %s',
     'tahun_pelajaran' => 'TAHUN PELAJARAN %s',
     'nama_siswa'      => 'Nama Murid',
@@ -113,6 +115,8 @@ $lbl = $is_global ? [
     'siswa'           => 'siswa',
     'mata_pelajaran'  => 'MATA PELAJARAN',
     'angka'           => 'Angka',
+    'asts_col'        => 'ASTS',
+    'kumulatif_col'   => 'Kumulatif',
     'deskripsi'       => 'Deskripsi',
     'kelompok'        => 'Kelompok',
     'kelompok_c_pil'  => 'Kelompok C (Mapel Pilihan)',
@@ -398,23 +402,38 @@ $row_no = 0;
     </table>
 
     <!-- ── TABEL NILAI ───────────────────────────────────────── -->
+    <?php
+    // STS pakai 6 kolom (tambah ASTS + Kumulatif), jenis lain tetap 5 kolom
+    $total_cols = $is_sts ? 6 : 5;
+    ?>
     <table class="raport-nilai-table" style="font-family:'Times New Roman',serif;font-size:10pt">
         <thead>
             <tr style="background:#fff">
-                <!-- Kolom Mata Pelajaran: No(tanpa label) | sub | Nama &mdash; 5 kolom total (Pred dihapus) -->
-                <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:48%">
+                <!-- Kolom Mata Pelajaran -->
+                <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:<?= $is_sts ? '42%' : '48%' ?>">
                     <?= $lbl['mata_pelajaran'] ?>
                 </th>
+                <?php if ($is_sts): ?>
+                <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $is_global ? 'Cognitive Score' : 'NILAI PENGETAHUAN' ?>
+                </th>
+                <?php else: ?>
                 <th colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:center">
                     <?= $is_global ? 'Cognitive Score' : 'NILAI PENGETAHUAN' ?>
                 </th>
+                <?php endif; ?>
             </tr>
             <tr style="background:#fff">
                 <th style="border:1px solid #000;padding:4px 6px;width:26px;text-align:center"></th>
                 <th style="border:1px solid #000;padding:4px 6px;width:18px;text-align:center"></th>
                 <th style="border:1px solid #000;padding:4px 6px;text-align:left">
                     <?= $is_global ? 'Subject' : 'Nama Mata Pelajaran' ?></th>
+                <?php if ($is_sts): ?>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['asts_col'] ?></th>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:52px"><?= $lbl['kumulatif_col'] ?></th>
+                <?php else: ?>
                 <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['angka'] ?></th>
+                <?php endif; ?>
                 <th style="border:1px solid #000;padding:4px 8px;text-align:center"><?= $lbl['deskripsi'] ?></th>
             </tr>
         </thead>
@@ -437,13 +456,13 @@ $row_no = 0;
           }
         ?>
             <tr style="background:#f0f0f0">
-                <td colspan="5" style="border:1px solid #000;padding:4px 8px;font-weight:700">
+                <td colspan="<?= $total_cols ?>" style="border:1px solid #000;padding:4px 8px;font-weight:700">
                     <?= htmlspecialchars($kg_label) ?>
                 </td>
             </tr>
 
             <?php elseif ($row['type'] === 'parent_header'): ?>
-            <!-- ── Baris Induk Mapel &mdash; nomor tampil, Pred dihapus ── -->
+            <!-- ── Baris Induk Mapel ── -->
             <?php $row_no++; ?>
             <tr>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;
@@ -453,16 +472,18 @@ $row_no = 0;
                     <?= htmlspecialchars($row['nama_mapel']) ?>:
                 </td>
                 <td style="border:1px solid #000;padding:4px 6px"></td>
+                <?php if ($is_sts): ?><td style="border:1px solid #000;padding:4px 6px"></td><?php endif; ?>
                 <td style="border:1px solid #000;padding:4px 8px"></td>
             </tr>
 
             <?php elseif ($row['type'] === 'child'): ?>
-            <!-- ── Baris Sub-Mapel &mdash; kolom Pred dihapus ── -->
+            <!-- ── Baris Sub-Mapel ── -->
             <?php
           $n        = $row['nilai'];
           $na       = (float)($n['nilai_akhir'] ?? 0);
-          $has_data = ($n['id'] !== null);  // false = nilai belum diisi guru
-          // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
+          $n_asts   = (float)($n['nilai_sts'] ?? 0);
+          $n_kumu   = (float)($n['nilai_kumulatif'] ?? 0);
+          $has_data = ($n['id'] !== null);
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
         ?>
             <tr>
@@ -473,21 +494,31 @@ $row_no = 0;
                 <td style="border:1px solid #000;padding:4px 8px">
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
+                <?php if ($is_sts): ?>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $has_data ? number_format($n_asts, 0) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $has_data ? number_format($n_kumu, 0) : '' ?>
+                </td>
+                <?php else: ?>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
                     <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
+                <?php endif; ?>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
             </tr>
 
             <?php elseif ($row['type'] === 'single'): ?>
-            <!-- ── Baris Mapel Mandiri &mdash; kolom Pred dihapus ── -->
+            <!-- ── Baris Mapel Mandiri ── -->
             <?php
           $n        = $row['nilai'];
           $na       = (float)($n['nilai_akhir'] ?? 0);
-          $has_data = ($n['id'] !== null);  // false = nilai belum diisi guru
-          // ?? hanya cek null &mdash; pakai ?: agar fallback jika string kosong
+          $n_asts   = (float)($n['nilai_sts'] ?? 0);
+          $n_kumu   = (float)($n['nilai_kumulatif'] ?? 0);
+          $has_data = ($n['id'] !== null);
           $desk = trim($n['deskripsi'] ?? '') ?: trim($n['catatan'] ?? '');
           $row_no++;
         ?>
@@ -499,9 +530,18 @@ $row_no = 0;
                 <td style="border:1px solid #000;padding:4px 8px;font-weight:700">
                     <?= htmlspecialchars($n['nama_mapel'] ?? '') ?>
                 </td>
+                <?php if ($is_sts): ?>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $has_data ? number_format($n_asts, 0) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
+                    <?= $has_data ? number_format($n_kumu, 0) : '' ?>
+                </td>
+                <?php else: ?>
                 <td style="border:1px solid #000;padding:4px 6px;text-align:center;font-weight:700">
                     <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
+                <?php endif; ?>
                 <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
@@ -512,14 +552,36 @@ $row_no = 0;
 
             <?php if (empty($ordered_rows)): ?>
             <tr>
-                <td colspan="5" style="border:1px solid #000;padding:14px;text-align:center;
+                <td colspan="<?= $total_cols ?>" style="border:1px solid #000;padding:14px;text-align:center;
                                 color:#666;font-style:italic">
                     Belum ada data nilai untuk periode ini.
                 </td>
             </tr>
             <?php endif; ?>
 
-            <!-- ── Baris Rata-rata &mdash; colspan disesuaikan 5 kolom ── -->
+            <!-- ── Baris Rata-rata ── -->
+            <?php if ($is_sts):
+                // Rata-rata ASTS = avg(nilai_sts dari baris terisi)
+                $avg_asts = 0; $avg_kumu = 0;
+                $n_terisi_sts = array_filter($nilai_terisi, fn($r) => $r['jenis_raport'] === 'sts');
+                if (count($n_terisi_sts) > 0) {
+                    $avg_asts = round(array_sum(array_column($n_terisi_sts, 'nilai_sts')) / count($n_terisi_sts), 2);
+                    $avg_kumu = round(array_sum(array_column($n_terisi_sts, 'nilai_kumulatif')) / count($n_terisi_sts), 2);
+                }
+            ?>
+            <tr style="font-weight:700;background:#f9f9f9">
+                <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $lbl['rata_rata'] ?>
+                </td>
+                <td style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $avg_asts > 0 ? number_format($avg_asts, 2) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:5px 8px;text-align:center">
+                    <?= $avg_kumu > 0 ? number_format($avg_kumu, 2) : '' ?>
+                </td>
+                <td style="border:1px solid #000;padding:5px 8px"></td>
+            </tr>
+            <?php else: ?>
             <tr style="font-weight:700;background:#f9f9f9">
                 <td colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center">
                     <?= $lbl['rata_rata'] ?>
@@ -529,6 +591,7 @@ $row_no = 0;
                 </td>
                 <td style="border:1px solid #000;padding:5px 8px"></td>
             </tr>
+            <?php endif; ?>
 
         </tbody>
     </table>

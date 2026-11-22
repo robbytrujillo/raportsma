@@ -179,8 +179,8 @@ if (isset($_GET['export'])) {
             ['header'=>'NH2',             'field'=>'nh2',             'width'=>10,'required'=>false, 'type'=>'number'],
             ['header'=>'NH3',             'field'=>'nh3',             'width'=>10,'required'=>false, 'type'=>'number'],
             ['header'=>'Tugas',           'field'=>'tugas',           'width'=>10,'required'=>false, 'type'=>'number'],
-            ['header'=>'STS',             'field'=>'sts',             'width'=>10,'required'=>false, 'type'=>'number',
-             'note'=>'Nilai STS (untuk jenis=sts)'],
+            ['header'=>'ASTS',            'field'=>'sts',             'width'=>10,'required'=>false, 'type'=>'number',
+             'note'=>'Nilai ASTS (untuk jenis=sts)'],
             ['header'=>'SAS',             'field'=>'sas',             'width'=>10,'required'=>false, 'type'=>'number',
              'note'=>'Nilai SAS (untuk jenis=semester)'],
             ['header'=>'Catatan',         'field'=>'catatan',         'width'=>28,'required'=>false, 'type'=>'text',  'format'=>'@'],
@@ -318,7 +318,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                     <select name="jenis" class="form-control">
                         <option value="">Semua</option>
                         <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS</option>
+                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>ASTS</option>
                         <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester</option>
                     </select>
                 </div>
@@ -356,7 +356,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                         <th style="width:56px;text-align:center">NH2</th>
                         <th style="width:56px;text-align:center">NH3</th>
                         <th style="width:58px;text-align:center">Tugas</th>
-                        <th style="width:56px;text-align:center">STS</th>
+                        <th style="width:56px;text-align:center">ASTS</th>
                         <th style="width:56px;text-align:center">SAS</th>
                         <th style="width:96px;text-align:center">Nilai Akhir</th>
                         <th style="width:56px;text-align:center">Pred.</th>
@@ -382,7 +382,7 @@ $qstr_n = http_build_query(['page'=>'nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'jen
                             <?php
                 $j = $n['jenis_raport'];
                 $jBadge = $j==='bulanan' ? 'badge-blue' : ($j==='sts' ? 'badge-purple' : 'badge-orange');
-                $jLabel = $j==='bulanan' ? 'Bulanan' : ($j==='sts' ? 'STS' : 'Semester');
+                $jLabel = $j==='bulanan' ? 'Bulanan' : ($j==='sts' ? 'ASTS' : 'Semester');
               ?>
                             <span class="badge <?= $jBadge ?>"><?= $jLabel ?></span>
                         </td>

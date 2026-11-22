@@ -67,7 +67,7 @@ if (in_array($role, ['admin','super_admin'])) {
     $filter_ta_id = (int)($filter_ta['id'] ?? 0);
 
     // Filter jenis_raport: semua | bulanan | sts | semester
-    $filter_jenis_opts = ['semua' => 'Semua Jenis', 'bulanan' => 'Bulanan', 'sts' => 'STS', 'semester' => 'Semester'];
+    $filter_jenis_opts = ['semua' => 'Semua Jenis', 'bulanan' => 'Bulanan', 'sts' => 'ASTS', 'semester' => 'Semester'];
     $filter_jenis = isset($_GET['f_jenis']) && array_key_exists($_GET['f_jenis'], $filter_jenis_opts)
                     ? $_GET['f_jenis'] : 'semua';
 
@@ -774,7 +774,7 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
     $pc_js_bulan   = json_encode($pc_bulan);
     $pc_js_mapel   = json_encode($pc_mapel);
     // Label bulan: jika key=0 berarti jenis semester/tanpa bulan
-    $jenis_label_map = ['sts' => 'STS', 'semester' => 'Semester', 'semua' => 'Semua'];
+    $jenis_label_map = ['sts' => 'ASTS', 'semester' => 'Semester', 'semua' => 'Semua'];
     $pc_js_bnames  = json_encode(array_combine(
         $pc_bulan,
         array_map(fn($b) => $b > 0

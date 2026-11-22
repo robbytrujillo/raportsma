@@ -182,7 +182,7 @@ if ($role === 'siswa') {
         <?php
           $rj = $r['jenis_raport'];
           $rjBadge = $rj==='bulanan' ? 'badge-blue' : ($rj==='sts' ? 'badge-purple' : 'badge-orange');
-          $rjLabel = $rj==='bulanan' ? 'Bulanan' : ($rj==='sts' ? 'STS' : 'Semester');
+          $rjLabel = $rj==='bulanan' ? 'Bulanan' : ($rj==='sts' ? 'ASTS' : 'Semester');
           $bulan_nama = (in_array($rj,['bulanan','sts']) && $r['bulan']) ? (BULAN_ID[(int)$r['bulan']] ?? '') : '';
           $avg = (float)($r['avg_nilai'] ?? 0);
           $pred_avg = $avg > 0 ? get_predikat($avg) : '-';
@@ -398,7 +398,7 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
                     <label class="form-label">Jenis Rapor</label>
                     <select name="jenis" class="form-control" onchange="this.form.submit()">
                         <option value="bulanan" <?= $jenis==='bulanan' ?'selected':'' ?>>Bulanan</option>
-                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>STS &mdash; Tengah Semester
+                        <option value="sts" <?= $jenis==='sts'     ?'selected':'' ?>>ASTS &mdash; Tengah Semester
                         </option>
                         <option value="semester" <?= $jenis==='semester'?'selected':'' ?>>Semester (SAS)</option>
                     </select>
@@ -681,7 +681,7 @@ if ($kelas_id) {
 <!-- Modal: belum ada nilai � tampil untuk semua role yang boleh akses leger -->
 <?php if ($leger_boleh && !$ada_nilai && $kelas_id): ?>
 <?php
-    $jenis_label = ['bulanan'=>'Bulanan','sts'=>'STS (Tengah Semester)','semester'=>'Semester (SAS)'];
+    $jenis_label = ['bulanan'=>'Bulanan','sts'=>'ASTS (Tengah Semester)','semester'=>'Semester (SAS)'];
     $kelas_nama_leger = db_row('SELECT nama_kelas FROM kelas WHERE id = :id', [':id' => $kelas_id])['nama_kelas'] ?? '';
     $input_nilai_url  = '/nilai';
 ?>
