@@ -9,6 +9,10 @@ $user = current_user();
 $_exp_uf   = get_user_unit_filter($user, 'g');
 $_exp_usql = $_exp_uf['sql']; // mis. "AND g.unit = 'putri'" atau ""
 
+// Periksa apakah admin sudah diset unit-nya (punya row di tabel guru)
+$_admin_unit_belum_diset = ($user['role'] === 'admin')
+    && !db_row('SELECT id FROM guru WHERE user_id = :uid', [':uid' => $user['id']]);
+
 // �"��"� Export CSV �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
 // Export XLSX -- kolom sesuai template import guru.
 if (isset($_GET['export'])) {
@@ -138,7 +142,13 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
     <div class="page-header">
         <div>
             <h1 class="page-title">Data Guru</h1>
-            <p class="page-subtitle">Kelola data guru dan wali kelas</p>
+            <p class="page-subtitle">Kelola data guru dan wali kelas
+                <?php if ($_gunit_f['units']): ?>
+                &mdash; <span class="badge <?= $_gunit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>" style="font-size:.75rem">
+                    Unit <?= ucfirst($_gunit_f['units'][0]) ?>
+                </span>
+                <?php endif; ?>
+            </p>
         </div>
         <div class="flex gap-2">
             <a href="/guru?export=1" class="btn btn-secondary" style="border-radius: 30px">
@@ -166,6 +176,14 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             </a>
         </div>
     </div>
+
+    <?php if (!empty($_admin_unit_belum_diset)): ?>
+    <div class="alert alert-danger mb-4" style="border-radius:10px">
+        ⚠️ <strong>Unit akun belum diset.</strong>
+        Akun Admin ini belum memiliki unit yang dikonfigurasi, sehingga filter data menggunakan default (Putra).
+        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit akun ini</a> untuk memastikan filter berjalan sesuai yang diinginkan.
+    </div>
+    <?php endif; ?>
 
     <div class="card">
         <div class="card-header">

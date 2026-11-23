@@ -196,6 +196,22 @@ function run_auto_migrations(): void {
         $pdo->exec("ALTER TABLE nilai ADD COLUMN nilai_kumulatif DECIMAL(5,2) DEFAULT 0 AFTER nilai_sts");
     }
 
+    // v12: tambah UNIQUE KEY pada guru.user_id agar ON DUPLICATE KEY UPDATE bisa bekerja
+    // dan pastikan setiap user role 'admin' punya guru record (untuk penyimpanan unit)
+    $idxs_guru = array_column($pdo->query("SHOW INDEX FROM guru")->fetchAll(PDO::FETCH_ASSOC), 'Key_name');
+    if (!in_array('uq_guru_user_id', $idxs_guru)) {
+        // Hapus duplikat dulu (pertahankan id terkecil per user_id)
+        $pdo->exec("DELETE g1 FROM guru g1
+            INNER JOIN guru g2 ON g2.user_id = g1.user_id AND g2.id < g1.id");
+        $pdo->exec("ALTER TABLE guru ADD UNIQUE KEY uq_guru_user_id (user_id)");
+    }
+    // Pastikan setiap admin punya row guru dengan unit default 'putra'
+    $pdo->exec("INSERT IGNORE INTO guru (user_id, unit, status)
+        SELECT u.id, 'putra', 'guru'
+        FROM users u
+        LEFT JOIN guru g ON g.user_id = u.id
+        WHERE u.role = 'admin' AND g.id IS NULL");
+
     // v6: seed data awal jenis_raport jika masih kosong
     $cnt = (int)$pdo->query('SELECT COUNT(*) FROM jenis_raport')->fetchColumn();
     if ($cnt === 0) {
@@ -233,7 +249,7 @@ function run_auto_migrations(): void {
 function get_user_unit_filter(array $user, string $alias = 'k'): array {
     $role = $user['role'] ?? 'siswa';
 
-    // super_admin: bebas penuh
+    // super_admin: bebas penuh (akses semua unit)
     if ($role === 'super_admin') {
         return ['sql' => '', 'units' => []];
     }

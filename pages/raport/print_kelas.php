@@ -119,6 +119,7 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Rapor Kelas <?= htmlspecialchars($kelas['nama_kelas']) ?> &mdash; <?= htmlspecialchars($ta['nama']) ?>
     </title>
+    <link rel="icon" type="image/png" href="../uploads/logos/logo_1792811174.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
@@ -205,25 +206,55 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
         background: rgba(255, 255, 255, 0.9);
         color: #f97316;
     }
-    .print-toolbar button.btn-print:hover { background: #fff; }
+
+    .print-toolbar button.btn-print:hover {
+        background: #fff;
+    }
 
     /* Tombol ukuran aktif */
     .btn-paper-active {
-        background: rgba(255,255,255,.9) !important;
-        color: #f97316 !important; font-weight: 700 !important;
+        background: rgba(255, 255, 255, .9) !important;
+        color: #f97316 !important;
+        font-weight: 700 !important;
     }
 
     @media (max-width: 600px) {
-        body { padding-top: 110px; }
-        .print-toolbar { padding: 8px 12px; gap: 6px; }
-        .print-toolbar .tb-title { font-size: .82rem; }
-        .print-toolbar .tb-meta { font-size: .72rem; }
-        .print-toolbar .tb-btns { gap: 6px; }
-        .print-toolbar a, .print-toolbar button { padding: 5px 10px; font-size: .75rem; }
+        body {
+            padding-top: 110px;
+        }
+
+        .print-toolbar {
+            padding: 8px 12px;
+            gap: 6px;
+        }
+
+        .print-toolbar .tb-title {
+            font-size: .82rem;
+        }
+
+        .print-toolbar .tb-meta {
+            font-size: .72rem;
+        }
+
+        .print-toolbar .tb-btns {
+            gap: 6px;
+        }
+
+        .print-toolbar a,
+        .print-toolbar button {
+            padding: 5px 10px;
+            font-size: .75rem;
+        }
     }
+
     @media (max-width: 420px) {
-        body { padding-top: 130px; }
-        .print-toolbar .tb-title { font-size: .75rem; }
+        body {
+            padding-top: 130px;
+        }
+
+        .print-toolbar .tb-title {
+            font-size: .75rem;
+        }
     }
 
     /* ── Progress indicator ── */
@@ -257,28 +288,38 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
 
     /* Override raport page &mdash; ikuti ukuran kertas */
     :root {
-      --paper-w:     <?= $paper['w'] ?>;
-      --paper-h:     <?= $paper['h'] ?>;
-      --paper-pad-v: <?= $paper['pad_v'] ?>;
-      --paper-pad-h: <?= $paper['pad_h'] ?>;
+        --paper-w: <?=$paper['w'] ?>;
+        --paper-h: <?=$paper['h'] ?>;
+        --paper-pad-v: <?=$paper['pad_v'] ?>;
+        --paper-pad-h: <?=$paper['pad_h'] ?>;
     }
+
     .raport-page {
         width: var(--paper-w) !important;
         /* No min-height on screen — prevents overflow that causes blank print pages */
         padding: var(--paper-pad-v) var(--paper-pad-h) !important;
         margin: 20px auto !important;
-        box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, .12) !important;
         box-sizing: border-box !important;
     }
+
     /* ── @media print ── */
     @media print {
-        body { background: #fff !important; padding-top: 0 !important; }
-        .print-toolbar, .print-progress { display: none !important; }
+        body {
+            background: #fff !important;
+            padding-top: 0 !important;
+        }
+
+        .print-toolbar,
+        .print-progress {
+            display: none !important;
+        }
 
         .student-raport-wrap {
             page-break-after: always;
             break-after: page;
         }
+
         .student-raport-wrap:last-child {
             page-break-after: avoid;
             break-after: avoid;
@@ -291,7 +332,11 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             margin: 0 !important;
             box-shadow: none !important;
         }
-        @page { size: <?= $paper['size_css'] ?>; margin: 0; }
+
+        @page {
+            size: <?=$paper['size_css'] ?>;
+            margin: 0;
+        }
     }
 
     /* A4 zoom + tightening sudah ditangani style.css @media print body[data-paper="a4"] */
@@ -316,33 +361,30 @@ $semester_lbl = ($ta['semester'] ?? 1) == 1 ? 'Ganjil' : 'Genap';
             <!-- Pilih ukuran kertas -->
             <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
                         border-radius:30px;padding:3px">
-                <button onclick="setUkuran('a4')"
-                    class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
+                <button onclick="setUkuran('a4')" class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
                     style="border:none;border-radius:30px;padding:3px 10px"
                     title="Kertas A4 &mdash; 210 × 297 mm">A4</button>
-                <button onclick="setUkuran('f4')"
-                    class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
+                <button onclick="setUkuran('f4')" class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
                     style="border:none;border-radius:30px;padding:3px 10px"
                     title="Kertas F4 &mdash; 215 × 330 mm">F4</button>
             </div>
             <!-- Date picker tanggal cetak -->
             <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;white-space:nowrap">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
                 Tgl Cetak:
-                <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
-                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);
+                <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);
                            color:#fff;padding:4px 8px;border-radius:30px;font-size:.82rem;cursor:pointer"
                     onchange="applyTglCetak(this.value)">
             </label>
             <a href="<?= page_url('raport', ['ta'=>$ta_id,'kelas'=>$kelas_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
-               onclick="if(window.opener||history.length<=1){window.close();return false;}"
-               style="border-radius:30px">
+                onclick="if(window.opener||history.length<=1){window.close();return false;}" style="border-radius:30px">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <polyline points="15 18 9 12 15 6"/>
+                    <polyline points="15 18 9 12 15 6" />
                 </svg>
                 Kembali
             </a>
@@ -374,6 +416,18 @@ $wali_kelas_shared = $kelas['wali_kelas_id']
     ? db_row('SELECT * FROM users WHERE id = :id', [':id' => $kelas['wali_kelas_id']])
     : null;
 
+// Cache penugasan mapel untuk kelas ini — query sekali di luar loop siswa
+// agar semua siswa mendapatkan daftar mapel yang sama (sama seperti raport_data.php)
+$penugasan_mapel_shared = db_query(
+    "SELECT DISTINCT m.id as mapel_id, m.nama_mapel, m.kelompok, m.kode_mapel,
+                     m.parent_id, m.sub_label, m.urutan
+     FROM guru_mapel_kelas gmk
+     INNER JOIN mapel m ON m.id = gmk.mapel_id
+     WHERE gmk.kelas_id = :kid AND gmk.tahun_ajaran_id = :ta
+     ORDER BY m.kelompok, m.urutan, m.nama_mapel",
+    [':kid' => $kelas_id, ':ta' => $ta_id]
+);
+
 // Peringkat: sudah terurut dari query, index = peringkat-1
 foreach ($siswa_list as $rank_idx => $sw):
     $siswa_uid         = (int)$sw['user_id'];
@@ -394,7 +448,7 @@ foreach ($siswa_list as $rank_idx => $sw):
     );
     if (!$siswa) continue;
 
-    // Nilai
+    // Nilai yang sudah diinput
     $nilai_params = [':uid' => $siswa_uid, ':ta' => $ta_id, ':jenis' => $jenis];
     $bulan_cond   = '';
     if (in_array($jenis, ['bulanan','sts']) && $bulan) {
@@ -413,6 +467,43 @@ foreach ($siswa_list as $rank_idx => $sw):
         $nilai_params
     );
 
+    // Tambahkan mapel dari penugasan yang belum ada nilainya
+    // (sama persis seperti logika di raport_data.php)
+    $mapel_id_terisi = array_flip(array_column($nilai_list, 'mapel_id'));
+    $bulan_default   = (in_array($jenis, ['bulanan','sts']) && $bulan) ? $bulan : null;
+    foreach ($penugasan_mapel_shared as $pm) {
+        if (isset($mapel_id_terisi[$pm['mapel_id']])) continue;
+        $nilai_list[] = [
+            'id'              => null,
+            'siswa_user_id'   => $siswa_uid,
+            'mapel_id'        => $pm['mapel_id'],
+            'kelas_id'        => $kelas_id,
+            'tahun_ajaran_id' => $ta_id,
+            'guru_user_id'    => null,
+            'jenis_raport'    => $jenis,
+            'bulan'           => $bulan_default,
+            'nilai_harian_1'  => 0, 'nilai_harian_2' => 0, 'nilai_harian_3' => 0,
+            'nilai_tugas'     => 0, 'nilai_sts'       => 0, 'nilai_kumulatif' => 0,
+            'nilai_sas'       => 0, 'nilai_akhir'     => 0,
+            'predikat'        => null, 'catatan' => '', 'deskripsi' => '',
+            'nama_mapel'      => $pm['nama_mapel'],
+            'kelompok'        => $pm['kelompok'],
+            'kode_mapel'      => $pm['kode_mapel'],
+            'parent_id'       => $pm['parent_id'],
+            'sub_label'       => $pm['sub_label'],
+            'urutan'          => $pm['urutan'],
+        ];
+    }
+
+    // Urutkan ulang: kelompok → urutan → nama_mapel
+    usort($nilai_list, function($a, $b) {
+        $kg = strcmp($a['kelompok'] ?? '', $b['kelompok'] ?? '');
+        if ($kg !== 0) return $kg;
+        $ur = ($a['urutan'] ?? 0) <=> ($b['urutan'] ?? 0);
+        if ($ur !== 0) return $ur;
+        return strcmp($a['nama_mapel'] ?? '', $b['nama_mapel'] ?? '');
+    });
+
     // Absensi
     $absensi = db_row(
         'SELECT * FROM absensi WHERE siswa_user_id = :uid AND kelas_id = :kid AND tahun_ajaran_id = :ta',
@@ -423,9 +514,11 @@ foreach ($siswa_list as $rank_idx => $sw):
     $wali_kelas = $wali_kelas_shared;
     $kepsek     = $kepsek_shared;
 
-    // Rata-rata nilai
-    $avg_nilai = count($nilai_list) > 0
-        ? round(array_sum(array_column($nilai_list, 'nilai_akhir')) / count($nilai_list), 2)
+    // Rata-rata hanya dari mapel yang sudah benar-benar diinput guru (id !== null)
+    // agar tidak terdistorsi oleh placeholder mapel yang belum diisi
+    $nilai_terisi = array_filter($nilai_list, fn($r) => $r['id'] !== null);
+    $avg_nilai = count($nilai_terisi) > 0
+        ? round(array_sum(array_column($nilai_terisi, 'nilai_akhir')) / count($nilai_terisi), 2)
         : 0;
 ?>
     <div class="student-raport-wrap" data-siswa="<?= $rank_idx + 1 ?>">

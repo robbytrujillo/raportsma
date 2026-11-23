@@ -64,7 +64,7 @@ $is_global      = stripos($nama_kelas_raw, 'global') !== false;
 // ── Label bilingual ───────────────────────────────────────────
 // Digunakan di seluruh template: jika $is_global pakai EN, jika tidak pakai ID
 $lbl = $is_global ? [
-    'judul_bulanan'   => ' (PERIOD: %s)',
+    'judul_bulanan'   => 'MONTHLY REPORT (PERIOD: %s)',
     'judul_sts'       => 'MID SEMESTER REPORT%s',
     'judul_semester'  => 'SEMESTER %s ACADEMIC REPORT',
     'tahun_pelajaran' => 'ACADEMIC YEAR %s',
@@ -410,7 +410,8 @@ $row_no = 0;
         <thead>
             <tr style="background:#fff">
                 <!-- Kolom Mata Pelajaran -->
-                <th colspan="3" style="border:1px solid #000;padding:5px 8px;text-align:center;width:<?= $is_sts ? '42%' : '48%' ?>">
+                <th colspan="3"
+                    style="border:1px solid #000;padding:5px 8px;text-align:center;width:<?= $is_sts ? '42%' : '48%' ?>">
                     <?= $lbl['mata_pelajaran'] ?>
                 </th>
                 <?php if ($is_sts): ?>
@@ -429,8 +430,10 @@ $row_no = 0;
                 <th style="border:1px solid #000;padding:4px 6px;text-align:left">
                     <?= $is_global ? 'Subject' : 'Nama Mata Pelajaran' ?></th>
                 <?php if ($is_sts): ?>
-                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['asts_col'] ?></th>
-                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:52px"><?= $lbl['kumulatif_col'] ?></th>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['asts_col'] ?>
+                </th>
+                <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:52px">
+                    <?= $lbl['kumulatif_col'] ?></th>
                 <?php else: ?>
                 <th style="border:1px solid #000;padding:4px 8px;text-align:center;width:48px"><?= $lbl['angka'] ?></th>
                 <?php endif; ?>

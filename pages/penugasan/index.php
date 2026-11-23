@@ -24,7 +24,7 @@ if (isset($_GET['export'])) {
          FROM guru_mapel_kelas gmk
          LEFT JOIN users u  ON u.id  = gmk.guru_user_id
          LEFT JOIN mapel m  ON m.id  = gmk.mapel_id
-         LEFT JOIN kelas k  ON k.id  = gmk.kelas_id
+         INNER JOIN kelas k  ON k.id  = gmk.kelas_id
          LEFT JOIN tahun_ajaran ta ON ta.id = gmk.tahun_ajaran_id
          WHERE $exp_where
          ORDER BY u.nama_lengkap, m.nama_mapel, k.nama_kelas",
@@ -179,9 +179,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $msg = "Berhasil menduplikasi {$dup_count} penugasan ke semester tujuan.";
-        if ($lewat_count) $msg .= " ({$lewat_count} dilewati karena kelas tidak ditemukan atau sudah ada.)";
-        flash('success', $msg);
+        if ($dup_count === 0 && $lewat_count > 0) {
+            flash('info', "Semua {$lewat_count} penugasan sudah ada di semester tujuan — tidak ada yang baru ditambahkan.");
+        } elseif ($dup_count === 0) {
+            flash('error', 'Tidak ada penugasan yang berhasil diduplikasi. Pastikan kelas di semester tujuan sudah dibuat via menu Kelas → Duplikasi Semester.');
+        } else {
+            $msg = "Berhasil menduplikasi {$dup_count} penugasan ke semester tujuan.";
+            if ($lewat_count) $msg .= " ({$lewat_count} dilewati karena sudah ada.)";
+            flash('success', $msg);
+        }
         header('Location: /penugasan?ta=' . $ta_tujuan); exit;
     }
     header('Location: ' . $_back); exit;
@@ -195,6 +201,10 @@ $user       = current_user();
 $_unit_f    = get_user_unit_filter($user);
 $_unit_sql  = $_unit_f['sql'];
 $_gunit_f   = get_user_unit_filter($user, 'g');
+
+// Periksa apakah admin sudah diset unit-nya
+$_admin_unit_belum_diset = ($user['role'] === 'admin')
+    && !db_row('SELECT id FROM guru WHERE user_id = :uid', [':uid' => $user['id']]);
 
 // Guru: filter per unit (admin putri hanya lihat guru unit putri/campuran)
 $_guru_where = "u.role IN ('guru','wali_kelas')";
@@ -231,7 +241,7 @@ $total_p = (int)(db_row(
      FROM guru_mapel_kelas gmk
      LEFT JOIN users u ON u.id = gmk.guru_user_id
      LEFT JOIN mapel m ON m.id = gmk.mapel_id
-     LEFT JOIN kelas k ON k.id = gmk.kelas_id
+     INNER JOIN kelas k ON k.id = gmk.kelas_id
      WHERE $where_p",
     $params_p
 )['n'] ?? 0);
@@ -244,7 +254,7 @@ $penugasan = db_query(
      FROM guru_mapel_kelas gmk
      LEFT JOIN users u ON u.id = gmk.guru_user_id
      LEFT JOIN mapel m ON m.id = gmk.mapel_id
-     LEFT JOIN kelas k ON k.id = gmk.kelas_id
+     INNER JOIN kelas k ON k.id = gmk.kelas_id
      WHERE $where_p
      ORDER BY u.nama_lengkap, m.nama_mapel
      LIMIT $per OFFSET $offset",
@@ -256,7 +266,13 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
     <div class="page-header">
         <div>
             <h1 class="page-title">Penugasan Guru</h1>
-            <p class="page-subtitle">Atur guru mengajar mata pelajaran di kelas tertentu</p>
+            <p class="page-subtitle">Atur guru mengajar mata pelajaran di kelas tertentu
+                <?php if ($_unit_f['units']): ?>
+                &mdash; <span class="badge <?= $_unit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>" style="font-size:.75rem">
+                    Unit <?= ucfirst($_unit_f['units'][0]) ?>
+                </span>
+                <?php endif; ?>
+            </p>
         </div>
         <div class="flex gap-2">
             <a href="/penugasan?export=1&ta=<?= $ta_id ?>" class="btn btn-secondary" style="border-radius: 30px">
@@ -292,7 +308,14 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
         </div>
     </div>
 
-    <!-- Filter TA -->
+    <?php if (!empty($_admin_unit_belum_diset)): ?>
+    <div class="alert alert-danger mb-4" style="border-radius:10px">
+        ⚠️ <strong>Unit akun belum diset.</strong>
+        Akun Admin ini belum memiliki unit yang dikonfigurasi, sehingga filter data menggunakan default (Putra).
+        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit akun ini</a>.
+    </div>
+    <?php endif; ?>
+
     <!-- Filter TA + Search + Per-page -->
     <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
         <div class="flex gap-2 flex-wrap">

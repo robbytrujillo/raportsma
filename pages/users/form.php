@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $active   = isset($_POST['is_active']) ? 1 : 0;
         $password = $_POST['password'] ?? '';
         $unit_kepsek = in_array($_POST['unit_kepsek'] ?? '', ['putra','putri']) ? $_POST['unit_kepsek'] : 'putra';
+        // Field unit berlaku untuk admin dan kepala_sekolah
+        $roles_with_unit = ['kepala_sekolah', 'admin'];
 
         // Validasi
         if (!$nama)     $errors[] = 'Nama lengkap wajib diisi.';
@@ -49,14 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($password) { $sql .= ', password=:pw'; $p[':pw'] = password_hash($password, PASSWORD_BCRYPT); }
                 $sql .= ' WHERE id=:id';
                 db_execute($sql, $p);
-                // Jika role kepala_sekolah: insert or update guru record dengan unit yang dipilih
-                if ($role === 'kepala_sekolah') {
-                    $exists_guru = db_row('SELECT id FROM guru WHERE user_id=:uid', [':uid'=>$id]);
-                    if ($exists_guru) {
-                        db_execute('UPDATE guru SET unit=:u WHERE user_id=:uid', [':u'=>$unit_kepsek, ':uid'=>$id]);
-                    } else {
-                        db_execute('INSERT INTO guru (user_id, unit, status) VALUES (:uid,:u,"guru")', [':uid'=>$id, ':u'=>$unit_kepsek]);
-                    }
+                // Jika role kepala_sekolah atau admin: upsert guru record dengan unit yang dipilih
+                if (in_array($role, $roles_with_unit)) {
+                    $stmt = db()->prepare(
+                        "INSERT INTO guru (user_id, unit, status) VALUES (:uid, :u, 'guru')
+                         ON DUPLICATE KEY UPDATE unit = :u2"
+                    );
+                    $stmt->execute([':uid' => $id, ':u' => $unit_kepsek, ':u2' => $unit_kepsek]);
                 }
                 flash('success', 'Pengguna berhasil diperbarui.');
             } else {
@@ -65,9 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [':n'=>$nama, ':u'=>$username, ':e'=>$email, ':r'=>$role,
                      ':pw'=>password_hash($password, PASSWORD_BCRYPT), ':a'=>$active]
                 );
-                // Jika role kepala_sekolah: buat guru record dengan unit yang dipilih
-                if ($role === 'kepala_sekolah' && $new_id) {
-                    db_execute('INSERT INTO guru (user_id, unit, status) VALUES (:uid,:u,"guru")', [':uid'=>$new_id, ':u'=>$unit_kepsek]);
+                // Jika role kepala_sekolah atau admin: buat guru record dengan unit yang dipilih
+                if (in_array($role, $roles_with_unit) && $new_id) {
+                    $stmt = db()->prepare(
+                        "INSERT IGNORE INTO guru (user_id, unit, status) VALUES (:uid, :u, 'guru')"
+                    );
+                    $stmt->execute([':uid' => $new_id, ':u' => $unit_kepsek]);
                 }
                 flash('success', 'Pengguna baru berhasil ditambahkan.');
             }
@@ -78,9 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $roles = ['super_admin'=>'Super Admin','admin'=>'Admin','kepala_sekolah'=>'Kepala Sekolah','wali_kelas'=>'Wali Kelas','guru'=>'Guru','siswa'=>'Murid'];
 $d = $user_data ?? [];
-// Ambil unit kepsek yang sudah disimpan (jika edit)
+// Ambil unit yang sudah disimpan (jika edit, untuk kepala_sekolah atau admin)
 $existing_unit_kepsek = 'putra';
-if ($is_edit && ($d['role'] ?? '') === 'kepala_sekolah') {
+if ($is_edit && in_array($d['role'] ?? '', ['kepala_sekolah', 'admin'])) {
     $existing_unit_kepsek = db_row('SELECT unit FROM guru WHERE user_id=:uid', [':uid'=>$id])['unit'] ?? 'putra';
 }
 ?>
@@ -141,12 +145,12 @@ if ($is_edit && ($d['role'] ?? '') === 'kepala_sekolah') {
                     </div>
 
                     <div class="form-group" id="unitKepsekWrap" style="display:none">
-                        <label class="form-label">Unit Kepala Sekolah <span class="text-red-500">*</span></label>
+                        <label class="form-label">Unit <span class="text-red-500">*</span></label>
                         <select name="unit_kepsek" class="form-control">
                             <option value="putra" <?= ($existing_unit_kepsek==='putra'||($_POST['unit_kepsek']??'')==='putra')?'selected':'' ?>>SMA Putra</option>
                             <option value="putri" <?= ($existing_unit_kepsek==='putri'||($_POST['unit_kepsek']??'')==='putri')?'selected':'' ?>>SMA Putri</option>
                         </select>
-                        <p class="text-xs text-gray-400 mt-1">Menentukan data mana yang bisa dilihat oleh Kepala Sekolah ini.</p>
+                        <p class="text-xs text-gray-400 mt-1">Menentukan data unit mana yang dapat dikelola oleh akun ini.</p>
                     </div>
 
                     <div class="form-group md:col-span-2">
@@ -178,7 +182,7 @@ if ($is_edit && ($d['role'] ?? '') === 'kepala_sekolah') {
 function toggleUnitKepsek() {
     var role = document.getElementById('roleSelect').value;
     var wrap = document.getElementById('unitKepsekWrap');
-    wrap.style.display = (role === 'kepala_sekolah') ? '' : 'none';
+    wrap.style.display = (role === 'kepala_sekolah' || role === 'admin') ? '' : 'none';
 }
 // Jalankan saat halaman load
 toggleUnitKepsek();

@@ -3,7 +3,7 @@
  * pages/raport/leger_export.php
  * Export Leger Raport ke XLSX menggunakan PhpSpreadsheet (server-side, full styling).
  * Dipanggil via GET dengan parameter sama seperti leger.php.
- * Akses: super_admin, admin, kepala_sekolah, wali_kelas.
+ * Akses: super_admin, admin, kepala_sekolah, wali_kelas, guru (kelas yang diajarnya).
  */
 require_once __DIR__ . '/../../auth.php';
 require_login();
@@ -11,7 +11,7 @@ require_login();
 $user_ses = current_user();
 $role     = $user_ses['role'];
 
-if (!in_array($role, ['super_admin', 'admin', 'kepala_sekolah', 'wali_kelas'])) {
+if (!in_array($role, ['super_admin', 'admin', 'kepala_sekolah', 'wali_kelas', 'guru'])) {
     http_response_code(403); echo 'Akses ditolak.'; exit;
 }
 
@@ -29,12 +29,9 @@ if (!$ta_id || !$kelas_id) {
 
 require_once __DIR__ . '/../../db.php';
 
-// Verifikasi akses wali_kelas
-if ($role === 'wali_kelas') {
-    $kelas_check = db_row('SELECT id FROM kelas WHERE id = :kid AND wali_kelas_id = :uid',
-        [':kid' => $kelas_id, ':uid' => $user_ses['id']]);
-    if (!$kelas_check) { http_response_code(403); echo 'Akses ditolak.'; exit; }
-} elseif ($role === 'kepala_sekolah') {
+// Verifikasi akses lebih lanjut untuk kepala_sekolah (unit)
+// wali_kelas dan guru boleh export leger kelas manapun
+if ($role === 'kepala_sekolah') {
     // Kepala sekolah hanya bisa export leger kelas di unitnya
     $_unit_f_le = get_user_unit_filter($user_ses);
     if (!empty($_unit_f_le['units'])) {
@@ -171,9 +168,11 @@ foreach ($siswa_list as $i => $s) {
     $total_val  = 0; $jml = 0;
     $nilai_per_mapel = [];
     foreach ($mapel_list as $m) {
-        $v = $sn[$m['id']] ?? 0;
-        $nilai_per_mapel[$m['id']] = $v;
-        if ($v > 0) { $total_val += $v; $jml++; }
+        // null = belum diinput, angka (termasuk 0) = sudah diinput
+        $has_record = array_key_exists($m['id'], $sn);
+        $v = $has_record ? $sn[$m['id']] : null;
+        $nilai_per_mapel[$m['id']] = ['val' => $v, 'has' => $has_record];
+        if ($has_record && $v > 0) { $total_val += $v; $jml++; }
     }
     $rata  = $jml > 0 ? round($total_val / $jml, 1) : 0;
     $total = round($total_val, 1);
@@ -415,10 +414,12 @@ foreach ($rows_data as $ri => $rd) {
     $ws->setCellValue('C'.$row, $rd['nama']);   $ws->getStyle('C'.$row)->applyFromArray($namaStyle);
 
     foreach ($mapel_list as $idx => $m) {
-        $v   = $rd['nilai'][$m['id']] ?? 0;
-        $col = col_letter($colMapelStart + $idx);
-        $ws->setCellValue($col.$row, $v > 0 ? (int)round($v) : '');
-        $ws->getStyle($col.$row)->applyFromArray($v > 0 && $v < $krit_c ? $lowStyle : $baseStyle);
+        $entry = $rd['nilai'][$m['id']] ?? ['val' => null, 'has' => false];
+        $has   = $entry['has'];
+        $v     = $entry['val'];
+        $col   = col_letter($colMapelStart + $idx);
+        $ws->setCellValue($col.$row, $has ? (int)round($v) : '');
+        $ws->getStyle($col.$row)->applyFromArray($has && $v > 0 && $v < $krit_c ? $lowStyle : $baseStyle);
     }
 
     $ws->setCellValue(col_letter($colTotal).$row, $rd['total'] > 0 ? (int)$rd['total'] : '-');

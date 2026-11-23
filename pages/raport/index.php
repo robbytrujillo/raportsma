@@ -314,17 +314,9 @@ if ($kelas_id) {
 }
 
 // Cek apakah user boleh akses leger untuk kelas yang sedang dipilih
-// - super_admin, admin, kepala_sekolah: selalu boleh
-// - wali_kelas: hanya jika dia wali_kelas dari kelas yang dipilih
-// - guru biasa: tidak boleh
-if (in_array($role, ['super_admin','admin','kepala_sekolah'])) {
-    $leger_boleh = true;
-} elseif ($role === 'wali_kelas' && $kelas_id) {
-    $kelas_row   = db_row('SELECT wali_kelas_id FROM kelas WHERE id = :id', [':id' => $kelas_id]);
-    $leger_boleh = ($kelas_row && (int)$kelas_row['wali_kelas_id'] === (int)$user['id']);
-} else {
-    $leger_boleh = false;
-}
+// - super_admin, admin, kepala_sekolah, wali_kelas, guru: selalu boleh
+// - siswa: tidak boleh
+$leger_boleh = in_array($role, ['super_admin','admin','kepala_sekolah','wali_kelas','guru']);
 
 // Cek apakah user boleh cetak semua raport kelas
 // - super_admin, admin, kepala_sekolah: selalu boleh
@@ -586,14 +578,17 @@ $is_published = (int)($pub_status['is_published'] ?? 0);
 <?php
 // Tentukan pesan modal sesuai kondisi
 $kelas_dipilih_nama = '';
-if ($kelas_id && isset($kelas_row)) {
-    // Ambil nama kelas untuk pesan modal wali kelas
+if ($kelas_id) {
     $kelas_nama_row = db_row('SELECT nama_kelas FROM kelas WHERE id = :id', [':id' => $kelas_id]);
     $kelas_dipilih_nama = $kelas_nama_row['nama_kelas'] ?? '';
 }
-$modal_pesan = ($role === 'wali_kelas')
-    ? 'Anda bukan Wali Kelas dari kelas <strong>' . htmlspecialchars($kelas_dipilih_nama) . '</strong>.<br><br>Leger hanya dapat dibuka oleh Wali Kelas dari kelas yang bersangkutan, serta Admin dan Kepala Sekolah.'
-    : 'Halaman <strong>Leger Rapor</strong> hanya dapat diakses oleh<br><strong>Super Admin, Admin, Kepala Sekolah,</strong> dan <strong>Wali Kelas</strong>.<br><br>Akun Anda sebagai <strong>Guru</strong> tidak memiliki izin untuk membuka halaman ini.';
+if ($role === 'wali_kelas') {
+    $modal_pesan = 'Anda bukan Wali Kelas dari kelas <strong>' . htmlspecialchars($kelas_dipilih_nama) . '</strong>.<br><br>Leger hanya dapat dibuka oleh Wali Kelas dari kelas yang bersangkutan, serta Admin dan Kepala Sekolah.';
+} elseif ($role === 'guru') {
+    $modal_pesan = 'Anda tidak mengajar di kelas <strong>' . htmlspecialchars($kelas_dipilih_nama) . '</strong>.<br><br>Silakan pilih kelas yang Anda ajar untuk membuka Leger Rapor.';
+} else {
+    $modal_pesan = 'Halaman <strong>Leger Rapor</strong> tidak dapat diakses untuk role Anda.';
+}
 ?>
 <!-- Modal peringatan leger -->
 <div id="modalLegerDitolak" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);

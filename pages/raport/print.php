@@ -88,8 +88,9 @@ if ($role === 'siswa') {
     <link rel="icon" type="image/png" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
     <link rel="shortcut icon" href="<?= UPLOAD_URL . e($sekolah_l['logo']) ?>">
     <?php else: ?>
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%23f97316'/><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' fill='none' stroke='white' stroke-width='2'/></svg>">
+    <!-- <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%23f97316'/><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' fill='none' stroke='white' stroke-width='2'/></svg>"> -->
+    <link rel="icon" type="image/png" href="../uploads/logos/logo_1792811174.png">
     <?php endif; ?>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,102 +100,173 @@ if ($role === 'siswa') {
     <link rel="stylesheet" href="<?= BASE_URL ?>/style.css?v=<?= filemtime(__DIR__.'/../../style.css') ?>">
     <style>
     /* ── Dimensi kertas (px pada 96dpi) ── */
-    <?php
-      // Konversi mm ke px (96dpi: 1mm = 3.7795px)
-      $mm2px = 3.7795;
-      $pw_px = round((float)$paper['w'] * $mm2px);   // lebar kertas px
-      $ph_px = round((float)$paper['h'] * $mm2px);   // tinggi kertas px
-    ?>
-    :root {
-      --paper-w-px:  <?= $pw_px ?>px;
-      --paper-h-px:  <?= $ph_px ?>px;
-      --paper-w:     <?= $paper['w'] ?>;
-      --paper-h:     <?= $paper['h'] ?>;
-      --paper-pad-v: <?= $paper['pad_v'] ?>;
-      --paper-pad-h: <?= $paper['pad_h'] ?>;
+    <?php // Konversi mm ke px (96dpi: 1mm = 3.7795px)
+    $mm2px=3.7795;
+    $pw_px=round((float)$paper['w'] * $mm2px); // lebar kertas px
+    $ph_px=round((float)$paper['h'] * $mm2px); // tinggi kertas px
+
+    ?> :root {
+        --paper-w-px: <?=$pw_px ?>px;
+        --paper-h-px: <?=$ph_px ?>px;
+        --paper-w: <?=$paper['w'] ?>;
+        --paper-h: <?=$paper['h'] ?>;
+        --paper-pad-v: <?=$paper['pad_v'] ?>;
+        --paper-pad-h: <?=$paper['pad_h'] ?>;
     }
 
-    body { background: #f3f4f6; margin: 0; padding-top: <?= $embed ? '0' : '60px' ?>; }
+    body {
+        background: #f3f4f6;
+        margin: 0;
+        padding-top: <?=$embed ? '0': '60px'?>;
+    }
+
     <?php if ($embed): ?>
-    /* Embed mode: clean white background, no gap */
-    body { background: #fff; }
-    .raport-page {
-      margin: 0 !important;
-      box-shadow: none !important;
-    }
-    <?php endif; ?>
 
-    .print-toolbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      background: #f97316; color: #fff; padding: 6px 16px;
-      display: flex; align-items: center; gap: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-      font-family: 'Poppins', sans-serif;
+    /* Embed mode: clean white background, no gap */
+    body {
+        background: #fff;
     }
+
+    .raport-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    <?php endif;
+
+    ?>.print-toolbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: #f97316;
+        color: #fff;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+        font-family: 'Poppins', sans-serif;
+    }
+
     .print-toolbar-title {
-      font-weight: 700; font-size: .95rem;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      flex: 1; min-width: 0;
+        font-weight: 700;
+        font-size: .95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
     }
+
     .print-toolbar-actions {
-      display: flex; gap: 6px; align-items: center;
-      flex-shrink: 0;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-shrink: 0;
     }
-    .print-toolbar button, .print-toolbar a {
-      background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5);
-      color: #fff; padding: 6px 14px; border-radius: 20px; cursor: pointer;
-      font-size: .82rem; font-weight: 600; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+
+    .print-toolbar button,
+    .print-toolbar a {
+        background: rgba(255, 255, 255, .2);
+        border: 1px solid rgba(255, 255, 255, .5);
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: .82rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
     }
-    .print-toolbar button:hover, .print-toolbar a:hover { background: rgba(255,255,255,.35); }
+
+    .print-toolbar button:hover,
+    .print-toolbar a:hover {
+        background: rgba(255, 255, 255, .35);
+    }
+
     /* Teks label cetak — disembunyikan di layar sempit */
-    .print-btn-label { display: inline; }
+    .print-btn-label {
+        display: inline;
+    }
 
     /* ── Mobile ≤ 640px: semua muat dalam 1 baris ── */
     @media (max-width: 640px) {
-      body { padding-top: 54px; }
-      .print-toolbar { padding: 5px 8px; gap: 5px; }
-      .print-toolbar-title { font-size: .8rem; }
-      .print-toolbar button, .print-toolbar a {
-        padding: 5px 9px; font-size: .75rem; gap: 4px;
-      }
-      /* Sembunyikan teks "Cetak / PDF", tampilkan ikon saja */
-      .print-btn-label { display: none; }
-      /* Sembunyikan teks "Kembali", tampilkan ikon saja */
-      .back-btn-label { display: none; }
-      /* Input tanggal lebih sempit */
-      #tglCetak { max-width: 118px; padding: 3px 5px; }
+        body {
+            padding-top: 54px;
+        }
+
+        .print-toolbar {
+            padding: 5px 8px;
+            gap: 5px;
+        }
+
+        .print-toolbar-title {
+            font-size: .8rem;
+        }
+
+        .print-toolbar button,
+        .print-toolbar a {
+            padding: 5px 9px;
+            font-size: .75rem;
+            gap: 4px;
+        }
+
+        /* Sembunyikan teks "Cetak / PDF", tampilkan ikon saja */
+        .print-btn-label {
+            display: none;
+        }
+
+        /* Sembunyikan teks "Kembali", tampilkan ikon saja */
+        .back-btn-label {
+            display: none;
+        }
+
+        /* Input tanggal lebih sempit */
+        #tglCetak {
+            max-width: 118px;
+            padding: 3px 5px;
+        }
     }
 
     .btn-paper-active {
-      background: rgba(255,255,255,.9) !important;
-      color: #f97316 !important; font-weight: 700 !important;
+        background: rgba(255, 255, 255, .9) !important;
+        color: #f97316 !important;
+        font-weight: 700 !important;
     }
 
     /* ── Preview: raport ditampilkan sesuai lebar kertas ── */
     .raport-page {
-      width: var(--paper-w);
-      /* No min-height — prevents blank extra page when printing */
-      padding: var(--paper-pad-v) var(--paper-pad-h);
-      background: #fff;
-      margin: 20px auto;
-      box-shadow: 0 4px 24px rgba(0,0,0,.12);
-      box-sizing: border-box;
+        width: var(--paper-w);
+        /* No min-height — prevents blank extra page when printing */
+        padding: var(--paper-pad-v) var(--paper-pad-h);
+        background: #fff;
+        margin: 20px auto;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, .12);
+        box-sizing: border-box;
     }
 
     /* ── Mobile scale-to-fit outer wrapper ── */
     .print-scale-outer {
-      overflow: hidden;
-      width: 100%;
+        overflow: hidden;
+        width: 100%;
     }
+
     .print-scale-wrap {
-      transform-origin: top left;
-      transform: scale(var(--print-preview-scale, 1));
+        transform-origin: top left;
+        transform: scale(var(--print-preview-scale, 1));
     }
 
     /* ── Print: ukuran halaman fisik ── */
     @media print {
-      @page { size: <?= $paper['size_css'] ?>; margin: 0; }
+        @page {
+            size: <?=$paper['size_css'] ?>;
+            margin: 0;
+        }
     }
     </style>
 </head>
@@ -204,142 +276,144 @@ if ($role === 'siswa') {
     <!-- Toolbar (hilang saat print atau embed) -->
     <?php if (!$embed): ?>
     <div class="print-toolbar no-print">
-      <div class="print-toolbar-title">
-        Rapor &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
-      </div>
-      <div class="print-toolbar-actions">
-
-        <!-- Pilih ukuran kertas -->
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
-                    border-radius:20px;padding:3px;flex-shrink:0">
-          <button onclick="setUkuran('a4')"
-            class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:20px;padding:4px 10px;border:none"
-            title="Kertas A4 — 210×297 mm">A4</button>
-          <button onclick="setUkuran('f4')"
-            class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
-            style="border-radius:20px;padding:4px 10px;border:none"
-            title="Kertas F4 — 215×330 mm">F4</button>
+        <div class="print-toolbar-title">
+            Rapor &mdash; <?= htmlspecialchars($siswa['nama_lengkap']) ?> | <?= htmlspecialchars($ta['nama']??'') ?>
         </div>
+        <div class="print-toolbar-actions">
 
-        <!-- Date picker tanggal cetak -->
-        <label style="display:flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;flex-shrink:0">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span class="print-btn-label">Tgl:</span>
-          <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>"
-            style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
+            <!-- Pilih ukuran kertas -->
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.15);
+                    border-radius:20px;padding:3px;flex-shrink:0">
+                <button onclick="setUkuran('a4')" class="<?= $ukuran==='a4' ? 'btn-paper-active' : '' ?>"
+                    style="border-radius:20px;padding:4px 10px;border:none" title="Kertas A4 — 210×297 mm">A4</button>
+                <button onclick="setUkuran('f4')" class="<?= $ukuran==='f4' ? 'btn-paper-active' : '' ?>"
+                    style="border-radius:20px;padding:4px 10px;border:none" title="Kertas F4 — 215×330 mm">F4</button>
+            </div>
+
+            <!-- Date picker tanggal cetak -->
+            <label style="display:flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;flex-shrink:0">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <span class="print-btn-label">Tgl:</span>
+                <input type="date" id="tglCetak" value="<?= htmlspecialchars($tgl_override) ?>" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
                    color:#fff;padding:3px 7px;border-radius:20px;font-size:.8rem;cursor:pointer"
-            onchange="applyTglCetak(this.value)">
-        </label>
+                    onchange="applyTglCetak(this.value)">
+            </label>
 
-        <!-- Kembali -->
-        <a href="<?= page_url('raport', ['ta'=>$ta_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
-           onclick="if(window.opener||history.length<=1){window.close();return false;}"
-           style="flex-shrink:0">
-          &larr; <span class="back-btn-label">Kembali</span>
-        </a>
+            <!-- Kembali -->
+            <a href="<?= page_url('raport', ['ta'=>$ta_id,'jenis'=>$jenis,'bulan'=>$bulan]) ?>"
+                onclick="if(window.opener||history.length<=1){window.close();return false;}" style="flex-shrink:0">
+                &larr; <span class="back-btn-label">Kembali</span>
+            </a>
 
-        <!-- Cetak -->
-        <button onclick="window.print()"
-          style="background:rgba(255,255,255,.9);color:#f97316;font-weight:700;flex-shrink:0"
-          title="Cetak / Simpan PDF">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="6 9 6 2 18 2 18 9"/>
-            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8"/>
-          </svg>
-          <span class="print-btn-label">Cetak / PDF</span>
-        </button>
-      </div>
+            <!-- Cetak -->
+            <button onclick="window.print()"
+                style="background:rgba(255,255,255,.9);color:#f97316;font-weight:700;flex-shrink:0"
+                title="Cetak / Simpan PDF">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                <span class="print-btn-label">Cetak / PDF</span>
+            </button>
+        </div>
     </div>
     <?php endif; // !$embed ?>
     <script>
     function applyTglCetak(val) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('tgl', val);
-      window.location.href = url.toString();
+        const url = new URL(window.location.href);
+        url.searchParams.set('tgl', val);
+        window.location.href = url.toString();
     }
+
     function setUkuran(u) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('ukuran', u);
-      window.location.href = url.toString();
+        const url = new URL(window.location.href);
+        url.searchParams.set('ukuran', u);
+        window.location.href = url.toString();
     }
     </script>
 
     <!-- Konten Rapor — scale-to-fit wrapper for mobile preview -->
     <div class="print-scale-outer" id="printScaleOuter">
-      <div class="print-scale-wrap" id="printScaleWrap">
-        <?php include __DIR__ . '/raport_template.php'; ?>
-      </div>
+        <div class="print-scale-wrap" id="printScaleWrap">
+            <?php include __DIR__ . '/raport_template.php'; ?>
+        </div>
     </div>
 
     <script>
-    (function () {
-      var outer, page;
+    (function() {
+        var outer, page;
 
-      function scalePrintPreview() {
-        outer = document.getElementById('printScaleOuter');
-        page  = outer && outer.querySelector('.raport-page');
-        if (!outer || !page) return;
+        function scalePrintPreview() {
+            outer = document.getElementById('printScaleOuter');
+            page = outer && outer.querySelector('.raport-page');
+            if (!outer || !page) return;
 
-        // Reset so we measure the true natural size
-        page.style.zoom            = '';
-        page.style.transform       = '';
-        page.style.transformOrigin = '';
-        outer.style.height         = '';
+            // Reset so we measure the true natural size
+            page.style.zoom = '';
+            page.style.transform = '';
+            page.style.transformOrigin = '';
+            outer.style.height = '';
 
-        var pageW  = page.getBoundingClientRect().width;
-        var pageH  = page.getBoundingClientRect().height;
-        var availW = outer.getBoundingClientRect().width;
+            var pageW = page.getBoundingClientRect().width;
+            var pageH = page.getBoundingClientRect().height;
+            var availW = outer.getBoundingClientRect().width;
 
-        if (!pageW || availW <= 0) return;
-        if (availW >= pageW) return; // wide enough, no scaling needed
+            if (!pageW || availW <= 0) return;
+            if (availW >= pageW) return; // wide enough, no scaling needed
 
-        var scale = availW / pageW;
+            var scale = availW / pageW;
 
-        if ('zoom' in page.style) {
-          page.style.zoom = scale;
-        } else {
-          page.style.transformOrigin = 'top left';
-          page.style.transform       = 'scale(' + scale + ')';
-          outer.style.height = Math.ceil(pageH * scale) + 'px';
+            if ('zoom' in page.style) {
+                page.style.zoom = scale;
+            } else {
+                page.style.transformOrigin = 'top left';
+                page.style.transform = 'scale(' + scale + ')';
+                outer.style.height = Math.ceil(pageH * scale) + 'px';
+            }
         }
-      }
 
-      // ── Sebelum print: hapus zoom/transform agar browser tidak salah hitung halaman
-      function resetForPrint() {
-        var el = document.getElementById('printScaleOuter');
-        var pg = el && el.querySelector('.raport-page');
-        if (!pg) return;
-        pg.style.zoom            = '';
-        pg.style.transform       = '';
-        pg.style.transformOrigin = '';
-        pg.style.width           = '';
-        if (el) { el.style.height = ''; el.style.overflow = ''; }
-      }
+        // ── Sebelum print: hapus zoom/transform agar browser tidak salah hitung halaman
+        function resetForPrint() {
+            var el = document.getElementById('printScaleOuter');
+            var pg = el && el.querySelector('.raport-page');
+            if (!pg) return;
+            pg.style.zoom = '';
+            pg.style.transform = '';
+            pg.style.transformOrigin = '';
+            pg.style.width = '';
+            if (el) {
+                el.style.height = '';
+                el.style.overflow = '';
+            }
+        }
 
-      // ── Setelah print: kembalikan tampilan mobile
-      function restoreAfterPrint() {
-        scalePrintPreview();
-      }
+        // ── Setelah print: kembalikan tampilan mobile
+        function restoreAfterPrint() {
+            scalePrintPreview();
+        }
 
-      window.addEventListener('beforeprint', resetForPrint);
-      window.addEventListener('afterprint',  restoreAfterPrint);
-      // matchMedia fallback untuk browser yang tidak support beforeprint
-      if (window.matchMedia) {
-        var mql = window.matchMedia('print');
-        mql.addEventListener('change', function(e) {
-          if (e.matches) resetForPrint(); else restoreAfterPrint();
-        });
-      }
+        window.addEventListener('beforeprint', resetForPrint);
+        window.addEventListener('afterprint', restoreAfterPrint);
+        // matchMedia fallback untuk browser yang tidak support beforeprint
+        if (window.matchMedia) {
+            var mql = window.matchMedia('print');
+            mql.addEventListener('change', function(e) {
+                if (e.matches) resetForPrint();
+                else restoreAfterPrint();
+            });
+        }
 
-      window.addEventListener('load',   scalePrintPreview);
-      window.addEventListener('resize', scalePrintPreview);
-      if (document.readyState === 'complete') { scalePrintPreview(); }
+        window.addEventListener('load', scalePrintPreview);
+        window.addEventListener('resize', scalePrintPreview);
+        if (document.readyState === 'complete') {
+            scalePrintPreview();
+        }
     })();
     </script>
 
@@ -347,15 +421,20 @@ if ($role === 'siswa') {
     <script>
     // In embed mode: notify parent of document height so iframe auto-sizes
     function notifyHeight() {
-      var h = document.body.scrollHeight;
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'raport-iframe-height', height: h }, '*');
-      }
+        var h = document.body.scrollHeight;
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'raport-iframe-height',
+                height: h
+            }, '*');
+        }
     }
     window.addEventListener('load', notifyHeight);
     window.addEventListener('resize', notifyHeight);
     // Also notify after a short delay in case fonts shift layout
-    window.addEventListener('load', function(){ setTimeout(notifyHeight, 500); });
+    window.addEventListener('load', function() {
+        setTimeout(notifyHeight, 500);
+    });
     </script>
     <?php endif; ?>
 

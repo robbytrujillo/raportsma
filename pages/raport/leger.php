@@ -2,9 +2,9 @@
 /**
  * pages/raport/leger.php
  * Leger Rapor — tabel rekap semua siswa × semua mapel dalam satu kelas.
- * Akses: super_admin, admin, kepala_sekolah, wali_kelas (kelasnya sendiri saja).
- * Guru biasa dan siswa: ditolak dengan redirect (peringatan ditampilkan sebagai
- * modal overlay di halaman raport/index.php saat tombol diklik).
+ * Akses: super_admin, admin, kepala_sekolah, wali_kelas (kelasnya sendiri saja),
+ *        guru (hanya kelas yang diajarnya).
+ * Siswa: ditolak dengan redirect.
  */
 require_once __DIR__ . '/../../auth.php';
 require_login();
@@ -13,7 +13,7 @@ $user_ses = current_user();
 $role     = $user_ses['role'];
 
 // Guard server-side: redirect jika role tidak diizinkan
-if (!in_array($role, ['super_admin', 'admin', 'kepala_sekolah', 'wali_kelas'])) {
+if (!in_array($role, ['super_admin', 'admin', 'kepala_sekolah', 'wali_kelas', 'guru'])) {
     header('Location: ' . page_url($role === 'siswa' ? 'raport' : 'dashboard'));
     exit;
 }
@@ -29,17 +29,9 @@ if (!$ta_id || !$kelas_id) {
 
 require_once __DIR__ . '/../../db.php';
 
-// Verifikasi akses lebih lanjut: wali_kelas hanya bisa akses kelasnya sendiri
-if ($role === 'wali_kelas') {
-    $kelas_check = db_row(
-        'SELECT id FROM kelas WHERE id = :kid AND wali_kelas_id = :uid',
-        [':kid' => $kelas_id, ':uid' => $user_ses['id']]
-    );
-    if (!$kelas_check) {
-        header('Location: ' . page_url('raport'));
-        exit;
-    }
-} elseif ($role === 'kepala_sekolah') {
+// Verifikasi akses lebih lanjut untuk kepala_sekolah (unit)
+// wali_kelas dan guru boleh akses leger kelas manapun
+if ($role === 'kepala_sekolah') {
     // Kepala sekolah hanya bisa akses leger kelas di unitnya
     $_unit_f_lg = get_user_unit_filter($user_ses);
     if (!empty($_unit_f_lg['units'])) {
@@ -198,6 +190,7 @@ $all_nilai_rows = db_query(
 );
 
 // Indeks: $nilai_map[siswa_id][mapel_id] = nilai_akhir
+// Key ada (meski nilai 0.0) = sudah diinput; key tidak ada = belum diinput sama sekali
 $nilai_map = [];
 foreach ($all_nilai_rows as $r) {
     $nilai_map[$r['siswa_user_id']][$r['mapel_id']] = (float)$r['nilai_akhir'];
@@ -844,12 +837,13 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
             $peringkat   = $rank_map[$sid] ?? ($i + 1);
             $siswa_nilai = $nilai_map[$sid] ?? [];
 
-            // Rata-rata hanya dari mapel yang sudah terisi (nilai > 0)
+            // Rata-rata hanya dari mapel yang sudah diinput (record ada di DB, nilai > 0)
             $total_val   = 0;
             $jml_mapel   = 0;
             foreach ($mapel_list as $m) {
-                $v = $siswa_nilai[$m['id']] ?? 0;
-                if ($v > 0) { $total_val += $v; $jml_mapel++; }
+                $has_record = array_key_exists($m['id'], $siswa_nilai);
+                $v = $has_record ? $siswa_nilai[$m['id']] : null;
+                if ($has_record && $v > 0) { $total_val += $v; $jml_mapel++; }
             }
             $rata  = $jml_mapel > 0 ? round($total_val / $jml_mapel, 1) : 0;
             $total = round($total_val, 1);
@@ -861,10 +855,11 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                         <td class="col-nisn" style="font-size:9px"><?= htmlspecialchars($s['nisn'] ?? $s['nis']) ?></td>
                         <td class="col-nama"><?= htmlspecialchars($s['nama_lengkap']) ?></td>
                         <?php foreach ($mapel_list as $m):
-                $v   = $siswa_nilai[$m['id']] ?? 0;
-                $low = ($v > 0 && $v < $krit_c);
+                $has_record = array_key_exists($m['id'], $siswa_nilai);
+                $v   = $has_record ? $siswa_nilai[$m['id']] : null;
+                $low = ($has_record && $v > 0 && $v < $krit_c);
             ?>
-                        <td class="col-mapel<?= $low ? ' val-low' : '' ?>"><?= $v > 0 ? number_format($v, 0) : '' ?>
+                        <td class="col-mapel<?= $low ? ' val-low' : '' ?>"><?= $has_record ? number_format($v, 0) : '' ?>
                         </td>
                         <?php endforeach; ?>
                         <td class="col-total"><?= $total > 0 ? number_format($total, 0) : '-' ?></td>

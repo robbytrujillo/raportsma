@@ -133,9 +133,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $duplikasi_count++;
         }
 
-        $msg = "Berhasil menduplikasi {$duplikasi_count} kelas ke tahun ajaran tujuan.";
-        if ($lewat_count) $msg .= " ({$lewat_count} kelas dilewati karena sudah ada.)";
-        flash('success', $msg);
+        if ($duplikasi_count === 0 && $lewat_count > 0) {
+            flash('info', "Semua {$lewat_count} kelas sudah ada di semester tujuan — tidak ada yang baru ditambahkan.");
+        } else {
+            $msg = "Berhasil menduplikasi {$duplikasi_count} kelas ke semester tujuan.";
+            if ($lewat_count) $msg .= " ({$lewat_count} sudah ada, dilewati.)";
+            $msg .= " Selanjutnya, duplikasi juga Penugasan Guru via menu Penugasan.";
+            flash('success', $msg);
+        }
         header('Location: /kelas?ta=' . $ta_tujuan); exit;
     }
 }
