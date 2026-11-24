@@ -21,7 +21,7 @@ $_cbot_api   = BASE_URL . '/?page=chatbot.api';
 
 <!-- Tombol floating -->
 <button id="cbotBtn" onclick="cbotBuka()" aria-label="Tanya Raporku.Bot"
-    style="position:fixed;bottom:24px;right:24px;z-index:1200;
+    style="position:fixed;bottom:72px;right:24px;z-index:1200;
            display:flex;align-items:center;gap:8px;
            background:var(--primary,#f97316);color:#fff;
            border:none;border-radius:30px;padding:11px 20px 11px 14px;
@@ -48,7 +48,7 @@ $_cbot_api   = BASE_URL . '/?page=chatbot.api';
     font-family:'Poppins',sans-serif;pointer-events:none">0</span>
 
 <!-- ── Modal Chat ──────────────────────────────────────────── -->
-<div id="cbotModal" style="display:none;position:fixed;bottom:80px;right:24px;
+<div id="cbotModal" style="display:none;position:fixed;bottom:128px;right:24px;
     z-index:1200;width:360px;max-width:calc(100vw - 32px);
     max-height:calc(100vh - 100px);
     background:#fff;border-radius:20px;
@@ -291,10 +291,25 @@ window.cbotKirim = async function() {
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
                 message: text,
-                history: cbotHistory.slice(0, -1),  // kirim tanpa pesan terakhir (sudah di message)
+                history: cbotHistory.slice(0, -1),
             }),
         });
-        const data = await res.json();
+
+        // Baca raw text dulu untuk debug jika bukan JSON
+        const rawText = await res.text();
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch(e) {
+            cbotHapusTyping();
+            cbotTambahBubble('bot',
+                '⚠️ Server mengembalikan respons tidak valid (HTTP ' + res.status + ').\n\n' +
+                'Detail: ' + rawText.substring(0, 200));
+            cbotTyping = false;
+            $('cbotSendBtn').disabled = false;
+            $('cbotStatus').textContent = 'Online \u2022 Siap membantu';
+            return;
+        }
         cbotHapusTyping();
 
         if (data.ok) {
@@ -306,14 +321,12 @@ window.cbotKirim = async function() {
                 'Silakan muat ulang halaman untuk memulai sesi baru.');
         } else {
             cbotTambahBubble('bot',
-                '⚠️ Maaf, terjadi kendala: ' + (data.msg || 'Tidak diketahui') +
-                '\n\nSilakan coba beberapa saat lagi.');
+                '⚠️ ' + (data.msg || 'Terjadi kendala tidak diketahui'));
         }
     } catch (err) {
         cbotHapusTyping();
         cbotTambahBubble('bot',
-            '⚠️ Koneksi bermasalah. Pastikan Anda terhubung ke internet, ' +
-            'lalu coba lagi.');
+            '⚠️ Fetch gagal: ' + err.message);
     }
 
     cbotTyping = false;

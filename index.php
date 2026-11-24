@@ -28,6 +28,13 @@ if (!in_array($page, $public_pages, true) && !in_array($page, $api_pages, true))
     require_login();
 }
 
+// ── Chatbot API — intercept sebelum apapun (GET atau POST) ────
+// Harus di luar blok POST karena fetch mengirim JSON body bukan form data
+if ($page === 'chatbot.api') {
+    include __DIR__ . '/pages/chatbot/api.php';
+    ob_end_flush(); exit;
+}
+
 // ── Handle POST actions (logout, dsb) ─────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -37,11 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // AJAX actions — include page file directly (no layout) so headers stay clean
     if ($action === 'toggle_publikasi' && $page === 'raport') {
         include __DIR__ . '/pages/raport/index.php';
-        ob_end_flush(); exit;
-    }
-    // Chatbot API — no layout
-    if ($page === 'chatbot.api') {
-        include __DIR__ . '/pages/chatbot/api.php';
         ob_end_flush(); exit;
     }
     // raport.manage POST actions (delete_periode, edit_bulan) — go through layout normally
