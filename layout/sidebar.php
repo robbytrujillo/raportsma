@@ -35,9 +35,9 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <?php endif; ?>
 
       <!-- Nama aplikasi &mdash; disembunyikan saat collapsed -->
-      <span class="sidebar-logo-text" style="font-size:1.25rem;font-weight:800;
-            letter-spacing:-.5px;white-space:nowrap;overflow:hidden;
-            transition:opacity .25s,width .25s">
+      <span class="sidebar-logo-text" style="font-size:1.1rem;font-weight:800;
+            letter-spacing:-.4px;white-space:nowrap;overflow:hidden;
+            color:#1f2937;transition:opacity .25s,width .25s">
         <?= APP_NAME ?>
       </span>
 
@@ -64,8 +64,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
         <?php endif; ?>
       </div>
       <div class="sidebar-user-info" style="min-width:0;overflow:hidden;white-space:nowrap">
-        <div class="text-white text-xs font-semibold leading-tight truncate"
-             style="max-width:150px"><?= e($user['nama_lengkap']) ?></div>
+        <div class="text-xs font-semibold leading-tight truncate"
+             style="max-width:150px;color:#1f2937"><?= e($user['nama_lengkap']) ?></div>
         <?php
           $guru_det = (!in_array($role, ['super_admin','admin','siswa','kepala_sekolah']))
               ? db_row('SELECT status FROM guru WHERE user_id = :id', [':id'=>$user['id']])
@@ -75,7 +75,7 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
               ? str_replace('_',' ', ucfirst($guru_det['status']))
               : ($_role_labels[$role] ?? str_replace('_',' ', ucfirst($role)));
         ?>
-        <div class="text-orange-200 text-xs capitalize"><?= e($status_label) ?></div>
+        <div class="text-xs capitalize" style="color:#9ca3af"><?= e($status_label) ?></div>
       </div>
     </div>
   </div><!-- /.sidebar-header -->
@@ -291,6 +291,17 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <span class="sidebar-nav-label">Info Sekolah</span>
       <span class="sidebar-tooltip">Info Sekolah</span>
     </a>
+    <?php if (in_array($role, ['super_admin','admin'])): ?>
+    <a href="/tools.fix_nilai_orphan" data-page="tools.fix_nilai_orphan">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg>
+      <span class="sidebar-nav-label">Perbaiki Nilai Tidak Sesuai</span>
+      <span class="sidebar-tooltip">Perbaiki Nilai Tidak Sesuai</span>
+    </a>
+    <?php endif; ?>
     </div><!-- /.sb-group[pengaturan] -->
     <?php endif; ?>
 
@@ -310,15 +321,16 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="logout">
       <button type="submit"
-        style="width:100%;display:flex;align-items:center;gap:12px;padding:10px 20px;
-               color:rgba(255,255,255,0.85);background:transparent;border:none;
-               cursor:pointer;font-size:.875rem;font-weight:500;white-space:nowrap;
-               transition:background .2s;position:relative"
-        onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+        style="width:calc(100% - 16px);display:flex;align-items:center;gap:10px;
+               padding:9px 14px;margin:1px 8px;
+               color:#ef4444;background:transparent;border:none;border-radius:8px;
+               cursor:pointer;font-size:.85rem;font-weight:500;white-space:nowrap;
+               transition:background .2s,color .2s;position:relative"
+        onmouseover="this.style.background='#fef2f2'"
         onmouseout="this.style.background='transparent'"
         id="logoutBtn">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
-             viewBox="0 0 24 24" style="flex-shrink:0;opacity:.85">
+             viewBox="0 0 24 24" style="flex-shrink:0;color:#ef4444">
           <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
           <line x1="21" y1="12" x2="9" y2="12"/>
@@ -341,8 +353,15 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
   align-items: center;
   user-select: none;
   padding-right: 14px !important;
+  border-radius: 6px;
+  margin: 0 8px;
+  padding-left: 10px !important;
+  transition: background .15s, color .15s;
 }
-.sb-accordion-title:hover { color: rgba(255,255,255,.85) !important; }
+.sb-accordion-title:hover {
+  background: var(--gray-100) !important;
+  color: var(--gray-800) !important;
+}
 
 /* Group wrapper: overflow hidden untuk animasi smooth */
 .sb-group {
@@ -382,7 +401,8 @@ foreach (explode(' ', $user['nama_lengkap']) as $word) {
     'penugasan':'manajemen','penugasan.create':'manajemen','penugasan.import':'manajemen',
     'penugasan.review_kelas':'manajemen',
     'users':'pengaturan','users.create':'pengaturan','users.edit':'pengaturan',
-    'tahun_ajaran':'pengaturan','jenis_raport':'pengaturan','sekolah':'pengaturan'
+    'tahun_ajaran':'pengaturan','jenis_raport':'pengaturan','sekolah':'pengaturan',
+    'tools.recalc_nilai':'pengaturan','tools.fix_nilai_orphan':'pengaturan'
   };
 
   // Support clean URLs (/mapel) dan legacy ?page=mapel

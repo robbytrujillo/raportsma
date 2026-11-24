@@ -192,29 +192,29 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
     <div class="page-header">
         <div>
             <h1 class="page-title">Data Murid</h1>
-                      <p class="page-subtitle">Kelola data murid sekolah</p>
+            <p class="page-subtitle">Kelola data murid sekolah</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 Export Excel
             </a>
             <a href="/siswa.import" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Import Excel
             </a>
             <a href="/siswa.create" class="btn btn-primary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 Tambah Murid
             </a>
@@ -228,7 +228,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <input type="hidden" name="page" value="siswa">
                 <div>
                     <label class="form-label">Tahun Ajaran</label>
-                    <select name="ta" class="form-control" onchange="this.form.submit()">
+                    <select name="ta" class="form-control" onchange="this.form.submit()" style="border-radius: 30px">
                         <?php foreach ($ta_list as $ta): ?>
                         <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
                             <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
@@ -238,7 +238,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </div>
                 <div>
                     <label class="form-label">Kelas</label>
-                    <select name="kelas" class="form-control">
+                    <select name="kelas" class="form-control" style="border-radius: 30px">
                         <option value="">Semua Kelas</option>
                         <?php foreach ($kelas_list as $k): ?>
                         <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
@@ -249,11 +249,11 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <div>
                     <label class="form-label">Cari</label>
                     <input type="text" name="q" class="form-control" placeholder="Nama / NIS..."
-                        value="<?= e($search) ?>">
+                        value="<?= e($search) ?>" style="border-radius: 30px">
                 </div>
                 <div>
                     <label class="form-label">Tampil</label>
-                    <select name="per" class="form-control" onchange="this.form.submit()">
+                    <select name="per" class="form-control" onchange="this.form.submit()" style="border-radius: 30px">
                         <?php foreach ([10,25,50,100] as $opt): ?>
                         <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
                         <?php endforeach; ?>
@@ -271,15 +271,13 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
         <div class="card-header">
             <div class="flex items-center gap-3">
                 <span>Daftar Murid</span>
-                        <span class="text-sm text-gray-500"><?= $total ?> murid</span>
+                <span class="text-sm text-gray-500"><?= $total ?> murid</span>
             </div>
             <!-- Tombol Pindah Kelas Massal � muncul jika ada yang dicentang -->
-            <button type="button" id="btnPindahKelas"
-                onclick="bukaPindahKelas()"
-                class="btn btn-sm"
+            <button type="button" id="btnPindahKelas" onclick="bukaPindahKelas()" class="btn btn-sm"
                 style="border-radius:30px;background:#f97316;color:#fff;display:none">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                 </svg>
                 Pindah Kelas (<span id="jmlDipilih">0</span>)
             </button>
@@ -291,8 +289,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         <!-- Kolom checkbox select-all -->
                         <th style="width:36px;text-align:center">
                             <input type="checkbox" id="chkAll" title="Pilih semua"
-                                style="width:15px;height:15px;cursor:pointer"
-                                onchange="toggleSemuaSiswa(this.checked)">
+                                style="width:15px;height:15px;cursor:pointer" onchange="toggleSemuaSiswa(this.checked)">
                         </th>
                         <th>#</th>
                         <th>Nama Murid</th>
@@ -315,8 +312,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                     <tr style="<?= !($s['is_active'] ?? 1) ? 'opacity:.6' : '' ?>">
                         <td style="text-align:center">
                             <input type="checkbox" class="chk-siswa" value="<?= $s['id'] ?>"
-                                style="width:15px;height:15px;cursor:pointer"
-                                onchange="updatePilihan()">
+                                style="width:15px;height:15px;cursor:pointer" onchange="updatePilihan()">
                         </td>
                         <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
                         <td>
@@ -386,12 +382,11 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                     if ($start > 2): ?><span class="page-link disabled">&hellip;</span><?php endif;
                 endif;
                 for ($pi = $start; $pi <= $end; $pi++): ?>
-                <a href="?<?= $qstr ?>&p=<?= $pi ?>"
-                    class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
+                <a href="?<?= $qstr ?>&p=<?= $pi ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
                 <?php endfor;
                 if ($end < $pages):
                     if ($end < $pages - 1): ?><span class="page-link disabled">&hellip;</span><?php endif; ?>
-                    <a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
+                <a href="?<?= $qstr ?>&p=<?= $pages ?>" class="page-link"><?= $pages ?></a><?php
                 endif; ?>
                 <a href="?<?= $qstr ?>&p=<?= min($pages,$page_n+1) ?>"
                     class="page-link <?= $page_n>=$pages?'disabled':'' ?>" style="border-radius:30px">Next &#8250;</a>
@@ -407,11 +402,12 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
         <div class="modal-header">
             <h3 class="modal-title" style="display:flex;align-items:center;gap:8px">
                 <svg width="18" height="18" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                 </svg>
                 Pindah Kelas Massal
             </h3>
-            <button type="button" onclick="tutupPindahKelas()" class="btn btn-sm btn-secondary" style="border-radius:50%;padding:4px 8px">&times;</button>
+            <button type="button" onclick="tutupPindahKelas()" class="btn btn-sm btn-secondary"
+                style="border-radius:50%;padding:4px 8px">&times;</button>
         </div>
         <form method="POST" action="/siswa" id="formPindahKelas">
             <?= csrf_field() ?>
@@ -424,7 +420,8 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
 
             <div class="modal-body" style="padding:20px 24px">
                 <!-- Ringkasan siswa dipilih -->
-                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:18px">
+                <div
+                    style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:18px">
                     <div class="text-sm font-semibold text-orange-700" style="margin-bottom:6px">
                         Siswa yang akan dipindahkan:
                     </div>
@@ -467,8 +464,9 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </button>
                 <button type="submit" class="btn btn-primary" style="border-radius:30px"
                     onclick="return konfirmasiPindah()">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M20 6L9 17l-5-5"/>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path d="M20 6L9 17l-5-5" />
                     </svg>
                     Pindahkan Sekarang
                 </button>
@@ -480,24 +478,24 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
 <script>
 /* -- Data nama siswa di halaman ini (untuk ditampilkan di modal) -- */
 const SISWA_NAMA = {
-<?php foreach ($siswa_list as $s): ?>
+    <?php foreach ($siswa_list as $s): ?>
     <?= (int)$s['id'] ?>: <?= json_encode($s['nama_lengkap']) ?>,
-<?php endforeach; ?>
+    <?php endforeach; ?>
 };
 
 /* -- Update counter pilihan & tampilkan tombol -- */
 function updatePilihan() {
     const dipilih = document.querySelectorAll('.chk-siswa:checked');
-    const btn     = document.getElementById('btnPindahKelas');
-    const jml     = document.getElementById('jmlDipilih');
+    const btn = document.getElementById('btnPindahKelas');
+    const jml = document.getElementById('jmlDipilih');
     jml.textContent = dipilih.length;
     btn.style.display = dipilih.length > 0 ? '' : 'none';
 
     // Sinkron checkbox "pilih semua"
-    const semua   = document.querySelectorAll('.chk-siswa');
-    const chkAll  = document.getElementById('chkAll');
+    const semua = document.querySelectorAll('.chk-siswa');
+    const chkAll = document.getElementById('chkAll');
     if (chkAll) {
-        chkAll.checked       = dipilih.length === semua.length && semua.length > 0;
+        chkAll.checked = dipilih.length === semua.length && semua.length > 0;
         chkAll.indeterminate = dipilih.length > 0 && dipilih.length < semua.length;
     }
 }
@@ -538,11 +536,16 @@ function tutupPindahKelas() {
 
 /* -- Konfirmasi sebelum submit -- */
 function konfirmasiPindah() {
-    const sel  = document.getElementById('selKelasTujuan');
-    const jml  = document.querySelectorAll('.chk-siswa:checked').length;
+    const sel = document.getElementById('selKelasTujuan');
+    const jml = document.querySelectorAll('.chk-siswa:checked').length;
     const nama = sel.options[sel.selectedIndex]?.text || '';
-    if (!sel.value) { alert('Pilih kelas tujuan terlebih dahulu.'); return false; }
-    return confirm(`Pindahkan ${jml} siswa ke kelas "${nama}"?\n\nTindakan ini akan mengubah kelas siswa. Data nilai yang ada tetap tersimpan.`);
+    if (!sel.value) {
+        alert('Pilih kelas tujuan terlebih dahulu.');
+        return false;
+    }
+    return confirm(
+        `Pindahkan ${jml} siswa ke kelas "${nama}"?\n\nTindakan ini akan mengubah kelas siswa. Data nilai yang ada tetap tersimpan.`
+        );
 }
 
 /* -- Keyboard: Esc menutup modal -- */

@@ -1,12 +1,12 @@
 <?php
 /**
  * pages/mapel/index.php
- * Daftar Mata Pelajaran â€" admin
+ * Daftar Mata Pelajaran ï¿½" admin
  */
 require_role(['admin','super_admin']);
 require_once __DIR__ . '/../../excel.php';
 
-// â"€â"€ Export CSV â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Export CSV ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 // Export XLSX -- kolom sesuai template import mapel.
 if (isset($_GET['export'])) {
     $rows = db_query('SELECT nama_mapel, kode_mapel, kelompok, parent_id, sub_label, urutan FROM mapel ORDER BY kelompok, urutan, nama_mapel');
@@ -34,7 +34,7 @@ if (isset($_GET['export'])) {
     ]);
 }
 
-// â"€â"€ Handle POST â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Handle POST ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf()) { flash('error','Token tidak valid.'); header('Location: /mapel'); exit; }
 
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: /mapel'); exit;
 }
 
-// â"€â"€ Paginasi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ï¿½"ï¿½ï¿½"ï¿½ Paginasi ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½"ï¿½
 $search_m = trim($_GET['q'] ?? '');
 $per_opts  = [10, 25, 50, 100];
 $per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
@@ -136,11 +136,12 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                 <div>
                     <label class="form-label">Cari Mapel</label>
                     <input type="text" name="q" placeholder="Nama / kode mapel..." value="<?= e($search_m) ?>"
-                        class="form-control" style="max-width:240px">
+                        class="form-control" style="max-width:240px; border-radius: 30px;">
                 </div>
                 <div>
                     <label class="form-label">Tampil</label>
-                    <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+                    <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()"
+                        style="border-radius: 30px;">
                         <?php foreach ([10,25,50,100] as $opt): ?>
                         <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
                         <?php endforeach; ?>
@@ -149,7 +150,7 @@ $qstr_m = http_build_query(['page'=>'mapel','q'=>$search_m,'per'=>$per]);
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Cari</button>
                     <?php if ($search_m || $per !== 10): ?>
-                    <a href="/mapel" class="btn btn-secondary btn-sm">Reset</a>
+                    <a href="/mapel" class="btn btn-secondary btn-sm" style="border-radius: 30px">Reset</a>
                     <?php endif; ?>
                 </div>
             </form>

@@ -144,14 +144,14 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
     $aktif_nh3   = $f_aktif_nh3;
     $aktif_tugas = $f_aktif_tugas;
 
-    // Baris siswa — nilai di-prefill jika sudah ada
+    // Baris siswa — nilai di-prefill jika sudah ada (hanya nilai, tanpa NA/predikat/deskripsi per-murid)
     $siswa_rows = [];
     foreach ($siswa_bulk as $idx => $s) {
         $nv = $existing[$s['id']] ?? null;
         $row = [
-            $idx + 1,                                  // 0: No
-            $s['nis'],                                  // 1: NIS
-            $s['nama_lengkap'],                         // 2: Nama Siswa
+            $idx + 1,           // 0: No
+            $s['nis'],          // 1: NIS
+            $s['nama_lengkap'], // 2: Nama Murid
         ];
         if ($f_jenis === 'bulanan') {
             $row[] = $nv ? (float)$nv['nilai_harian_1'] : ''; // NH1
@@ -159,14 +159,14 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
             $row[] = $nv ? (float)$nv['nilai_harian_3'] : ''; // NH3
             $row[] = $nv ? (float)$nv['nilai_tugas']    : ''; // Tugas
         } elseif ($f_jenis === 'sts') {
-            $row[] = $nv ? (float)$nv['nilai_sts']  : ''; // STS
+            $row[] = $nv ? (float)$nv['nilai_sts']  : '';
         } else {
-            $row[] = $nv ? (float)$nv['nilai_sas']  : ''; // SAS
+            $row[] = $nv ? (float)$nv['nilai_sas']  : '';
         }
         $siswa_rows[] = $row;
     }
 
-    // Definisi kolom
+    // Definisi kolom (hanya kolom nilai — template untuk input)
     $col_defs = [
         ['header'=>'No',         'field'=>'no',   'width'=>5,  'required'=>false,'type'=>'number'],
         ['header'=>'NIS',        'field'=>'nis',  'width'=>14, 'required'=>true, 'type'=>'text','format'=>'@',
@@ -186,6 +186,7 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
     } else {
         $col_sas   = count($col_defs) + 1; $col_defs[] = ['header'=>'Nilai SAS','field'=>'sas','width'=>12,'required'=>true,'type'=>'number','note'=>'Nilai SAS langsung'];
     }
+    // TIDAK ada kolom Nilai Akhir / Predikat / Deskripsi per-murid di template input
     $sekolah_tmp = sekolah_info();
     $krit_a_min = (float)($sekolah_tmp['kriteria_a_min'] ?? 92);
     $krit_b_min = (float)($sekolah_tmp['kriteria_b_min'] ?? 83);
@@ -316,6 +317,112 @@ if (isset($_GET['download_bulk']) && $f_kelas && $f_mapel) {
     ]);
 }
 
+// ── Export Nilai (rekap nilai + deskripsi per-murid yang sudah tersimpan) ──
+// Dipanggil dari tombol "Export Excel" di halaman Input Nilai (bulk.php)
+if (isset($_GET['export_nilai']) && $f_kelas && $f_mapel) {
+    $kelas_row = db_row('SELECT * FROM kelas WHERE id=:id', [':id'=>$f_kelas]);
+    $mapel_row = db_row('SELECT * FROM mapel WHERE id=:id', [':id'=>$f_mapel]);
+    $ta_info   = db_row('SELECT * FROM tahun_ajaran WHERE id=:id', [':id'=>$f_ta_id]);
+    $guru_pgm  = db_row(
+        'SELECT u.nama_lengkap FROM users u
+         INNER JOIN guru_mapel_kelas gmk ON gmk.guru_user_id=u.id
+         WHERE gmk.kelas_id=:k AND gmk.mapel_id=:m AND gmk.tahun_ajaran_id=:ta LIMIT 1',
+        [':k'=>$f_kelas,':m'=>$f_mapel,':ta'=>$f_ta_id]
+    );
+
+    $jenis_label = ['bulanan'=>'Bulanan (NH + Tugas)','sts'=>'ASTS – Tengah Semester','semester'=>'Semester (SAS)'];
+    $bulan_nama  = ($f_bulan > 0) ? (BULAN_ID[$f_bulan] ?? '') : '';
+    $periode_str = ($f_jenis !== 'semester' && $f_bulan > 0) ? $bulan_nama
+                 : ($f_jenis === 'semester' ? 'Semester' : '');
+    $sem_label   = ($ta_info['semester'] ?? 1) == 1 ? 'Semester Ganjil' : 'Semester Genap';
+
+    // Ambil semua murid di kelas
+    $siswa_bulk = db_query(
+        'SELECT u.id, u.nama_lengkap, s.nis FROM users u
+         INNER JOIN siswa s ON s.user_id=u.id
+         WHERE s.kelas_id=:kid ORDER BY u.nama_lengkap',
+        [':kid'=>$f_kelas]
+    );
+
+    // Ambil nilai yang sudah tersimpan
+    $existing = [];
+    if ($f_bulan > 0 || $f_jenis === 'semester') {
+        $exrows = db_query(
+            'SELECT * FROM nilai WHERE kelas_id=:k AND mapel_id=:m AND tahun_ajaran_id=:ta
+              AND jenis_raport=:j AND (bulan=:b OR (:b2 IS NULL AND bulan IS NULL))',
+            [':k'=>$f_kelas,':m'=>$f_mapel,':ta'=>$f_ta_id,
+             ':j'=>$f_jenis,':b'=>$f_bulan?:null,':b2'=>$f_bulan?:null]
+        );
+        foreach ($exrows as $er) $existing[$er['siswa_user_id']] = $er;
+    }
+
+    // Susun baris data
+    $exp_rows = [];
+    foreach ($siswa_bulk as $idx => $s) {
+        $nv  = $existing[$s['id']] ?? null;
+        $row = [
+            $idx + 1,
+            $s['nis'],
+            $s['nama_lengkap'],
+        ];
+        if ($f_jenis === 'bulanan') {
+            $row[] = $nv ? (float)$nv['nilai_harian_1'] : '';
+            $row[] = $nv ? (float)$nv['nilai_harian_2'] : '';
+            $row[] = $nv ? (float)$nv['nilai_harian_3'] : '';
+            $row[] = $nv ? (float)$nv['nilai_tugas']    : '';
+        } elseif ($f_jenis === 'sts') {
+            $row[] = $nv ? (float)$nv['nilai_sts'] : '';
+        } else {
+            $row[] = $nv ? (float)$nv['nilai_sas'] : '';
+        }
+        $row[] = $nv && $nv['nilai_akhir'] > 0 ? (float)$nv['nilai_akhir'] : ''; // Nilai Akhir
+        $row[] = $nv ? ($nv['predikat']  ?? '') : '';                              // Predikat
+        $row[] = $nv ? ($nv['deskripsi'] ?? '') : '';                              // Deskripsi per-murid
+        $exp_rows[] = $row;
+    }
+
+    // Kolom definisi
+    $exp_col_defs = [
+        ['header'=>'No',         'field'=>'no',   'width'=>5,  'required'=>false,'type'=>'number'],
+        ['header'=>'NIS',        'field'=>'nis',  'width'=>14, 'required'=>false,'type'=>'text','format'=>'@'],
+        ['header'=>'Nama Murid', 'field'=>'nama', 'width'=>30, 'required'=>false,'type'=>'text','format'=>'@'],
+    ];
+    if ($f_jenis === 'bulanan') {
+        $exp_col_defs[] = ['header'=>'NH1',  'field'=>'nh1',  'width'=>9, 'required'=>false,'type'=>'number'];
+        $exp_col_defs[] = ['header'=>'NH2',  'field'=>'nh2',  'width'=>9, 'required'=>false,'type'=>'number'];
+        $exp_col_defs[] = ['header'=>'NH3',  'field'=>'nh3',  'width'=>9, 'required'=>false,'type'=>'number'];
+        $exp_col_defs[] = ['header'=>'Tugas','field'=>'tugas','width'=>9, 'required'=>false,'type'=>'number'];
+    } elseif ($f_jenis === 'sts') {
+        $exp_col_defs[] = ['header'=>'Nilai ASTS','field'=>'sts','width'=>12,'required'=>false,'type'=>'number'];
+    } else {
+        $exp_col_defs[] = ['header'=>'Nilai SAS', 'field'=>'sas','width'=>12,'required'=>false,'type'=>'number'];
+    }
+    $exp_col_defs[] = ['header'=>'Nilai Akhir','field'=>'na',   'width'=>11,'required'=>false,'type'=>'number'];
+    $exp_col_defs[] = ['header'=>'Predikat',   'field'=>'pred', 'width'=>9, 'required'=>false,'type'=>'text','format'=>'@'];
+    $exp_col_defs[] = ['header'=>'Deskripsi',  'field'=>'desk', 'width'=>55,'required'=>false,'type'=>'text','format'=>'@'];
+
+    $mapel_slug   = preg_replace('/[^a-z0-9]+/i', '_', substr($mapel_row['nama_mapel'] ?? 'mapel', 0, 25));
+    $periode_slug = ($f_bulan > 0) ? strtolower($bulan_nama) : ($f_jenis === 'semester' ? 'semester' : 'sts');
+    $filename = 'export_nilai_' . $mapel_slug . '_' . $periode_slug . '.xlsx';
+
+    xlsx_template($filename, [
+        'title'    => 'Rekap Nilai: ' . ($mapel_row['nama_mapel'] ?? '') . ' — Kelas ' . ($kelas_row['nama_kelas'] ?? ''),
+        'info_rows'=> [
+            ['Mata Pelajaran', $mapel_row['nama_mapel'] ?? '-'],
+            ['Kelas',          $kelas_row['nama_kelas'] ?? '-'],
+            ['Tahun Ajaran',   ($ta_info['nama'] ?? '') . ' ' . $sem_label],
+            ['Guru Pengampu',  $guru_pgm['nama_lengkap'] ?? '-'],
+            ['Jenis Raport',   $jenis_label[$f_jenis] ?? $f_jenis],
+            ['Periode',        $periode_str ?: '-'],
+            ['Jumlah Murid',   count($siswa_bulk) . ' murid'],
+            ['Diekspor oleh',  'Raportku'],
+        ],
+        'note'    => 'File ini hanya untuk rekap/arsip — tidak didesain untuk diimport ulang',
+        'columns' => $exp_col_defs,
+        'examples'=> $exp_rows,
+    ]);
+}
+
 // ── Download Template Generik (lama) ─────────────────────────────
 if (isset($_GET['download_template'])) {
     $mapel_list_all = db_query('SELECT id, nama_mapel, kelompok FROM mapel ORDER BY kelompok, urutan, nama_mapel');
@@ -432,8 +539,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 $kelas_b = db_row('SELECT * FROM kelas WHERE id=:id',[':id'=>$bulk_kelas_id]);
                 $mapel_b = db_row('SELECT * FROM mapel WHERE id=:id',[':id'=>$bulk_mapel_id]);
 
+                // ── VALIDASI OTORISASI IMPORT ──────────────────────────────
+                // Pastikan guru ini benar-benar ditugaskan untuk mapel+kelas tersebut.
+                // Mencegah guru mengupload template dengan kelas/mapel orang lain.
+                $import_authorized = true;
+                if (!in_array($role, ['admin', 'super_admin']) && $kelas_b && $mapel_b) {
+                    if ($guru_status === 'wali_kelas' && in_array($bulk_kelas_id, $wali_kelas_ids)) {
+                        // Wali kelas di kelasnya sendiri: cukup mapel terdaftar di kelas itu
+                        $import_authorized = (bool)db_row(
+                            'SELECT id FROM guru_mapel_kelas
+                             WHERE mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta LIMIT 1',
+                            [':m'=>$bulk_mapel_id,':k'=>$bulk_kelas_id,':ta'=>$bulk_ta_id]
+                        );
+                    } else {
+                        // Guru biasa: harus ditugaskan ke mapel+kelas tersebut
+                        $import_authorized = (bool)db_row(
+                            'SELECT id FROM guru_mapel_kelas
+                             WHERE guru_user_id=:uid AND mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta LIMIT 1',
+                            [':uid'=>$user['id'],':m'=>$bulk_mapel_id,':k'=>$bulk_kelas_id,':ta'=>$bulk_ta_id]
+                        );
+                    }
+                    if (!$import_authorized) {
+                        $errors[] = '⛔ Import ditolak: Anda tidak memiliki penugasan untuk mata pelajaran <strong>'
+                            . htmlspecialchars($mapel_b['nama_mapel'] ?? '')
+                            . '</strong> di kelas <strong>'
+                            . htmlspecialchars($kelas_b['nama_kelas'] ?? '')
+                            . '</strong>. Pastikan Anda mengunduh dan mengupload template untuk kelas dan mapel yang sesuai penugasan Anda.';
+                    }
+                }
+
                 if (!$kelas_b || !$mapel_b) {
                     $errors[] = 'Kelas atau mapel tidak valid.';
+                } elseif (!$import_authorized) {
+                    // Pesan error sudah ditambahkan di atas, tidak proses lanjut
                 } else {
                     // Pisahkan baris siswa dari baris extra (extra mulai setelah baris kosong)
                     // Ciri baris extra: kolom B (index 1) berisi teks non-NIS seperti 'AKTIF', atau label deskripsi
@@ -514,21 +652,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         }
 
                         // Baca nilai sesuai jenis + status aktif kolom
+                        // Layout kolom template bulanan: No(0)|NIS(1)|Nama(2)|NH1(3)|NH2(4)|NH3(5)|Tugas(6)|NilaiAkhir(7)|Predikat(8)|Deskripsi(9)
+                        // Layout STS/Semester:            No(0)|NIS(1)|Nama(2)|Nilai(3)|NilaiAkhir(4)|Predikat(5)|Deskripsi(6)
                         $h1 = $h2 = $h3 = $tug = $sts_v = $sas_v = 0.0;
+                        $desk_siswa_excel = ''; // deskripsi per-siswa dari kolom Excel
                         if ($bulk_jenis === 'bulanan') {
                             $h1  = $bulk_aktif_nh1   ? excel_float($row, 3) : 0.0;
                             $h2  = $bulk_aktif_nh2   ? excel_float($row, 4) : 0.0;
                             $h3  = $bulk_aktif_nh3   ? excel_float($row, 5) : 0.0;
                             $tug = $bulk_aktif_tugas ? excel_float($row, 6) : 0.0;
+                            // Kolom 7=Nilai Akhir (skip/read-only), 8=Predikat (skip), 9=Deskripsi (baca)
+                            $desk_siswa_excel = trim($row[9] ?? '');
                         } elseif ($bulk_jenis === 'sts') {
                             $sts_v = excel_float($row, 3);
+                            $desk_siswa_excel = trim($row[6] ?? '');
                         } else {
                             $sas_v = excel_float($row, 3);
+                            $desk_siswa_excel = trim($row[6] ?? '');
                         }
-
-                        // Deskripsi per-siswa: kosong — akan diisi otomatis dari predikat saat save di bulk.php
-                        // (import hanya menyimpan nilai; deskripsi per-siswa diserahkan ke bulk.php saat sinkronisasi)
-                        $catatan = '';
 
                         // Hitung NA
                         if ($bulk_jenis === 'semester') {
@@ -541,8 +682,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                         }
                         $pred = ($na>=$krit_a)?'A':(($na>=$krit_b)?'B':(($na>=$krit_c)?'C':'D'));
 
-                        // Deskripsi otomatis dari predikat
-                        $auto_desk = $bulk_desk[$pred] ?? '';
+                        // Tentukan deskripsi yang akan disimpan:
+                        // Prioritas: 1) deskripsi dari kolom Excel (guru sudah edit per-murid)
+                        //            2) deskripsi otomatis dari predikat (dari baris deskripsi bawah template)
+                        //            3) kosong
+                        $auto_desk  = $bulk_desk[$pred] ?? '';
+                        $final_desk = $desk_siswa_excel !== '' ? $desk_siswa_excel : $auto_desk;
 
                         try {
                             db_execute(
@@ -550,38 +695,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                                     (siswa_user_id,mapel_id,kelas_id,tahun_ajaran_id,guru_user_id,
                                      jenis_raport,bulan,
                                      nilai_harian_1,nilai_harian_2,nilai_harian_3,
-                                     nilai_tugas,nilai_sts,nilai_sas,nilai_akhir,predikat,catatan)
-                                 VALUES (:sid,:m,:k,:ta,:guru,:j,:b,:h1,:h2,:h3,:tug,:sts,:sas,:na,:pred,:cat)
+                                     nilai_tugas,nilai_sts,nilai_sas,nilai_akhir,predikat,deskripsi)
+                                 VALUES (:sid,:m,:k,:ta,:guru,:j,:b,:h1,:h2,:h3,:tug,:sts,:sas,:na,:pred,:desk)
                                  ON DUPLICATE KEY UPDATE
                                      guru_user_id=VALUES(guru_user_id),
                                      nilai_harian_1=VALUES(nilai_harian_1),nilai_harian_2=VALUES(nilai_harian_2),
                                      nilai_harian_3=VALUES(nilai_harian_3),nilai_tugas=VALUES(nilai_tugas),
                                      nilai_sts=VALUES(nilai_sts),nilai_sas=VALUES(nilai_sas),
-                                     nilai_akhir=VALUES(nilai_akhir),predikat=VALUES(predikat),catatan=VALUES(catatan)',
+                                     nilai_akhir=VALUES(nilai_akhir),predikat=VALUES(predikat),
+                                     deskripsi=IF(VALUES(deskripsi)!="",VALUES(deskripsi),deskripsi)',
                                 [':sid'=>$siswa_cache[$nis],':m'=>$bulk_mapel_id,
                                  ':k'=>$bulk_kelas_id,':ta'=>$bulk_ta_id,':guru'=>$user['id'],
                                  ':j'=>$bulk_jenis,':b'=>$bulk_bulan,
                                  ':h1'=>$h1,':h2'=>$h2,':h3'=>$h3,
                                  ':tug'=>$tug,':sts'=>$sts_v,':sas'=>$sas_v,
-                                 ':na'=>$na,':pred'=>$pred,':cat'=>$catatan]
+                                 ':na'=>$na,':pred'=>$pred,':desk'=>$final_desk]
                             );
-                            // Update deskripsi per-siswa jika ada auto_desk
-                            if ($auto_desk !== '' && $siswa_cache[$nis]) {
-                                try {
-                                    db_execute(
-                                        'UPDATE nilai SET catatan=:d
-                                         WHERE siswa_user_id=:sid AND mapel_id=:m AND kelas_id=:k
-                                           AND tahun_ajaran_id=:ta AND jenis_raport=:j
-                                           AND (bulan=:b OR (:b2 IS NULL AND bulan IS NULL))',
-                                        [':d'=>$auto_desk,':sid'=>$siswa_cache[$nis],':m'=>$bulk_mapel_id,
-                                         ':k'=>$bulk_kelas_id,':ta'=>$bulk_ta_id,':j'=>$bulk_jenis,
-                                         ':b'=>$bulk_bulan,':b2'=>$bulk_bulan]
-                                    );
-                                } catch (\PDOException $ex) { /* silent */ }
-                            }
                             $nama_siswa = trim($row[2] ?? $nis);
                             $results[]  = ['line'=>$line,'status'=>'ok',
-                                'msg'=>"$nama_siswa (NIS $nis) | NA: $na ($pred)" . ($auto_desk ? ' | deskripsi ✓' : '') . " — berhasil"];
+                                'msg'=>"$nama_siswa (NIS $nis) | NA: $na ($pred)" . ($final_desk ? ' | deskripsi ✓' : '') . " — berhasil"];
                             $successes++;
                         } catch (\PDOException $ex) {
                             $results[] = ['line'=>$line,'status'=>'error','msg'=>"NIS $nis: ".$ex->getMessage()];

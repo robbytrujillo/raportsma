@@ -144,7 +144,8 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
             <h1 class="page-title">Data Guru</h1>
             <p class="page-subtitle">Kelola data guru dan wali kelas
                 <?php if ($_gunit_f['units']): ?>
-                &mdash; <span class="badge <?= $_gunit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>" style="font-size:.75rem">
+                &mdash; <span class="badge <?= $_gunit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>"
+                    style="font-size:.75rem">
                     Unit <?= ucfirst($_gunit_f['units'][0]) ?>
                 </span>
                 <?php endif; ?>
@@ -181,7 +182,8 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
     <div class="alert alert-danger mb-4" style="border-radius:10px">
         ⚠️ <strong>Unit akun belum diset.</strong>
         Akun Admin ini belum memiliki unit yang dikonfigurasi, sehingga filter data menggunakan default (Putra).
-        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit akun ini</a> untuk memastikan filter berjalan sesuai yang diinginkan.
+        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit
+            akun ini</a> untuk memastikan filter berjalan sesuai yang diinginkan.
     </div>
     <?php endif; ?>
 
@@ -192,11 +194,12 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 <div>
                     <label class="form-label">Cari Guru</label>
                     <input type="text" name="q" placeholder="Nama / NIP..." value="<?= e($search) ?>"
-                        class="form-control" style="max-width:220px">
+                        class="form-control" style="max-width:220px; border-radius: 30px;">
                 </div>
                 <div>
                     <label class="form-label">Tampil</label>
-                    <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+                    <select name="per" class="form-control" style="width:90px; border-radius: 30px;"
+                        onchange="this.form.submit()">
                         <?php foreach ([10,25,50,100] as $opt): ?>
                         <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
                         <?php endforeach; ?>
@@ -204,8 +207,8 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                 </div>
                 <div class="flex gap-2 items-end" style="padding-bottom:0">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px;">Cari</button>
-                    <?php if ($search || $per !== 10): ?><a href="/guru"
-                        class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+                    <?php if ($search || $per !== 10): ?><a href="/guru" class="btn btn-secondary btn-sm"
+                        style="border-radius: 30px;">Reset</a><?php endif; ?>
                 </div>
             </form>
             <span class="text-sm text-gray-500"><?= $total ?> guru</span>
@@ -256,8 +259,7 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                                 <input type="hidden" name="id" value="<?= $g['id'] ?>">
                                 <input type="hidden" name="q" value="<?= e($search) ?>">
                                 <input type="hidden" name="per" value="<?= $per ?>">
-                                <button type="submit"
-                                    title="Klik untuk ganti unit"
+                                <button type="submit" title="Klik untuk ganti unit"
                                     style="border:none;background:none;cursor:pointer;padding:0">
                                     <span class="badge <?= $g_unit==='putri'?'badge-purple':'badge-blue' ?>"
                                         style="cursor:pointer;user-select:none">
@@ -313,10 +315,10 @@ $qstr = http_build_query(['page'=>'guru','q'=>$search,'per'=>$per]);
                                 <form method="POST" action="/guru" style="display:inline"
                                     onsubmit="return confirm('Hapus guru <?= e($g['nama_lengkap']) ?>?')">
                                     <?= csrf_field() ?>
-                                    <input type="hidden" name="action"   value="delete">
-                                    <input type="hidden" name="id"       value="<?= $g['id'] ?>">
-                                    <input type="hidden" name="_ret_q"   value="<?= e($search) ?>">
-                                    <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                                    <input type="hidden" name="_ret_q" value="<?= e($search) ?>">
+                                    <input type="hidden" name="_ret_p" value="<?= $page_n ?>">
                                     <input type="hidden" name="_ret_per" value="<?= $per ?>">
                                     <button type="submit" class="btn btn-sm btn-danger"
                                         style="border-radius: 30px;">Hapus</button>

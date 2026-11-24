@@ -39,6 +39,8 @@ $page_titles = [
     'tahun_ajaran' => 'Tahun Ajaran',
     'jenis_raport' => 'Jenis Rapor',
     'sekolah'      => 'Pengaturan Sekolah',
+    'tools.recalc_nilai'     => 'Recalculate Nilai',
+    'tools.fix_nilai_orphan' => 'Perbaiki Nilai Tidak Sesuai',
 ];
 $page_title = $page_titles[$page] ?? 'Raporku';
 

@@ -268,7 +268,8 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <h1 class="page-title">Penugasan Guru</h1>
             <p class="page-subtitle">Atur guru mengajar mata pelajaran di kelas tertentu
                 <?php if ($_unit_f['units']): ?>
-                &mdash; <span class="badge <?= $_unit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>" style="font-size:.75rem">
+                &mdash; <span class="badge <?= $_unit_f['units'][0]==='putra' ? 'badge-blue' : 'badge-orange' ?>"
+                    style="font-size:.75rem">
                     Unit <?= ucfirst($_unit_f['units'][0]) ?>
                 </span>
                 <?php endif; ?>
@@ -291,10 +292,11 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 </svg>
                 Import
             </a>
-            <button onclick="Modal.open('modalDuplikasiPenugasan')" class="btn btn-secondary" style="border-radius: 30px">
+            <button onclick="Modal.open('modalDuplikasiPenugasan')" class="btn btn-secondary"
+                style="border-radius: 30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>
                 Duplikasi Semester
             </button>
@@ -312,7 +314,8 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
     <div class="alert alert-danger mb-4" style="border-radius:10px">
         ⚠️ <strong>Unit akun belum diset.</strong>
         Akun Admin ini belum memiliki unit yang dikonfigurasi, sehingga filter data menggunakan default (Putra).
-        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit akun ini</a>.
+        Silakan <a href="/users" style="text-decoration:underline;font-weight:600">atur unit di Data Pengguna → Edit
+            akun ini</a>.
     </div>
     <?php endif; ?>
 
@@ -337,11 +340,12 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 <div>
                     <label class="form-label">Cari</label>
                     <input type="text" name="q" placeholder="Guru / mapel / kelas..." value="<?= e($search_p) ?>"
-                        class="form-control" style="max-width:240px">
+                        class="form-control" style="max-width:240px; border-radius: 30px;">
                 </div>
                 <div>
                     <label class="form-label">Tampil</label>
-                    <select name="per" class="form-control" style="width:90px" onchange="this.form.submit()">
+                    <select name="per" class="form-control" style="width:90px; border-radius: 30px"
+                        onchange="this.form.submit()">
                         <?php foreach ([10,25,50,100] as $opt): ?>
                         <option value="<?= $opt ?>" <?= $per===$opt?'selected':'' ?>><?= $opt ?>/hal</option>
                         <?php endforeach; ?>
@@ -350,7 +354,7 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 30px">Cari</button>
                     <?php if ($search_p || $per !== 10): ?><a href="/penugasan?ta=<?= $ta_id ?>"
-                        class="btn btn-secondary btn-sm">Reset</a><?php endif; ?>
+                        class="btn btn-secondary btn-sm" style="border-radius: 30px;">Reset</a><?php endif; ?>
                 </div>
             </form>
         </div>
@@ -385,7 +389,8 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                         <td class="font-semibold"><?= e($p['nama_guru']) ?></td>
                         <td>
                             <?php if ($p['kode_mapel']): ?>
-                            <span class="badge badge-gray text-xs" style="font-family:monospace;margin-right:4px"><?= e($p['kode_mapel']) ?></span>
+                            <span class="badge badge-gray text-xs"
+                                style="font-family:monospace;margin-right:4px"><?= e($p['kode_mapel']) ?></span>
                             <?php endif; ?>
                             <?= e($p['nama_mapel']) ?>
                         </td>
@@ -399,12 +404,12 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                                     'kelas_id'        => $p['kelas_id'],
                                     'tahun_ajaran_id' => $p['tahun_ajaran_id'],
                                 ]) ?>)' class="btn btn-sm btn-secondary" style="border-radius:30px">Edit</button>
-                                <form method="POST" action="/penugasan"
-                                    style="display:inline" onsubmit="return confirm('Hapus penugasan ini?')">
+                                <form method="POST" action="/penugasan" style="display:inline"
+                                    onsubmit="return confirm('Hapus penugasan ini?')">
                                     <?= csrf_field() ?>
-                                    <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
-                                    <input type="hidden" name="_ret_q"   value="<?= e($search_p) ?>">
-                                    <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+                                    <input type="hidden" name="_ret_ta" value="<?= $ta_id ?>">
+                                    <input type="hidden" name="_ret_q" value="<?= e($search_p) ?>">
+                                    <input type="hidden" name="_ret_p" value="<?= $page_n ?>">
                                     <input type="hidden" name="_ret_per" value="<?= $per ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
@@ -426,7 +431,8 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages_p ?> (<?= $total_p ?>
                 penugasan)</span>
             <div class="pagination">
-                <a href="?<?= $qstr_p ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>">
+                <a href="?<?= $qstr_p ?>&p=<?= max(1,$page_n-1) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
+                    style="border-radius: 30px;">
                     < Prev</a>
                         <?php
           $start = max(1, $page_n - 3); $end = min($pages_p, $page_n + 3);
@@ -442,7 +448,8 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
           endif;
         ?>
                         <a href="?<?= $qstr_p ?>&p=<?= min($pages_p,$page_n+1) ?>"
-                            class="page-link <?= $page_n>=$pages_p?'disabled':'' ?>">Next ></a>
+                            class="page-link <?= $page_n>=$pages_p?'disabled':'' ?> " style="border-radius: 30px;">Next
+                            ></a>
             </div>
         </div>
         <?php endif; ?>
@@ -459,12 +466,12 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
         </div>
         <form method="POST" action="/penugasan">
             <?= csrf_field() ?>
-            <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
-            <input type="hidden" name="_ret_q"   value="<?= e($search_p) ?>">
-            <input type="hidden" name="_ret_p"   value="<?= $page_n ?>">
+            <input type="hidden" name="_ret_ta" value="<?= $ta_id ?>">
+            <input type="hidden" name="_ret_q" value="<?= e($search_p) ?>">
+            <input type="hidden" name="_ret_p" value="<?= $page_n ?>">
             <input type="hidden" name="_ret_per" value="<?= $per ?>">
             <input type="hidden" name="action" id="penugasanAction" value="save">
-            <input type="hidden" name="id"     id="penugasanId"     value="">
+            <input type="hidden" name="id" id="penugasanId" value="">
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Guru <span class="text-red-500">*</span></label>
@@ -480,7 +487,9 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
                     <select name="mapel_id" id="penugasanMapel" class="form-control" required>
                         <option value="">-- Pilih Mata Pelajaran --</option>
                         <?php foreach ($mapel_list as $m): ?>
-                        <option value="<?= $m['id'] ?>"><?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?></option>
+                        <option value="<?= $m['id'] ?>">
+                            <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -517,11 +526,11 @@ $qstr_p = http_build_query(['page'=>'penugasan','ta'=>$ta_id,'q'=>$search_p,'per
 function editPenugasan(data) {
     document.getElementById('modalPenugasanTitle').textContent = 'Edit Penugasan Guru';
     document.getElementById('penugasanAction').value = 'update';
-    document.getElementById('penugasanId').value     = data.id;
-    document.getElementById('penugasanGuru').value   = data.guru_user_id;
-    document.getElementById('penugasanMapel').value  = data.mapel_id;
-    document.getElementById('penugasanKelas').value  = data.kelas_id;
-    document.getElementById('penugasanTA').value     = data.tahun_ajaran_id;
+    document.getElementById('penugasanId').value = data.id;
+    document.getElementById('penugasanGuru').value = data.guru_user_id;
+    document.getElementById('penugasanMapel').value = data.mapel_id;
+    document.getElementById('penugasanKelas').value = data.kelas_id;
+    document.getElementById('penugasanTA').value = data.tahun_ajaran_id;
     Modal.open('modalPenugasan');
 }
 
@@ -534,11 +543,11 @@ document.querySelector('#modalPenugasan .modal-header button').addEventListener(
 function resetPenugasanModal() {
     document.getElementById('modalPenugasanTitle').textContent = 'Tambah Penugasan Guru';
     document.getElementById('penugasanAction').value = 'save';
-    document.getElementById('penugasanId').value     = '';
-    document.getElementById('penugasanGuru').value   = '';
-    document.getElementById('penugasanMapel').value  = '';
-    document.getElementById('penugasanKelas').value  = '';
-    document.getElementById('penugasanTA').value     = '<?= $ta_id ?>';
+    document.getElementById('penugasanId').value = '';
+    document.getElementById('penugasanGuru').value = '';
+    document.getElementById('penugasanMapel').value = '';
+    document.getElementById('penugasanKelas').value = '';
+    document.getElementById('penugasanTA').value = '<?= $ta_id ?>';
 }
 </script>
 
@@ -553,25 +562,30 @@ function resetPenugasanModal() {
         <form method="POST" action="/penugasan">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="duplikasi_penugasan">
-            <input type="hidden" name="_ret_ta"  value="<?= $ta_id ?>">
-            <input type="hidden" name="_ret_q"   value="">
-            <input type="hidden" name="_ret_p"   value="1">
+            <input type="hidden" name="_ret_ta" value="<?= $ta_id ?>">
+            <input type="hidden" name="_ret_q" value="">
+            <input type="hidden" name="_ret_p" value="1">
             <input type="hidden" name="_ret_per" value="10">
             <div class="modal-body">
-                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.85rem;color:#92400e;line-height:1.6">
-                    <strong>Apa yang diduplikasi:</strong> Penugasan guru (guru → mapel → kelas) dari semester sumber akan disalin ke semester tujuan.<br>
-                    <strong>Syarat:</strong> Kelas di semester tujuan harus sudah ada (duplikasi kelas terlebih dahulu via menu Kelas).<br>
+                <div
+                    style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.85rem;color:#92400e;line-height:1.6">
+                    <strong>Apa yang diduplikasi:</strong> Penugasan guru (guru → mapel → kelas) dari semester sumber
+                    akan disalin ke semester tujuan.<br>
+                    <strong>Syarat:</strong> Kelas di semester tujuan harus sudah ada (duplikasi kelas terlebih dahulu
+                    via menu Kelas).<br>
                     <strong>Tidak termasuk:</strong> nilai dan data raport.
                 </div>
                 <div class="form-group">
                     <label class="form-label">Sumber <span class="text-red-500">*</span>
                         <span class="text-gray-400 font-normal">(penugasan akan disalin dari)</span>
                     </label>
-                    <select name="ta_sumber" id="dupPenugasanSumber" class="form-control" required onchange="dupPenugasanUpdateInfo()">
+                    <select name="ta_sumber" id="dupPenugasanSumber" class="form-control" required
+                        onchange="dupPenugasanUpdateInfo()">
                         <option value="">-- Pilih Semester Sumber --</option>
                         <?php foreach ($ta_list as $ta): ?>
                         <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id ? 'selected' : '' ?>>
-                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                            (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
                             <?= $ta['is_aktif'] ? ' — Aktif' : '' ?>
                         </option>
                         <?php endforeach; ?>
@@ -581,17 +595,20 @@ function resetPenugasanModal() {
                     <label class="form-label">Tujuan <span class="text-red-500">*</span>
                         <span class="text-gray-400 font-normal">(semester yang akan diisi)</span>
                     </label>
-                    <select name="ta_tujuan" id="dupPenugasanTujuan" class="form-control" required onchange="dupPenugasanUpdateInfo()">
+                    <select name="ta_tujuan" id="dupPenugasanTujuan" class="form-control" required
+                        onchange="dupPenugasanUpdateInfo()">
                         <option value="">-- Pilih Semester Tujuan --</option>
                         <?php foreach ($ta_list as $ta): ?>
                         <option value="<?= $ta['id'] ?>">
-                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?> (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
+                            <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
+                            (<?= $ta['semester']==1 ? 'Ganjil' : 'Genap' ?>)
                             <?= $ta['is_aktif'] ? ' — Aktif' : '' ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div id="dupPenugasanWarning" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.84rem;color:#991b1b">
+                <div id="dupPenugasanWarning"
+                    style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.84rem;color:#991b1b">
                     ⚠️ Sumber dan tujuan tidak boleh sama.
                 </div>
             </div>
@@ -610,7 +627,7 @@ function dupPenugasanUpdateInfo() {
     var s = document.getElementById('dupPenugasanSumber').value;
     var t = document.getElementById('dupPenugasanTujuan').value;
     var warn = document.getElementById('dupPenugasanWarning');
-    var btn  = document.getElementById('dupPenugasanSubmit');
+    var btn = document.getElementById('dupPenugasanSubmit');
     if (s && t && s === t) {
         warn.style.display = 'block';
         btn.disabled = true;

@@ -50,6 +50,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     $p_mapel = (int)$_POST['mapel_id'];
     $p_jenis = $_POST['jenis_raport'] ?? 'bulanan';
     $p_bulan = ($p_jenis !== 'semester') ? ((int)$_POST['bulan'] ?: null) : null;
+
+    // ── VALIDASI OTORISASI: pastikan guru ini ditugaskan di mapel+kelas tersebut ──
+    if (!in_array($role, ['admin', 'super_admin'])) {
+        $penugasan_valid = false;
+        if ($guru_status === 'wali_kelas' && in_array($p_kelas, $wali_kelas_ids)) {
+            // Wali kelas: boleh input nilai mapel apa saja selama mapel itu terdaftar di kelasnya
+            $penugasan_valid = (bool)db_row(
+                'SELECT id FROM guru_mapel_kelas
+                 WHERE mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta LIMIT 1',
+                [':m'=>$p_mapel,':k'=>$p_kelas,':ta'=>$p_ta]
+            );
+        } else {
+            // Guru biasa: hanya boleh input mapel yang ditugaskan ke dirinya di kelas tersebut
+            $penugasan_valid = (bool)db_row(
+                'SELECT id FROM guru_mapel_kelas
+                 WHERE guru_user_id=:uid AND mapel_id=:m AND kelas_id=:k AND tahun_ajaran_id=:ta LIMIT 1',
+                [':uid'=>$user['id'],':m'=>$p_mapel,':k'=>$p_kelas,':ta'=>$p_ta]
+            );
+        }
+        if (!$penugasan_valid) {
+            flash('error', 'Tidak dapat menyimpan: Anda tidak memiliki penugasan untuk mata pelajaran ini di kelas tersebut. Pilih mata pelajaran yang sesuai dengan kelas yang dipilih.');
+            header("Location: /nilai.bulk?ta=$p_ta&kelas=$p_kelas&mapel=0&jenis=$p_jenis");
+            exit;
+        }
+    }
+
     $sekolah = sekolah_info();
     $krit_a  = (float)($sekolah['kriteria_a_min'] ?? 92);
     $krit_b  = (float)($sekolah['kriteria_b_min'] ?? 83);
@@ -252,6 +278,15 @@ if ($kelas_id) {
     }
 }
 
+// ── Guard: reset mapel_id jika tidak ada dalam mapel_list kelas ini ──
+// Ini mencegah tampil & simpan nilai dengan mapel sisa kelas lain di URL
+if ($mapel_id && !empty($mapel_list)) {
+    $valid_mapel_ids = array_column($mapel_list, 'id');
+    if (!in_array($mapel_id, $valid_mapel_ids)) {
+        $mapel_id = 0; // reset — paksa guru pilih mapel yang sesuai kelas ini
+    }
+}
+
 // Info kelas & mapel terpilih
 $kelas_info = $kelas_id ? db_row('SELECT * FROM kelas WHERE id=:id', [':id'=>$kelas_id]) : null;
 $mapel_info = $mapel_id ? db_row('SELECT * FROM mapel WHERE id=:id', [':id'=>$mapel_id]) : null;
@@ -366,8 +401,10 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         </div>
         <div class="flex gap-2 flex-wrap">
             <?php if ($ready): ?>
-            <a href="/nilai?ta=<?= $ta_id ?>&kelas=<?= $kelas_id ?>&jenis=<?= e($jenis) ?>&export=1"
-                class="btn btn-secondary" style="border-radius:30px" title="Export data nilai kelas ini ke Excel">
+            <a id="linkExportExcel"
+                href="/nilai.import?export_nilai=1&f_ta=<?= $ta_id ?>&f_kelas=<?= $kelas_id ?>&f_mapel=<?= $mapel_id ?>&f_jenis=<?= e($jenis) ?>&f_bulan=<?= $bulan ?>"
+                class="btn btn-secondary" style="border-radius:30px"
+                title="Export rekap nilai + deskripsi yang sudah diinput ke Excel">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -412,7 +449,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <!-- Tahun Ajaran -->
                     <div class="form-group mb-0">
                         <label class="form-label">Tahun Ajaran</label>
-                        <select name="ta" class="form-control" onchange="this.form.submit()">
+                        <select name="ta" class="form-control" id="selectTA" onchange="onTAChange(this)">
                             <?php foreach ($ta_list as $ta): ?>
                             <option value="<?= $ta['id'] ?>" <?= $ta['id']==$ta_id?'selected':'' ?>>
                                 <?= e($ta['nama']) ?>/<?= $ta['semester'] ?>
@@ -423,7 +460,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <!-- Kelas -->
                     <div class="form-group mb-0">
                         <label class="form-label">Kelas</label>
-                        <select name="kelas" class="form-control" onchange="this.form.submit()">
+                        <select name="kelas" class="form-control" id="selectKelas" onchange="onKelasChange(this)">
                             <option value="">-- Pilih --</option>
                             <?php foreach ($kelas_list as $k): ?>
                             <option value="<?= $k['id'] ?>" <?= $k['id']==$kelas_id?'selected':'' ?>>
@@ -434,11 +471,12 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <!-- Mapel -->
                     <div class="form-group mb-0">
                         <label class="form-label">Mata Pelajaran</label>
-                        <select name="mapel" class="form-control" onchange="this.form.submit()">
+                        <select name="mapel" id="selectMapel" class="form-control" onchange="this.form.submit()">
                             <option value="">-- Pilih --</option>
                             <?php foreach ($mapel_list as $m): ?>
                             <option value="<?= $m['id'] ?>" <?= $m['id']==$mapel_id?'selected':'' ?>>
-                                <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?></option>
+                                <?= $m['kode_mapel'] ? '['.e($m['kode_mapel']).'] ' : '' ?><?= e($m['nama_mapel']) ?>
+                            </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -457,8 +495,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                         <label class="form-label">
                             Bulan <span class="text-red-500">*</span>
                         </label>
-                        <select name="bulan" id="selectBulan" class="form-control"
-                            onchange="this.form.submit()"
+                        <select name="bulan" id="selectBulan" class="form-control" onchange="this.form.submit()"
                             style="<?= (!$bulan && $kelas_id && $mapel_id) ? 'border-color:#ef4444;background:#fef2f2' : '' ?>">
                             <option value="">-- Pilih Bulan --</option>
                             <?php foreach ($bulan_opts as $bk => $bv): ?>
@@ -498,14 +535,15 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <div class="card-body empty-state">
             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
                 class="mx-auto mb-3" style="color:#f97316">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
             <p style="font-weight:600;font-size:1rem;margin-bottom:6px">Pilih Bulan Terlebih Dahulu</p>
-            <p class="text-gray-400 text-sm">Jenis rapor <strong><?= e($jenis_opts[$jenis]) ?></strong> memerlukan bulan.<br>
-            Pilih bulan di filter atas lalu klik <strong>Tampilkan</strong>.</p>
+            <p class="text-gray-400 text-sm">Jenis rapor <strong><?= e($jenis_opts[$jenis]) ?></strong> memerlukan
+                bulan.<br>
+                Pilih bulan di filter atas lalu klik <strong>Tampilkan</strong>.</p>
         </div>
     </div>
 
@@ -558,9 +596,9 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <?php endforeach; ?>
         <?php if ($jenis === 'bulanan'): ?>
         <!-- Kolom aktif: nilai dari DB (atau default 1 jika belum pernah disimpan) -->
-        <input type="hidden" id="hid_nh1"   name="aktif_nh1"   value="<?= $db_aktif_nh1 ?>">
-        <input type="hidden" id="hid_nh2"   name="aktif_nh2"   value="<?= $db_aktif_nh2 ?>">
-        <input type="hidden" id="hid_nh3"   name="aktif_nh3"   value="<?= $db_aktif_nh3 ?>">
+        <input type="hidden" id="hid_nh1" name="aktif_nh1" value="<?= $db_aktif_nh1 ?>">
+        <input type="hidden" id="hid_nh2" name="aktif_nh2" value="<?= $db_aktif_nh2 ?>">
+        <input type="hidden" id="hid_nh3" name="aktif_nh3" value="<?= $db_aktif_nh3 ?>">
         <input type="hidden" id="hid_tugas" name="aktif_tugas" value="<?= $db_aktif_tugas ?>">
         <?php endif; ?>
 
@@ -578,7 +616,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                 <path d="M23 21v-2a4 4 0 00-3-3.87" />
                                 <path d="M16 3.13a4 4 0 010 7.75" />
                             </svg>
-                            Nilai Siswa
+                            Nilai Murid
                         </span>
                         <div class="flex gap-2">
                             <button type="button" onclick="isiSemuaRata()" class="btn btn-sm btn-secondary"
@@ -734,12 +772,12 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                                             data-field="sts" onchange="hitungBaris(<?= $s['id'] ?>)">
                                     </td>
                                     <td>
-                                        <input type="number" name="kumulatif_<?= $s['id'] ?>" min="0" max="100" step="0.01"
-                                            value="<?= $nv['nilai_kumulatif'] ?? 0 ?>"
+                                        <input type="number" name="kumulatif_<?= $s['id'] ?>" min="0" max="100"
+                                            step="0.01" value="<?= $nv['nilai_kumulatif'] ?? 0 ?>"
                                             class="nilai-input form-control text-center"
                                             style="padding:4px 2px;font-size:.8rem;background:#f0f9ff;border-color:#bae6fd"
-                                            data-sid="<?= $s['id'] ?>"
-                                            data-field="kumulatif" onchange="hitungBaris(<?= $s['id'] ?>)">
+                                            data-sid="<?= $s['id'] ?>" data-field="kumulatif"
+                                            onchange="hitungBaris(<?= $s['id'] ?>)">
                                     </td>
 
                                     <?php else: ?>
@@ -754,7 +792,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
 
                                     <!-- Nilai Akhir (readonly, dihitung JS) -->
                                     <td>
-                                        <input type="number" id="na_<?= $s['id'] ?>" value="<?= $nv !== null ? $na : '' ?>"
+                                        <input type="number" id="na_<?= $s['id'] ?>"
+                                            value="<?= $nv !== null ? $na : '' ?>"
                                             class="form-control text-center font-bold text-orange-600"
                                             style="padding:4px 2px;font-size:.85rem;background:#fff7ed;border-color:#fed7aa"
                                             readonly tabindex="-1">
@@ -938,8 +977,8 @@ $ready = $kelas_id && $mapel_id && $ta_id;
             <div>
                 <div style="font-weight:700;font-size:1rem;color:#1f2328;display:flex;align-items:center;gap:6px">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
                     </svg>
                     Review Nilai &amp; Deskripsi
                 </div>
@@ -955,8 +994,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
                     <?php endif; ?>
                 </div>
             </div>
-            <button onclick="tutupReviewNilai()"
-                style="background:none;border:none;cursor:pointer;color:#9ca3af;
+            <button onclick="tutupReviewNilai()" style="background:none;border:none;cursor:pointer;color:#9ca3af;
                 font-size:1.6rem;line-height:1;padding:4px 8px">&times;</button>
         </div>
 
@@ -968,8 +1006,7 @@ $ready = $kelas_id && $mapel_id && $ta_id;
         <div style="padding:10px 20px;border-bottom:1px solid #f3f4f6;
             display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span style="font-size:.78rem;color:#57606a;white-space:nowrap">Tampilkan:</span>
-            <select id="reviewFilter" onchange="renderReviewTabel()"
-                style="font-size:.78rem;padding:5px 10px;border:1px solid #e5e7eb;
+            <select id="reviewFilter" onchange="renderReviewTabel()" style="font-size:.78rem;padding:5px 10px;border:1px solid #e5e7eb;
                 border-radius:8px;background:#fff;color:#1f2328;cursor:pointer">
                 <option value="semua">Semua siswa</option>
                 <option value="nilai_kosong">Nilai belum diinput</option>
@@ -1017,7 +1054,6 @@ const REVIEW_SISWA = <?= json_encode(array_values(array_map(fn($s) => [
 ], $siswa_list))) ?>;
 </script>
 <?php endif; ?>
-
 
 
 <script>
@@ -1069,8 +1105,8 @@ function hitungBaris(sid, isInit = false) {
             nilaiKolom.reduce((a, b) => a + b, 0) / kolomAktif.length :
             0;
     } else if (JENIS === 'sts') {
-        const stsVal   = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
-        const kumuRaw  = document.querySelector(`[name="kumulatif_${sid}"]`)?.value ?? '';
+        const stsVal = parseFloat(document.querySelector(`[name="sts_${sid}"]`)?.value) || 0;
+        const kumuRaw = document.querySelector(`[name="kumulatif_${sid}"]`)?.value ?? '';
         // nilai_akhir = kumulatif jika guru mengisi field (termasuk jika diisi 0),
         // fallback ke sts hanya jika field kumulatif benar-benar kosong/tidak diisi
         na = kumuRaw.trim() !== '' ? (parseFloat(kumuRaw) || 0) : stsVal;
@@ -1321,9 +1357,9 @@ function isiSemuaRata() {
                 if (el) el.value = num;
             });
         } else if (JENIS === 'sts') {
-            const elSts  = document.querySelector(`[name="sts_${sid}"]`);
+            const elSts = document.querySelector(`[name="sts_${sid}"]`);
             const elKumu = document.querySelector(`[name="kumulatif_${sid}"]`);
-            if (elSts)  elSts.value  = num;
+            if (elSts) elSts.value = num;
             if (elKumu) elKumu.value = num;
         } else {
             const el = document.querySelector(`[name="sas_${sid}"]`);
@@ -1366,20 +1402,30 @@ document.addEventListener('DOMContentLoaded', () => {
             terapkanKolom(chk.dataset.col, chk.checked);
         });
 
-        /** Update href tombol Import Excel dengan state kolom aktif saat ini */
+        /** Update href tombol Import & Export Excel dengan state kolom aktif saat ini */
         function updateImportLink() {
-            const link = document.getElementById('linkImportExcel');
-            if (!link) return;
-            const base = link.href.split('&aktif_')[0]; // hapus param aktif_ lama
             const state = {};
             document.querySelectorAll('.kolom-aktif-chk').forEach(chk => {
                 state[chk.dataset.col] = chk.checked ? 1 : 0;
             });
-            link.href = base +
+            const aktifParams =
                 '&aktif_nh1=' + (state.nh1 ?? 1) +
                 '&aktif_nh2=' + (state.nh2 ?? 1) +
                 '&aktif_nh3=' + (state.nh3 ?? 1) +
                 '&aktif_tugas=' + (state.tugas ?? 1);
+
+            // Import link
+            const importLink = document.getElementById('linkImportExcel');
+            if (importLink) {
+                const base = importLink.href.split('&aktif_')[0];
+                importLink.href = base + aktifParams;
+            }
+            // Export link — sinkronkan kolom aktif agar template yg diunduh konsisten
+            const exportLink = document.getElementById('linkExportExcel');
+            if (exportLink) {
+                const base = exportLink.href.split('&aktif_')[0];
+                exportLink.href = base + aktifParams;
+            }
         }
         // Update link sesuai state awal
         updateImportLink();
@@ -1432,40 +1478,53 @@ function tutupReviewNilai() {
 
 function renderReviewTabel() {
     if (typeof REVIEW_SISWA === 'undefined') return;
-    const filter  = document.getElementById('reviewFilter')?.value ?? 'semua';
-    const tbody   = document.getElementById('reviewTbody');
+    const filter = document.getElementById('reviewFilter')?.value ?? 'semua';
+    const tbody = document.getElementById('reviewTbody');
     const statsEl = document.getElementById('reviewStats');
-    const jmlEl   = document.getElementById('reviewJumlah');
+    const jmlEl = document.getElementById('reviewJumlah');
     if (!tbody) return;
 
-    const PRED_COLOR = { A:'#16a34a', B:'#2563eb', C:'#ca8a04', D:'#dc2626', '-':'#9ca3af' };
+    const PRED_COLOR = {
+        A: '#16a34a',
+        B: '#2563eb',
+        C: '#ca8a04',
+        D: '#dc2626',
+        '-': '#9ca3af'
+    };
 
     // ── Kumpulkan data terkini dari DOM per siswa ──────────────────────
     const rows = REVIEW_SISWA.map(s => {
         const sid = s.id;
 
         // Nilai akhir dari input readonly #na_SID
-        const naEl  = document.getElementById('na_' + sid);
+        const naEl = document.getElementById('na_' + sid);
         const naVal = naEl ? naEl.value.trim() : '';
-        const na    = naVal !== '' ? parseFloat(naVal) : null;
+        const na = naVal !== '' ? parseFloat(naVal) : null;
 
         // Predikat dari span #pred_SID
         const predEl = document.getElementById('pred_' + sid);
-        const pred   = predEl ? predEl.textContent.trim() : '-';
+        const pred = predEl ? predEl.textContent.trim() : '-';
 
         // Deskripsi dari textarea #deskArea_SID
         const taEl = document.getElementById('deskArea_' + sid);
         const desk = taEl ? taEl.value.trim() : '';
 
-        return { id: sid, nama: s.nama, nis: s.nis, na, pred, desk };
+        return {
+            id: sid,
+            nama: s.nama,
+            nis: s.nis,
+            na,
+            pred,
+            desk
+        };
     });
 
     // ── Statistik ringkas ──────────────────────────────────────────────
-    const total      = rows.length;
-    const nilaiIsi   = rows.filter(r => r.na !== null).length;
-    const deskIsi    = rows.filter(r => r.desk !== '').length;
-    const lengkap    = rows.filter(r => r.na !== null && r.desk !== '').length;
-    const nilaiKosong= total - nilaiIsi;
+    const total = rows.length;
+    const nilaiIsi = rows.filter(r => r.na !== null).length;
+    const deskIsi = rows.filter(r => r.desk !== '').length;
+    const lengkap = rows.filter(r => r.na !== null && r.desk !== '').length;
+    const nilaiKosong = total - nilaiIsi;
     const deskKosong = total - deskIsi;
 
     const stat = (label, val, total, color) =>
@@ -1477,12 +1536,12 @@ function renderReviewTabel() {
         </div>`;
 
     statsEl.innerHTML =
-        stat('Total Siswa',      total,       null,  '#1f2328') +
-        stat('Nilai Terisi',     nilaiIsi,    total, '#16a34a') +
-        stat('Nilai Kosong',     nilaiKosong, total, nilaiKosong > 0 ? '#dc2626' : '#9ca3af') +
-        stat('Deskripsi Terisi', deskIsi,     total, '#2563eb') +
-        stat('Deskripsi Kosong', deskKosong,  total, deskKosong > 0 ? '#d97706' : '#9ca3af') +
-        stat('Lengkap',          lengkap,     total, lengkap === total ? '#16a34a' : '#6366f1');
+        stat('Total Siswa', total, null, '#1f2328') +
+        stat('Nilai Terisi', nilaiIsi, total, '#16a34a') +
+        stat('Nilai Kosong', nilaiKosong, total, nilaiKosong > 0 ? '#dc2626' : '#9ca3af') +
+        stat('Deskripsi Terisi', deskIsi, total, '#2563eb') +
+        stat('Deskripsi Kosong', deskKosong, total, deskKosong > 0 ? '#d97706' : '#9ca3af') +
+        stat('Lengkap', lengkap, total, lengkap === total ? '#16a34a' : '#6366f1');
 
     // ── Filter ─────────────────────────────────────────────────────────
     let filtered = rows;
@@ -1501,15 +1560,15 @@ function renderReviewTabel() {
 
     const rowsHTML = filtered.map((r, i) => {
         // Nilai akhir
-        const nilaiHtml = r.na !== null
-            ? `<span style="font-weight:700;color:#ea580c">${r.na.toFixed(2)}</span>`
-            : `<span style="color:#dc2626;font-size:.75rem;font-weight:600">&#9888; Belum diinput</span>`;
+        const nilaiHtml = r.na !== null ?
+            `<span style="font-weight:700;color:#ea580c">${r.na.toFixed(2)}</span>` :
+            `<span style="color:#dc2626;font-size:.75rem;font-weight:600">&#9888; Belum diinput</span>`;
 
         // Predikat
         const predColor = PRED_COLOR[r.pred] ?? '#9ca3af';
-        const predHtml  = r.pred && r.pred !== '-'
-            ? `<span style="font-weight:700;color:${predColor};font-size:.9rem">${r.pred}</span>`
-            : `<span style="color:#9ca3af">-</span>`;
+        const predHtml = r.pred && r.pred !== '-' ?
+            `<span style="font-weight:700;color:${predColor};font-size:.9rem">${r.pred}</span>` :
+            `<span style="color:#9ca3af">-</span>`;
 
         // Deskripsi
         let deskHtml;
@@ -1545,4 +1604,25 @@ document.addEventListener('click', function(e) {
     const modal = document.getElementById('modalReviewNilai');
     if (modal && e.target === modal) tutupReviewNilai();
 });
+
+/**
+ * Saat Kelas berubah: reset pilihan Mata Pelajaran ke kosong sebelum submit.
+ * Ini memastikan guru tidak bisa terbawa mapel dari kelas lain di URL.
+ */
+function onKelasChange(sel) {
+    const mapelSel = document.getElementById('selectMapel');
+    if (mapelSel) mapelSel.value = '';
+    sel.form.submit();
+}
+
+/**
+ * Saat Tahun Ajaran berubah: reset Kelas DAN Mata Pelajaran ke kosong sebelum submit.
+ */
+function onTAChange(sel) {
+    const kelasSel = document.getElementById('selectKelas');
+    const mapelSel = document.getElementById('selectMapel');
+    if (kelasSel) kelasSel.value = '';
+    if (mapelSel) mapelSel.value = '';
+    sel.form.submit();
+}
 </script>

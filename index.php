@@ -20,7 +20,11 @@ $page = $_GET['page'] ?? 'dashboard';
 // Halaman yang dapat diakses tanpa login
 $public_pages = ['login'];
 
-if (!in_array($page, $public_pages, true)) {
+// Chatbot API: require_login() dijalankan di dalam file-nya sendiri
+// (agar bisa return JSON 401 bukan redirect HTML)
+$api_pages = ['chatbot.api'];
+
+if (!in_array($page, $public_pages, true) && !in_array($page, $api_pages, true)) {
     require_login();
 }
 
@@ -33,6 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // AJAX actions — include page file directly (no layout) so headers stay clean
     if ($action === 'toggle_publikasi' && $page === 'raport') {
         include __DIR__ . '/pages/raport/index.php';
+        ob_end_flush(); exit;
+    }
+    // Chatbot API — no layout
+    if ($page === 'chatbot.api') {
+        include __DIR__ . '/pages/chatbot/api.php';
         ob_end_flush(); exit;
     }
     // raport.manage POST actions (delete_periode, edit_bulan) — go through layout normally
@@ -112,7 +121,11 @@ $routes = [
     'sekolah'         => 'pages/sekolah/index.php',
 
     // Tools admin
-    'tools.recalc_nilai' => 'pages/tools/recalc_nilai.php',
+    'tools.recalc_nilai'      => 'pages/tools/recalc_nilai.php',
+    'tools.fix_nilai_orphan'  => 'pages/tools/fix_nilai_orphan.php',
+
+    // Chatbot AI
+    'chatbot.api'             => 'pages/chatbot/api.php',
 ];
 
 // ── Tentukan file halaman yang akan di-include ─────────────────

@@ -53,6 +53,15 @@
 
 </footer>
 
+<?php
+// Widget Raporku.Bot — hanya tampil di halaman berstruktur (bukan raport.print dsb)
+// Variabel $page sudah tersedia dari index.php (scope global)
+$_cbot_exclude = ['raport.print','raport.print_kelas','raport.leger','raport.leger_export','login'];
+if (!in_array($page ?? '', $_cbot_exclude)) {
+    include __DIR__ . '/../pages/chatbot/widget.php';
+}
+?>
+
 <script>
 // ── Bersihkan preview-raport-mode jika halaman ini bukan raport.view ───
 // Melindungi dari bfcache yang merestorasi class dari halaman sebelumnya.

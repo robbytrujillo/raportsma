@@ -1,10 +1,15 @@
 ﻿# ============================================================
-# .gitignore ï¿½ Raportku
+# .gitignore — Raportku
 # ============================================================
 
 # -- Konfigurasi sensitif -------------------------------------
-# config.php berisi kredensial DB ï¿½ JANGAN pernah di-push
+# config.php berisi kredensial DB & API key — JANGAN pernah di-push
 config.php
+
+# -- Chatbot AI -----------------------------------------------
+# api.php adalah endpoint server yang membaca GROK_API_KEY dari config.php
+# Tetap ignore agar implementasi AI tidak bocor ke repo publik
+/pages/chatbot/api.php
 
 # -- Dependensi PHP (Composer) --------------------------------
 # vendor/ diinstall ulang via `composer install`
@@ -53,3 +58,11 @@ desktop.ini
 # Semua file SQL tidak di-push ke repo (private deployment)
 # Sediakan instruksi setup DB manual di README
 *.sql
+
+# -- File debug & QA ------------------------------------------
+/qa_pindah_debug.mjs
+/qa_pindah_modal.png
+
+# -- Node (jika ada tooling) ----------------------------------
+node_modules/
+package-lock.json

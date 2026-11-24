@@ -210,10 +210,11 @@ $kelompok_colors = [
         <?php if ($kelas_id && $ta_id): ?>
         <div class="flex gap-2">
             <a href="/penugasan?ta=<?= $ta_id ?>&q=<?= urlencode($kelas_row['nama_kelas'] ?? '') ?>"
-               class="btn btn-secondary" style="border-radius:30px">
+                class="btn btn-secondary" style="border-radius:30px">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
                 </svg>
                 Kelola Penugasan
             </a>
@@ -228,7 +229,7 @@ $kelompok_colors = [
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
                     <label class="form-label">Tahun Ajaran</label>
-                    <select name="ta" class="form-control" onchange="this.form.submit()">
+                    <select name="ta" class="form-control" onchange="this.form.submit()" style="border-radius: 30px">
                         <?php foreach ($ta_list as $ta): ?>
                         <option value="<?= $ta['id'] ?>" <?= $ta['id'] == $ta_id ? 'selected' : '' ?>>
                             <?= e($ta['nama']) ?> Sem.<?= $ta['semester'] ?>
@@ -238,7 +239,7 @@ $kelompok_colors = [
                 </div>
                 <div>
                     <label class="form-label">Kelas</label>
-                    <select name="kelas" class="form-control" onchange="this.form.submit()">
+                    <select name="kelas" class="form-control" onchange="this.form.submit()" style="border-radius: 30px">
                         <option value="">— Pilih Kelas —</option>
                         <?php foreach ($kelas_list as $k): ?>
                         <option value="<?= $k['id'] ?>" <?= $k['id'] == $kelas_id ? 'selected' : '' ?>>
@@ -262,8 +263,8 @@ $kelompok_colors = [
     <div class="card">
         <div class="card-body empty-state">
             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
             <p>Pilih tahun ajaran dan kelas untuk melihat review susunan mapel.</p>
         </div>
@@ -274,13 +275,13 @@ $kelompok_colors = [
     <div class="card">
         <div class="card-body empty-state">
             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <p style="font-weight:600;margin-bottom:4px">Belum Ada Penugasan</p>
             <p>Kelas <strong><?= e($kelas_row['nama_kelas'] ?? '') ?></strong> belum memiliki
-               penugasan guru untuk tahun ajaran ini.</p>
+                penugasan guru untuk tahun ajaran ini.</p>
             <a href="/penugasan?ta=<?= $ta_id ?>" class="btn btn-primary mt-3" style="border-radius:30px">
                 + Tambah Penugasan
             </a>
@@ -319,9 +320,11 @@ $kelompok_colors = [
     <!-- Info: cara perbaiki urutan -->
     <div class="alert" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;
          margin-bottom:16px;display:flex;align-items:flex-start;gap:10px">
-        <svg width="18" height="18" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px">
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        <svg width="18" height="18" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"
+            style="flex-shrink:0;margin-top:1px">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
         <div style="font-size:.85rem;color:#92400e;line-height:1.6">
             <strong>Urutan tidak sesuai raport?</strong>
@@ -329,7 +332,8 @@ $kelompok_colors = [
             Mapel diurutkan: <strong>kelompok → urutan (ascending)</strong>.
             Jika mapel induk (misal PAI) perlu muncul sebelum Bahasa Indonesia,
             pastikan <code>urutan</code> PAI lebih kecil dari Bahasa Indonesia.
-            &nbsp;<a href="/mapel" style="color:#d97706;font-weight:700;text-decoration:underline">Edit urutan di halaman Mata Pelajaran →</a>
+            &nbsp;<a href="/mapel" style="color:#d97706;font-weight:700;text-decoration:underline">Edit urutan di
+                halaman Mata Pelajaran →</a>
         </div>
     </div>
 
@@ -338,11 +342,13 @@ $kelompok_colors = [
         <div class="card-header">
             <span>Susunan Mapel — Format Rapor</span>
             <div class="flex items-center gap-2">
-                <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#16a34a;font-weight:600">
+                <span
+                    style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#16a34a;font-weight:600">
                     <span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block"></span>
                     Ada nilai
                 </span>
-                <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#9ca3af;font-weight:600">
+                <span
+                    style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#9ca3af;font-weight:600">
                     <span style="width:9px;height:9px;border-radius:50%;background:#d1d5db;display:inline-block"></span>
                     Belum ada nilai
                 </span>
@@ -355,14 +361,15 @@ $kelompok_colors = [
                         <th style="width:36px;text-align:center">No</th>
                         <th style="width:20px;text-align:center">Sub</th>
                         <th>Mata Pelajaran</th>
-                        <th style="width:60px;text-align:center" title="Nilai urutan di tabel Mata Pelajaran">Urutan</th>
+                        <th style="width:60px;text-align:center" title="Nilai urutan di tabel Mata Pelajaran">Urutan
+                        </th>
                         <th style="width:110px">Kode</th>
                         <th>Guru Pengampu</th>
                         <th style="width:100px;text-align:center">Nilai</th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php
+                    <?php
                 $row_no      = 0;
                 $kelompok_prev = null;
                 foreach ($penugasan as $slot):
@@ -371,115 +378,119 @@ $kelompok_colors = [
                     $kg_color   = $kelompok_colors[$slot_kg] ?? '#6b7280';
                 ?>
 
-                <?php if ($slot_kg !== $kelompok_prev):
+                    <?php if ($slot_kg !== $kelompok_prev):
                     $kelompok_prev = $slot_kg;
                 ?>
-                <!-- Baris header kelompok -->
-                <tr>
-                    <td colspan="7" style="background:<?= $kg_color ?>18;border-left:4px solid <?= $kg_color ?>;
+                    <!-- Baris header kelompok -->
+                    <tr>
+                        <td colspan="7" style="background:<?= $kg_color ?>18;border-left:4px solid <?= $kg_color ?>;
                         padding:8px 12px;font-weight:700;color:<?= $kg_color ?>;font-size:.82rem;letter-spacing:.3px">
-                        <?= htmlspecialchars($kg_label) ?>
-                    </td>
-                </tr>
-                <?php endif; ?>
+                            <?= htmlspecialchars($kg_label) ?>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
 
-                <?php if ($slot['type'] === 'single'):
+                    <?php if ($slot['type'] === 'single'):
                     $m          = $slot['mapel_data'];
                     $guru_names = array_values($guru_by_mapel[$slot['mapel_id']] ?? []);
                     $row_no++;
                 ?>
-                <!-- Baris mapel mandiri -->
-                <tr class="<?= $m['ada_nilai'] ? '' : 'text-gray-400' ?>">
-                    <td style="text-align:center;font-weight:700;color:#374151"><?= $row_no ?></td>
-                    <td></td>
-                    <td style="font-weight:600"><?= htmlspecialchars($m['nama_mapel']) ?></td>
-                    <td style="text-align:center;font-size:.78rem;color:#9ca3af"><?= $m['urutan'] ?: '—' ?></td>
-                    <td>
-                        <?php if ($m['kode_mapel']): ?>
-                        <span class="badge badge-gray" style="font-family:monospace;font-size:.75rem">
-                            <?= e($m['kode_mapel']) ?>
-                        </span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php foreach ($guru_names as $gn): ?>
-                        <span class="badge badge-blue" style="margin:1px 2px;font-size:.75rem">
-                            <?= htmlspecialchars($gn) ?>
-                        </span>
-                        <?php endforeach; ?>
-                    </td>
-                    <td style="text-align:center">
-                        <?php if ($m['ada_nilai']): ?>
-                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;
+                    <!-- Baris mapel mandiri -->
+                    <tr class="<?= $m['ada_nilai'] ? '' : 'text-gray-400' ?>">
+                        <td style="text-align:center;font-weight:700;color:#374151"><?= $row_no ?></td>
+                        <td></td>
+                        <td style="font-weight:600"><?= htmlspecialchars($m['nama_mapel']) ?></td>
+                        <td style="text-align:center;font-size:.78rem;color:#9ca3af"><?= $m['urutan'] ?: '—' ?></td>
+                        <td>
+                            <?php if ($m['kode_mapel']): ?>
+                            <span class="badge badge-gray" style="font-family:monospace;font-size:.75rem">
+                                <?= e($m['kode_mapel']) ?>
+                            </span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php foreach ($guru_names as $gn): ?>
+                            <span class="badge badge-blue" style="margin:1px 2px;font-size:.75rem">
+                                <?= htmlspecialchars($gn) ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </td>
+                        <td style="text-align:center">
+                            <?php if ($m['ada_nilai']): ?>
+                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;
                               color:#16a34a;font-weight:600">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
-                                 viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-                            Terisi
-                        </span>
-                        <?php else: ?>
-                        <span style="font-size:.75rem;color:#9ca3af">—</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path d="M20 6L9 17l-5-5" />
+                                </svg>
+                                Terisi
+                            </span>
+                            <?php else: ?>
+                            <span style="font-size:.75rem;color:#9ca3af">—</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
 
-                <?php elseif ($slot['type'] === 'parent_group'):
+                    <?php elseif ($slot['type'] === 'parent_group'):
                     $pm_urutan = $parent_meta[$slot['parent_id']]['urutan'] ?? 0;
                     $row_no++;
                 ?>
-                <!-- Baris induk mapel -->
-                <tr style="background:#fafafa">
-                    <td style="text-align:center;font-weight:700;color:#374151"><?= $row_no ?></td>
-                    <td></td>
-                    <td style="font-weight:700;color:#374151">
-                        <?= htmlspecialchars($slot['parent_nama']) ?>:
-                    </td>
-                    <td style="text-align:center;font-size:.78rem;color:#9ca3af"><?= $pm_urutan ?: '—' ?></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <?php foreach ($slot['children'] as $c):
+                    <!-- Baris induk mapel -->
+                    <tr style="background:#fafafa">
+                        <td style="text-align:center;font-weight:700;color:#374151"><?= $row_no ?></td>
+                        <td></td>
+                        <td style="font-weight:700;color:#374151">
+                            <?= htmlspecialchars($slot['parent_nama']) ?>:
+                        </td>
+                        <td style="text-align:center;font-size:.78rem;color:#9ca3af"><?= $pm_urutan ?: '—' ?></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <?php foreach ($slot['children'] as $c):
                     $guru_names_c = array_values($guru_by_mapel[$c['mapel_id']] ?? []);
                 ?>
-                <!-- Baris sub-mapel (anak) -->
-                <tr class="<?= $c['ada_nilai'] ? '' : 'text-gray-400' ?>">
-                    <td></td>
-                    <td style="text-align:center;font-weight:600;font-size:.8rem;color:#6b7280">
-                        <?= htmlspecialchars($c['sub_label'] ?? '') ?>
-                    </td>
-                    <td style="padding-left:20px"><?= htmlspecialchars($c['nama_mapel']) ?></td>
-                    <td></td>
-                    <td>
-                        <?php if ($c['kode_mapel']): ?>
-                        <span class="badge badge-gray" style="font-family:monospace;font-size:.75rem">
-                            <?= e($c['kode_mapel']) ?>
-                        </span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php foreach ($guru_names_c as $gn): ?>
-                        <span class="badge badge-blue" style="margin:1px 2px;font-size:.75rem">
-                            <?= htmlspecialchars($gn) ?>
-                        </span>
-                        <?php endforeach; ?>
-                    </td>
-                    <td style="text-align:center">
-                        <?php if ($c['ada_nilai']): ?>
-                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;
+                    <!-- Baris sub-mapel (anak) -->
+                    <tr class="<?= $c['ada_nilai'] ? '' : 'text-gray-400' ?>">
+                        <td></td>
+                        <td style="text-align:center;font-weight:600;font-size:.8rem;color:#6b7280">
+                            <?= htmlspecialchars($c['sub_label'] ?? '') ?>
+                        </td>
+                        <td style="padding-left:20px"><?= htmlspecialchars($c['nama_mapel']) ?></td>
+                        <td></td>
+                        <td>
+                            <?php if ($c['kode_mapel']): ?>
+                            <span class="badge badge-gray" style="font-family:monospace;font-size:.75rem">
+                                <?= e($c['kode_mapel']) ?>
+                            </span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php foreach ($guru_names_c as $gn): ?>
+                            <span class="badge badge-blue" style="margin:1px 2px;font-size:.75rem">
+                                <?= htmlspecialchars($gn) ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </td>
+                        <td style="text-align:center">
+                            <?php if ($c['ada_nilai']): ?>
+                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;
                               color:#16a34a;font-weight:600">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
-                                 viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-                            Terisi
-                        </span>
-                        <?php else: ?>
-                        <span style="font-size:.75rem;color:#9ca3af">—</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; // anak ?>
-                <?php endif; // type ?>
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path d="M20 6L9 17l-5-5" />
+                                </svg>
+                                Terisi
+                            </span>
+                            <?php else: ?>
+                            <span style="font-size:.75rem;color:#9ca3af">—</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; // anak ?>
+                    <?php endif; // type ?>
 
-                <?php endforeach; // slots ?>
+                    <?php endforeach; // slots ?>
                 </tbody>
                 <tfoot>
                     <tr style="background:#f9fafb;font-weight:700">

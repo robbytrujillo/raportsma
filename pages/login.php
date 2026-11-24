@@ -171,7 +171,7 @@ $sekolah_l = sekolah_info();
     .login-right {
         width: 440px;
         min-width: 360px;
-        background: #fff;
+        background: #f6f8fd;
         display: flex;
         flex-direction: column;
         align-items: center;

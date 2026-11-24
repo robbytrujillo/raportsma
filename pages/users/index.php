@@ -48,23 +48,57 @@ $page_n = max(1, (int)($_GET['p'] ?? 1));
 $per    = 15;
 $offset = ($page_n - 1) * $per;
 
+$cur_user   = current_user();
+$cur_role   = $cur_user['role'];
+
+// Unit filter untuk admin (bukan super_admin)
+// Admin putra hanya lihat: super_admin, kepsek, admin (semua — karena sedikit),
+// guru/wali_kelas unit putra, siswa kelas unit putra
+$unit_join  = '';
+$unit_cond  = '';
+$unit_params = [];
+if ($cur_role === 'admin') {
+    $admin_guru = db_row('SELECT unit FROM guru WHERE user_id = :uid', [':uid' => $cur_user['id']]);
+    $admin_unit = $admin_guru['unit'] ?? 'putra';
+    if ($admin_unit === 'putra' || $admin_unit === 'putri') {
+        $unit_join = "LEFT JOIN guru g_uf ON g_uf.user_id = u.id
+                      LEFT JOIN siswa s_uf ON s_uf.user_id = u.id
+                      LEFT JOIN kelas k_uf ON k_uf.id = s_uf.kelas_id";
+        $unit_cond = "AND (
+            u.role IN ('super_admin','admin','kepala_sekolah')
+            OR (u.role IN ('guru','wali_kelas') AND g_uf.unit = :u_unit)
+            OR (u.role = 'siswa' AND k_uf.unit = :u_unit2)
+        )";
+        $unit_params = [':u_unit' => $admin_unit, ':u_unit2' => $admin_unit];
+    }
+}
+
 $where = ['1=1'];
 $params = [];
 if ($search) {
-    $where[]       = '(nama_lengkap LIKE :q1 OR username LIKE :q2 OR email LIKE :q3)';
+    $where[]       = '(u.nama_lengkap LIKE :q1 OR u.username LIKE :q2 OR u.email LIKE :q3)';
     $params[':q1'] = "%$search%";
     $params[':q2'] = "%$search%";
     $params[':q3'] = "%$search%";
 }
 if ($role_f) {
-    $where[] = 'role = :role';
+    $where[] = 'u.role = :role';
     $params[':role'] = $role_f;
 }
 $whereStr = implode(' AND ', $where);
+$allParams = array_merge($params, $unit_params);
 
-$total   = (int)(db_row("SELECT COUNT(*) as n FROM users WHERE $whereStr", $params)['n'] ?? 0);
-$pages   = max(1, (int)ceil($total / $per));
-$users   = db_query("SELECT * FROM users WHERE $whereStr ORDER BY nama_lengkap LIMIT $per OFFSET $offset", $params);
+// Gunakan alias u agar konsisten dengan JOIN
+$total = (int)(db_row(
+    "SELECT COUNT(DISTINCT u.id) as n FROM users u $unit_join WHERE $whereStr $unit_cond",
+    $allParams
+)['n'] ?? 0);
+$pages = max(1, (int)ceil($total / $per));
+$users = db_query(
+    "SELECT DISTINCT u.* FROM users u $unit_join WHERE $whereStr $unit_cond
+     ORDER BY u.nama_lengkap LIMIT $per OFFSET $offset",
+    $allParams
+);
 
 $role_labels = [
     'super_admin'  => ['label'=>'Super Admin',  'class'=>'badge-red'],
@@ -81,6 +115,12 @@ $role_labels = [
             <h1 class="page-title">Manajemen Pengguna</h1>
             <p class="page-subtitle">
                 <?= $can_crud ? 'Kelola akun seluruh pengguna sistem' : 'Lihat daftar pengguna sistem (hanya Super Admin yang dapat mengelola)' ?>
+                <?php if (!empty($admin_unit) && $cur_role === 'admin'): ?>
+                &mdash; <span class="badge <?= $admin_unit==='putra' ? 'badge-blue' : 'badge-orange' ?>"
+                    style="font-size:.75rem">
+                    Unit <?= ucfirst($admin_unit) ?>
+                </span>
+                <?php endif; ?>
             </p>
         </div>
         <?php if ($can_crud): ?>
@@ -113,8 +153,8 @@ $role_labels = [
             <form method="GET" action="index.php" class="flex flex-wrap gap-2 items-center flex-1">
                 <input type="hidden" name="page" value="users">
                 <input type="text" name="q" placeholder="Cari nama / username..." value="<?= e($search) ?>"
-                    class="form-control" style="max-width:220px">
-                <select name="role" class="form-control" style="max-width:160px">
+                    class="form-control" style="max-width:220px; border-radius: 30px">
+                <select name="role" class="form-control" style="max-width:160px; border-radius: 30px">
                     <option value="">Semua Role</option>
                     <?php foreach ($role_labels as $k => $v): ?>
                     <option value="<?= $k ?>" <?= $role_f===$k?'selected':'' ?>><?= $v['label'] ?></option>
@@ -177,8 +217,8 @@ $role_labels = [
                         <?php if ($can_crud): ?>
                         <td>
                             <div class="flex gap-1">
-                                <a href="/users.edit?id=<?= $u['id'] ?>"
-                                    class="btn btn-sm btn-secondary tooltip-wrap" style="border-radius: 30px">
+                                <a href="/users.edit?id=<?= $u['id'] ?>" class="btn btn-sm btn-secondary tooltip-wrap"
+                                    style="border-radius: 30px">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -187,39 +227,39 @@ $role_labels = [
                                     <span class="tooltip-text">Edit</span>
                                 </a>
                                 <?php if ($u['id'] != current_user()['id']): ?>
-                                        <!-- Tombol Toggle Aktif/Nonaktif -->
-                                        <form method="POST" action="/users" style="display:inline"
-                                            onsubmit="return confirm('<?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?> pengguna <?= e($u['nama_lengkap']) ?>?')">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="action" value="toggle_active">
-                                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                            <input type="hidden" name="q" value="<?= e($search) ?>">
-                                            <input type="hidden" name="role" value="<?= e($role_f) ?>">
-                                            <button type="submit"
-                                                class="btn btn-sm <?= $u['is_active'] ? 'btn-warning' : 'btn-success' ?>"
-                                                style="border-radius:30px">
-                                                <?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="/users" style="display:inline"
-                                            onsubmit="return confirm('Hapus pengguna <?= e($u['nama_lengkap']) ?>?')">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger tooltip-wrap"
-                                                style="border-radius: 30px">
-                                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
-                                                    viewBox="0 0 24 24">
-                                                    <polyline points="3 6 5 6 21 6" />
-                                                    <path d="M19 6l-1 14H6L5 6" />
-                                                    <path d="M10 11v6" />
-                                                    <path d="M14 11v6" />
-                                                    <path d="M9 6V4h6v2" />
-                                                </svg>
-                                                <span class="tooltip-text">Hapus</span>
-                                            </button>
-                                        </form>
-                                        <?php endif; ?>
+                                <!-- Tombol Toggle Aktif/Nonaktif -->
+                                <form method="POST" action="/users" style="display:inline"
+                                    onsubmit="return confirm('<?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?> pengguna <?= e($u['nama_lengkap']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="toggle_active">
+                                    <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                                    <input type="hidden" name="q" value="<?= e($search) ?>">
+                                    <input type="hidden" name="role" value="<?= e($role_f) ?>">
+                                    <button type="submit"
+                                        class="btn btn-sm <?= $u['is_active'] ? 'btn-warning' : 'btn-success' ?>"
+                                        style="border-radius:30px">
+                                        <?= $u['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                    </button>
+                                </form>
+                                <form method="POST" action="/users" style="display:inline"
+                                    onsubmit="return confirm('Hapus pengguna <?= e($u['nama_lengkap']) ?>?')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger tooltip-wrap"
+                                        style="border-radius: 30px">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6l-1 14H6L5 6" />
+                                            <path d="M10 11v6" />
+                                            <path d="M14 11v6" />
+                                            <path d="M9 6V4h6v2" />
+                                        </svg>
+                                        <span class="tooltip-text">Hapus</span>
+                                    </button>
+                                </form>
+                                <?php endif; ?>
                             </div>
                         </td>
                         <?php endif; ?>
@@ -231,18 +271,46 @@ $role_labels = [
         </div>
 
         <!-- Pagination -->
-        <?php if ($pages > 1): ?>
+        <?php if ($pages > 1):
+            // Windowed: tampilkan 2 halaman di kiri & kanan halaman aktif + first/last
+            $pg_url = fn($p) => '?page=users&q='.urlencode($search).'&role='.$role_f.'&p='.$p;
+            $win    = 2; // jumlah halaman di kiri & kanan aktif
+            $start  = max(2, $page_n - $win);
+            $end    = min($pages - 1, $page_n + $win);
+        ?>
         <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?></span>
             <div class="pagination">
-                <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= max(1,$page_n-1) ?>"
-                    class="page-link <?= $page_n<=1?'disabled':'' ?>">&lsaquo; Prev</a>
-                <?php for ($pi=1; $pi<=$pages; $pi++): ?>
-                <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= $pi ?>"
-                    class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
+                <!-- Prev -->
+                <a href="<?= $pg_url(max(1,$page_n-1)) ?>" class="page-link <?= $page_n<=1?'disabled':'' ?>"
+                    style="border-radius: 30px;">&lsaquo; Prev</a>
+
+                <!-- Halaman 1 selalu tampil -->
+                <a href="<?= $pg_url(1) ?>" class="page-link <?= $page_n===1?'active':'' ?>">1</a>
+
+                <!-- Ellipsis kiri -->
+                <?php if ($start > 2): ?>
+                <span class="page-link disabled" style="border:none;padding:6px 4px;cursor:default">…</span>
+                <?php endif; ?>
+
+                <!-- Window tengah -->
+                <?php for ($pi = $start; $pi <= $end; $pi++): ?>
+                <a href="<?= $pg_url($pi) ?>" class="page-link <?= $pi===$page_n?'active':'' ?>"><?= $pi ?></a>
                 <?php endfor; ?>
-                <a href="?page=users&q=<?= urlencode($search) ?>&role=<?= $role_f ?>&p=<?= min($pages,$page_n+1) ?>"
-                    class="page-link <?= $page_n>=$pages?'disabled':'' ?>">Next &rsaquo;</a>
+
+                <!-- Ellipsis kanan -->
+                <?php if ($end < $pages - 1): ?>
+                <span class="page-link disabled" style="border:none;padding:6px 4px;cursor:default">…</span>
+                <?php endif; ?>
+
+                <!-- Halaman terakhir selalu tampil -->
+                <?php if ($pages > 1): ?>
+                <a href="<?= $pg_url($pages) ?>" class="page-link <?= $page_n===$pages?'active':'' ?>"><?= $pages ?></a>
+                <?php endif; ?>
+
+                <!-- Next -->
+                <a href="<?= $pg_url(min($pages,$page_n+1)) ?>" class="page-link <?= $page_n>=$pages?'disabled':'' ?>"
+                    style="border-radius: 30px;">Next &rsaquo;</a>
             </div>
         </div>
         <?php endif; ?>
