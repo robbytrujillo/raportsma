@@ -7,12 +7,21 @@
 if (!function_exists('current_user')) return;
 $_cbot_user = current_user();
 if (!$_cbot_user) return;
-$_cbot_nama  = e($_cbot_user['nama_lengkap']);
 $_cbot_role  = $_cbot_user['role'];
+
+// Admin & Super Admin tidak perlu chatbot — mereka sudah punya akses penuh via UI
+if (in_array($_cbot_role, ['admin', 'super_admin'])) return;
+
+$_cbot_nama  = $_cbot_user['nama_lengkap'];
 $_cbot_label = ['siswa' => 'Murid', 'guru' => 'Guru', 'wali_kelas' => 'Wali Kelas',
-                 'kepala_sekolah' => 'Kepala Sekolah', 'admin' => 'Admin',
-                 'super_admin' => 'Super Admin'][$_cbot_role] ?? ucfirst($_cbot_role);
+                 'kepala_sekolah' => 'Kepala Sekolah'][$_cbot_role] ?? ucfirst($_cbot_role);
 $_cbot_api   = BASE_URL . '/?page=chatbot.api';
+
+// Tentukan mode chatbot berdasarkan role
+$_cbot_mode  = 'murid'; // default
+if (in_array($_cbot_role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
+    $_cbot_mode = 'guru';
+}
 ?>
 
 <!-- ════════════════════════════════════════════════════════════
@@ -161,6 +170,7 @@ $_cbot_api   = BASE_URL . '/?page=chatbot.api';
 const CBOT_API    = <?= json_encode($_cbot_api) ?>;
 const CBOT_NAMA   = <?= json_encode($_cbot_nama) ?>;
 const CBOT_LABEL  = <?= json_encode($_cbot_label) ?>;
+const CBOT_MODE   = <?= json_encode($_cbot_mode) ?>;   // 'murid' | 'guru'
 const IDLE_MS     = 90000;    // 90 detik tidak ada aktifitas → ucap salam perpisahan
 
 let cbotHistory   = [];       // [{role,content}] dikirim ke API
@@ -229,9 +239,16 @@ function cbotSapaan() {
     const nama   = CBOT_NAMA || 'Pengguna';
     const label  = CBOT_LABEL;
 
+    // Decode HTML entities jika ada (misal Sa&#039;id → Sa'id)
+    const namaBersih = (function(str) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value;
+    })(nama);
+
     const salam =
-        'Assalamualaikum Warahmatullahi Wabarakatuh 🌙\n\n' +
-        'Halo, **' + nama + '** (' + label + ')! Selamat datang di **Raporku.Bot**.\n\n' +
+        'Assalamualaikum Warahmatullahi Wabarakatuh\n\n' +
+        'Halo, **' + namaBersih + '** (' + label + ')! Selamat datang di **Raporku.Bot**.\n\n' +
         'Silakan bertanya seputar:\n' +
         '• 📊 Nilai dan rapor murid\n' +
         '• 🏅 Predikat & peringkat kelas\n' +
