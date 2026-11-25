@@ -856,10 +856,11 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                         <td class="col-nama"><?= htmlspecialchars($s['nama_lengkap']) ?></td>
                         <?php foreach ($mapel_list as $m):
                 $has_record = array_key_exists($m['id'], $siswa_nilai);
-                $v   = $has_record ? $siswa_nilai[$m['id']] : null;
-                $low = ($has_record && $v > 0 && $v < $krit_c);
+                $v        = $has_record ? $siswa_nilai[$m['id']] : null;
+                $v_disp   = $has_record ? (int)round((float)$v, 0) : null; // nilai setelah dibulatkan (sama dengan tampilan)
+                $low      = ($has_record && $v_disp > 0 && $v_disp < $krit_c);
             ?>
-                        <td class="col-mapel<?= $low ? ' val-low' : '' ?>"><?= $has_record ? number_format($v, 0) : '' ?>
+                        <td class="col-mapel<?= $low ? ' val-low' : '' ?>"><?= $has_record ? $v_disp : '' ?>
                         </td>
                         <?php endforeach; ?>
                         <td class="col-total"><?= $total > 0 ? number_format($total, 0) : '-' ?></td>

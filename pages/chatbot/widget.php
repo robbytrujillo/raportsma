@@ -217,6 +217,23 @@ if (in_array($_cbot_role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
     const CBOT_MODE = <?= json_encode($_cbot_mode) ?>; // 'murid' | 'guru'
     const IDLE_MS = 90000; // 90 detik tidak ada aktifitas → ucap salam perpisahan
 
+    // Daftar quick reply per mode (dipakai saat sapaan & setelah setiap jawaban bot)
+    const CBOT_QUICK = {
+        guru: [
+            'Statistik & distribusi nilai kelas',
+            'Peringkat dan rekap predikat murid',
+            'Murid yang perlu perhatian khusus',
+            'Saran strategi pengajaran',
+            'Cara menggunakan fitur rapor',
+        ],
+        murid: [
+            'Lihat nilai rapor saya',
+            'Peringkat saya di kelas',
+            'Saran cara meningkatkan nilai',
+            'Cara melihat rapor di aplikasi',
+        ],
+    };
+
     let cbotHistory = []; // [{role,content}] dikirim ke API
     let cbotOpen = false;
     let cbotTyping = false;
@@ -277,6 +294,93 @@ if (in_array($_cbot_role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
         if (el) el.remove();
     }
 
+    /* ── Konfirmasi Ya/Tidak setelah bot menjawab ──────────── */
+    function cbotTampilKonfirmasi() {
+        const wrap = $('cbotMessages');
+        // Hapus konfirmasi lama jika ada
+        const old = document.getElementById('cbotKonfirmasi');
+        if (old) old.remove();
+
+        const kDiv = document.createElement('div');
+        kDiv.id = 'cbotKonfirmasi';
+        kDiv.style.cssText = 'display:flex;gap:8px;padding:4px 0 2px';
+
+        const btnYa = document.createElement('button');
+        btnYa.textContent = 'Ya, ada pertanyaan lagi';
+        btnYa.style.cssText =
+            'background:#fff;color:var(--primary,#f97316);' +
+            'border:1.5px solid var(--primary,#f97316);border-radius:20px;' +
+            'padding:5px 14px;font-family:\'Poppins\',sans-serif;font-size:.72rem;' +
+            'font-weight:600;cursor:pointer;transition:background .15s,color .15s';
+        btnYa.onmouseover = function() { this.style.background='var(--primary,#f97316)';this.style.color='#fff'; };
+        btnYa.onmouseout  = function() { this.style.background='#fff';this.style.color='var(--primary,#f97316)'; };
+        btnYa.onclick = function(e) {
+            e.stopPropagation();
+            kDiv.remove();
+            cbotTampilQuickReplies(CBOT_QUICK[CBOT_MODE] || CBOT_QUICK.murid);
+        };
+
+        const btnTidak = document.createElement('button');
+        btnTidak.textContent = 'Tidak, terima kasih';
+        btnTidak.style.cssText =
+            'background:#fff;color:#6b7280;' +
+            'border:1.5px solid #d1d5db;border-radius:20px;' +
+            'padding:5px 14px;font-family:\'Poppins\',sans-serif;font-size:.72rem;' +
+            'font-weight:600;cursor:pointer;transition:background .15s,color .15s';
+        btnTidak.onmouseover = function() { this.style.background='#f3f4f6'; };
+        btnTidak.onmouseout  = function() { this.style.background='#fff'; };
+        btnTidak.onclick = function(e) {
+            e.stopPropagation();
+            kDiv.remove();
+            cbotTambahBubble('bot',
+                'Baik, terima kasih sudah bertanya. _Jazaakumullah khairan._ 🤲\nSemoga bermanfaat!');
+        };
+
+        kDiv.appendChild(btnYa);
+        kDiv.appendChild(btnTidak);
+        wrap.appendChild(kDiv);
+        wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    /* ── Quick reply buttons ───────────────────────────────── */
+    function cbotTampilQuickReplies(list) {
+        const wrap = $('cbotMessages');
+        const qDiv = document.createElement('div');
+        qDiv.id = 'cbotQuickReplies';
+        qDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 2px';
+        list.forEach(function(label) {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.style.cssText =
+                'background:#fff;color:var(--primary,#f97316);' +
+                'border:1.5px solid var(--primary,#f97316);border-radius:20px;' +
+                'padding:5px 12px;font-family:\'Poppins\',sans-serif;font-size:.72rem;' +
+                'font-weight:600;cursor:pointer;white-space:nowrap;' +
+                'transition:background .15s,color .15s';
+            btn.onmouseover = function() {
+                this.style.background = 'var(--primary,#f97316)';
+                this.style.color = '#fff';
+            };
+            btn.onmouseout = function() {
+                this.style.background = '#fff';
+                this.style.color = 'var(--primary,#f97316)';
+            };
+            btn.onclick = function(e) {
+                e.stopPropagation(); // Cegah bubble ke listener penutup modal
+                // Hapus semua quick reply setelah diklik
+                const qEl = $('cbotQuickReplies');
+                if (qEl) qEl.remove();
+                // Kirim sebagai pesan
+                const inp = $('cbotInput');
+                inp.value = label;
+                cbotKirim();
+            };
+            qDiv.appendChild(btn);
+        });
+        wrap.appendChild(qDiv);
+        wrap.scrollTop = wrap.scrollHeight;
+    }
+
     /* ── Pesan selamat datang ──────────────────────────────── */
     function cbotSapaan() {
         const wrap = $('cbotMessages');
@@ -298,28 +402,20 @@ if (in_array($_cbot_role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
             salam =
                 'Assalamualaikum Warahmatullahi Wabarakatuh\n\n' +
                 'Halo, **' + namaBersih + '** (' + label + ')! Selamat datang di **Raporku.Bot**.\n\n' +
-                'Sebagai tenaga pendidik, Anda dapat bertanya seputar:\n' +
-                '• 📊 Statistik & distribusi nilai kelas\n' +
-                '• 🏅 Peringkat dan rekap predikat murid\n' +
-                '• 📋 Murid yang perlu perhatian khusus\n' +
-                '• 💡 Saran strategi pengajaran berdasarkan data\n' +
-                '• ❓ Cara menggunakan fitur aplikasi rapor ini\n\n' +
-                '_Untuk data nilai murid secara spesifik, silakan buka menu Rapor atau Input Nilai._\n\n' +
-                '_Untuk pertanyaan di luar topik tersebut, saya akan mengarahkan ke pihak yang lebih berwenang._';
+                'Saya sudah memuat data kelas dan nilai yang Anda ampu. Silakan tanyakan:';
         } else {
             // Sapaan untuk Murid
             salam =
                 'Assalamualaikum Warahmatullahi Wabarakatuh\n\n' +
                 'Halo, **' + namaBersih + '**! Selamat datang di **Raporku.Bot**.\n\n' +
-                'Silakan bertanya seputar:\n' +
-                '• 📊 Nilai dan rapor kamu\n' +
-                '• 🏅 Peringkat di kelas kamu\n' +
-                '• 📚 Saran cara belajar & peningkatan nilai\n' +
-                '• ❓ Cara menggunakan fitur aplikasi rapor ini\n\n' +
-                '_Untuk pertanyaan di luar topik tersebut, saya akan mengarahkan ke pihak yang lebih berwenang._';
+                'Silakan bertanya seputar nilai, peringkat, atau saran belajar kamu:';
         }
 
         cbotTambahBubble('bot', salam);
+
+        // Tampilkan quick reply sesuai mode
+        cbotTampilQuickReplies(CBOT_QUICK[CBOT_MODE] || CBOT_QUICK.murid);
+
         cbotGreeted = true;
     }
 
@@ -407,6 +503,9 @@ if (in_array($_cbot_role, ['guru', 'wali_kelas', 'kepala_sekolah'])) {
                     role: 'assistant',
                     content: data.reply
                 });
+                // Tawaran konfirmasi — pengguna baca dulu, baru pilih Ya/Tidak
+                cbotTambahBubble('bot', 'Ada yang ingin ditanyakan lagi?');
+                cbotTampilKonfirmasi();
             } else if (data.msg === 'session_limit') {
                 cbotTambahBubble('bot',
                     'Sesi obrolan telah mencapai batas maksimum. ' +
