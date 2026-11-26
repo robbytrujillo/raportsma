@@ -81,6 +81,116 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         header('Location: /tools.fix_nilai_orphan'); exit;
     }
 
+    // ── TRANSFER NILAI: pindah semua nilai mapel A → mapel B di kelas tertentu ──
+    if ($action === 'transfer_mapel') {
+        $from_mid = (int)($_POST['from_mapel_id'] ?? 0);
+        $to_mid   = (int)($_POST['to_mapel_id']   ?? 0);
+        $kelas_id_t = (int)($_POST['kelas_id_t']  ?? 0);
+        $ta_id_t    = (int)($_POST['ta_id_t']      ?? 0);
+
+        if (!$from_mid || !$to_mid || !$kelas_id_t || !$ta_id_t) {
+            flash('error', 'Data tidak lengkap. Pilih kelas, tahun ajaran, mapel asal, dan mapel tujuan.');
+            header('Location: /tools.fix_nilai_orphan'); exit;
+        }
+        if ($from_mid === $to_mid) {
+            flash('error', 'Mapel asal dan mapel tujuan tidak boleh sama.');
+            header('Location: /tools.fix_nilai_orphan'); exit;
+        }
+
+        // Verifikasi mapel asal ada di kelas+TA ini
+        $from_m = db_row("SELECT m.id, m.nama_mapel FROM mapel m WHERE m.id=:mid", [':mid'=>$from_mid]);
+        // Verifikasi mapel tujuan ada di kelas+TA ini
+        $to_m = db_row("SELECT m.id, m.nama_mapel FROM mapel m WHERE m.id=:mid", [':mid'=>$to_mid]);
+
+        if (!$from_m || !$to_m) {
+            flash('error', 'Mapel asal atau tujuan tidak valid.');
+            header('Location: /tools.fix_nilai_orphan'); exit;
+        }
+
+        // Cek apakah nilai tujuan sudah ada (duplikat), jika ada skip / update yang lebih tinggi
+        $dipindah = 0; $skip = 0;
+        $nilai_asal = db_query(
+            "SELECT id, siswa_user_id, jenis_raport, bulan, nilai_akhir, predikat, guru_user_id
+             FROM nilai
+             WHERE mapel_id=:fmid AND kelas_id=:kid AND tahun_ajaran_id=:ta",
+            [':fmid'=>$from_mid, ':kid'=>$kelas_id_t, ':ta'=>$ta_id_t]
+        );
+
+        foreach ($nilai_asal as $nv) {
+            // Cek apakah di mapel tujuan sudah ada nilai untuk siswa+jenis+bulan yang sama
+            $existing = db_row(
+                "SELECT id, nilai_akhir FROM nilai
+                 WHERE mapel_id=:tmid AND kelas_id=:kid AND tahun_ajaran_id=:ta
+                   AND siswa_user_id=:sid AND jenis_raport=:jr
+                   AND (bulan=:bl OR (bulan IS NULL AND :bl2 IS NULL))",
+                [':tmid'=>$to_mid, ':kid'=>$kelas_id_t, ':ta'=>$ta_id_t,
+                 ':sid'=>$nv['siswa_user_id'], ':jr'=>$nv['jenis_raport'],
+                 ':bl'=>$nv['bulan'], ':bl2'=>$nv['bulan']]
+            );
+
+            if ($existing) {
+                // Sudah ada nilai di tujuan → hapus nilai asal saja (nilai tujuan dipertahankan)
+                db_execute("DELETE FROM nilai WHERE id=:id", [':id'=>$nv['id']]);
+                $skip++;
+            } else {
+                // Belum ada → pindahkan (UPDATE mapel_id)
+                db_execute(
+                    "UPDATE nilai SET mapel_id=:tmid WHERE id=:id",
+                    [':tmid'=>$to_mid, ':id'=>$nv['id']]
+                );
+                $dipindah++;
+            }
+        }
+
+        // ── Transfer deskripsi per kriteria (tabel nilai_deskripsi) ──────────
+        // Pastikan tabel ada dulu (bisa jadi belum pernah dibuat jika fitur bulk belum dipakai)
+        db()->exec("CREATE TABLE IF NOT EXISTS nilai_deskripsi (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            mapel_id INT NOT NULL,
+            kelas_id INT NOT NULL,
+            tahun_ajaran_id INT NOT NULL,
+            jenis_raport ENUM('bulanan','sts','semester') NOT NULL DEFAULT 'bulanan',
+            bulan TINYINT DEFAULT NULL,
+            kriteria CHAR(1) NOT NULL,
+            deskripsi TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uk_dk (mapel_id, kelas_id, tahun_ajaran_id, jenis_raport, bulan, kriteria)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $desk_rows = db_query(
+            "SELECT jenis_raport, bulan, kriteria, deskripsi
+             FROM nilai_deskripsi
+             WHERE mapel_id=:fmid AND kelas_id=:kid AND tahun_ajaran_id=:ta",
+            [':fmid'=>$from_mid, ':kid'=>$kelas_id_t, ':ta'=>$ta_id_t]
+        );
+        $desk_pindah = 0;
+        foreach ($desk_rows as $dk) {
+            // INSERT ke mapel tujuan — jika sudah ada deskripsi di tujuan, pertahankan (tidak overwrite)
+            $affected = db_execute(
+                "INSERT IGNORE INTO nilai_deskripsi
+                    (mapel_id, kelas_id, tahun_ajaran_id, jenis_raport, bulan, kriteria, deskripsi)
+                 VALUES (:tmid, :kid, :ta, :jr, :bl, :kr, :desk)",
+                [':tmid'=>$to_mid, ':kid'=>$kelas_id_t, ':ta'=>$ta_id_t,
+                 ':jr'=>$dk['jenis_raport'], ':bl'=>$dk['bulan'],
+                 ':kr'=>$dk['kriteria'], ':desk'=>$dk['deskripsi']]
+            );
+            if ($affected) $desk_pindah++;
+        }
+        // Hapus deskripsi dari mapel asal
+        if ($desk_rows) {
+            db_execute(
+                "DELETE FROM nilai_deskripsi WHERE mapel_id=:fmid AND kelas_id=:kid AND tahun_ajaran_id=:ta",
+                [':fmid'=>$from_mid, ':kid'=>$kelas_id_t, ':ta'=>$ta_id_t]
+            );
+        }
+
+        $msg = "Transfer selesai: {$dipindah} nilai dipindahkan dari \"{$from_m['nama_mapel']}\" ke \"{$to_m['nama_mapel']}\".";
+        if ($skip > 0)       $msg .= " {$skip} nilai dilewati (di mapel tujuan sudah ada nilai, nilai asal dihapus).";
+        if ($desk_pindah > 0) $msg .= " {$desk_pindah} deskripsi kriteria juga ikut dipindahkan.";
+        flash($dipindah > 0 || $skip > 0 ? 'success' : 'info', $msg);
+        header('Location: /tools.fix_nilai_orphan'); exit;
+    }
+
     if ($action === 'hapus_semua') {
         $deleted = db_execute("DELETE n FROM nilai n WHERE NOT EXISTS (
             SELECT 1 FROM guru_mapel_kelas gmk
@@ -178,6 +288,29 @@ foreach ($grouped as $gk => $grp) {
 $bulan_id = BULAN_ID;
 // Tab kelas aktif (dari GET)
 $active_kelas = (int)($_GET['kelas_tab'] ?? array_key_first($kelas_list) ?? 0);
+
+// ── Data untuk seksi Transfer Nilai ──────────────────────────────────────
+$tr_ta_list = db_query("SELECT id, nama, semester FROM tahun_ajaran ORDER BY id DESC");
+$tr_kelas_list = []; // akan di-load via AJAX per TA
+$tr_ta_aktif_id = db_row("SELECT id FROM tahun_ajaran WHERE is_aktif=1 ORDER BY id DESC LIMIT 1")['id'] ?? 0;
+// Kelas di TA aktif untuk default
+$tr_kelas_all = db_query(
+    "SELECT k.id, k.nama_kelas, k.tahun_ajaran_id FROM kelas k
+     INNER JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
+     ORDER BY ta.id DESC, k.nama_kelas"
+);
+// mapel per kelas (dari penugasan guru) — semua kelas
+$tr_mapel_per_kelas = [];
+foreach ($tr_kelas_all as $tkl) {
+    $tr_mapel_per_kelas[(int)$tkl['id']] = db_query(
+        "SELECT DISTINCT m.id, m.nama_mapel, m.kelompok
+         FROM mapel m
+         INNER JOIN guru_mapel_kelas gmk ON gmk.mapel_id = m.id
+         WHERE gmk.kelas_id=:kid AND gmk.tahun_ajaran_id=:ta
+         ORDER BY m.kelompok, m.urutan, m.nama_mapel",
+        [':kid' => $tkl['id'], ':ta' => $tkl['tahun_ajaran_id']]
+    );
+}
 ?>
 
 <div class="page-content" style="max-width:1100px">
@@ -186,7 +319,7 @@ $active_kelas = (int)($_GET['kelas_tab'] ?? array_key_first($kelas_list) ?? 0);
 <div class="page-header" style="margin-bottom:12px">
     <div>
         <h1 class="page-title">Perbaiki Nilai Tidak Sesuai</h1>
-        <p class="page-subtitle">Deteksi &amp; perbaiki nilai yang mapel-nya tidak sesuai penugasan guru di kelas tersebut</p>
+        <p class="page-subtitle">Deteksi &amp; perbaiki nilai yang mapel-nya tidak sesuai penugasan guru · Transfer nilai antar mapel dalam satu kelas</p>
     </div>
 </div>
 
@@ -417,7 +550,226 @@ $active_kelas = (int)($_GET['kelas_tab'] ?? array_key_first($kelas_list) ?? 0);
 
 </div><!-- /.card -->
 <?php endif; ?>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SEKSI TRANSFER NILAI ANTAR MAPEL
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="card" style="margin-top:28px">
+    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;background:#f0f9ff">
+        <h2 style="font-size:1rem;font-weight:700;color:#1f2328;margin:0">
+            🔄 Transfer Nilai Antar Mapel
+        </h2>
+        <p style="font-size:.82rem;color:#57606a;margin:4px 0 0">
+            Pindahkan semua nilai dari satu mapel ke mapel lain dalam kelas & tahun ajaran yang sama.
+            Berguna jika guru terlanjur mengisi nilai di mapel yang salah.
+        </p>
+    </div>
+
+    <div style="padding:20px">
+        <form method="POST" action="/tools.fix_nilai_orphan" id="formTransfer"
+              onsubmit="return konfirmasiTransfer()">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="transfer_mapel">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                <!-- Tahun Ajaran -->
+                <div>
+                    <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px">
+                        Tahun Ajaran
+                    </label>
+                    <select name="ta_id_t" id="trTaId"
+                            style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.85rem;background:#fff"
+                            onchange="trLoadKelas()">
+                        <option value="">-- Pilih Tahun Ajaran --</option>
+                        <?php foreach ($tr_ta_list as $tta): ?>
+                        <option value="<?= (int)$tta['id'] ?>"
+                            <?= (int)$tta['id'] === $tr_ta_aktif_id ? 'selected' : '' ?>>
+                            <?= e($tta['nama']) ?> Sem.<?= (int)$tta['semester'] ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Kelas -->
+                <div>
+                    <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px">
+                        Kelas
+                    </label>
+                    <select name="kelas_id_t" id="trKelasId"
+                            style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.85rem;background:#fff"
+                            onchange="trLoadMapel()">
+                        <option value="">-- Pilih Kelas --</option>
+                        <?php foreach ($tr_kelas_all as $tkl):
+                              if ((int)$tkl['tahun_ajaran_id'] !== $tr_ta_aktif_id) continue; ?>
+                        <option value="<?= (int)$tkl['id'] ?>"><?= e($tkl['nama_kelas']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin-bottom:20px">
+                <!-- Mapel Asal -->
+                <div>
+                    <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px">
+                        Mapel Asal <span style="color:#dc2626">(nilai akan dipindah dari sini)</span>
+                    </label>
+                    <select name="from_mapel_id" id="trFromMapel"
+                            style="width:100%;padding:8px 10px;border:1px solid #fca5a5;border-radius:8px;font-size:.85rem;background:#fff">
+                        <option value="">-- Pilih Kelas dulu --</option>
+                    </select>
+                </div>
+
+                <!-- Panah -->
+                <div style="text-align:center;padding-bottom:4px;font-size:1.4rem;color:#9ca3af">→</div>
+
+                <!-- Mapel Tujuan -->
+                <div>
+                    <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px">
+                        Mapel Tujuan <span style="color:#16a34a">(nilai akan dipindah ke sini)</span>
+                    </label>
+                    <select name="to_mapel_id" id="trToMapel"
+                            style="width:100%;padding:8px 10px;border:1px solid #86efac;border-radius:8px;font-size:.85rem;background:#fff">
+                        <option value="">-- Pilih Kelas dulu --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Info peringatan -->
+            <div id="trInfo" style="display:none;padding:10px 14px;background:#fffbf5;border:1px solid #fcd34d;
+                 border-radius:8px;font-size:.82rem;color:#92400e;margin-bottom:16px"></div>
+
+            <div style="display:flex;gap:10px;align-items:center">
+                <button type="submit" class="btn btn-sm"
+                        style="border-radius:20px;background:#2563eb;color:#fff;border:none;font-size:.85rem;padding:8px 20px">
+                    🔄 Transfer Nilai Sekarang
+                </button>
+                <span style="font-size:.78rem;color:#9ca3af">
+                    Proses ini tidak dapat dibatalkan. Pastikan pilihan sudah benar.
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+
 </div><!-- /.page-content -->
+
+<script>
+// ── Data mapel per kelas untuk Transfer Nilai ─────────────────────────────
+const TR_KELAS_ALL    = <?= json_encode(array_map(fn($k) => [
+    'id'    => (int)$k['id'],
+    'nama'  => $k['nama_kelas'],
+    'ta_id' => (int)$k['tahun_ajaran_id'],
+], $tr_kelas_all)) ?>;
+
+const TR_MAPEL_PER_KELAS = <?= json_encode(array_map(
+    fn($list) => array_map(fn($m) => [
+        'id'       => (int)$m['id'],
+        'nama'     => $m['nama_mapel'],
+        'kelompok' => $m['kelompok'] ?? '',
+    ], $list),
+    $tr_mapel_per_kelas
+)) ?>;
+
+function trLoadKelas() {
+    const taId  = parseInt(document.getElementById('trTaId').value) || 0;
+    const sel   = document.getElementById('trKelasId');
+    sel.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    TR_KELAS_ALL.filter(k => k.ta_id === taId).forEach(k => {
+        sel.insertAdjacentHTML('beforeend', `<option value="${k.id}">${k.nama}</option>`);
+    });
+    trLoadMapel();
+}
+
+function trLoadMapel() {
+    const kid = parseInt(document.getElementById('trKelasId').value) || 0;
+    const mapels = kid && TR_MAPEL_PER_KELAS[kid] ? TR_MAPEL_PER_KELAS[kid] : [];
+
+    ['trFromMapel','trToMapel'].forEach(selId => {
+        const sel = document.getElementById(selId);
+        sel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+        // Kelompokkan per kelompok mapel
+        const groups = {};
+        const groupOrder = [];
+        mapels.forEach(m => {
+            const g = m.kelompok || '';
+            if (!groups[g]) { groups[g] = []; groupOrder.push(g); }
+            groups[g].push(m);
+        });
+        groupOrder.forEach(kel => {
+            const container = kel ? document.createElement('optgroup') : null;
+            if (container) container.label = 'Kelompok ' + kel;
+            groups[kel].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.nama;
+                (container || sel).appendChild(opt);
+            });
+            if (container) sel.appendChild(container);
+        });
+    });
+    trUpdateInfo();
+}
+
+function trUpdateInfo() {
+    const fromId = parseInt(document.getElementById('trFromMapel').value) || 0;
+    const toId   = parseInt(document.getElementById('trToMapel').value)   || 0;
+    const kid    = parseInt(document.getElementById('trKelasId').value)   || 0;
+    const info   = document.getElementById('trInfo');
+
+    if (!kid || !fromId || !toId) { info.style.display = 'none'; return; }
+
+    const mapels  = TR_MAPEL_PER_KELAS[kid] || [];
+    const fromNm  = mapels.find(m => m.id === fromId)?.nama || '?';
+    const toNm    = mapels.find(m => m.id === toId)?.nama   || '?';
+
+    if (fromId === toId) {
+        info.style.display   = 'block';
+        info.style.background = '#fef2f2';
+        info.style.borderColor= '#fca5a5';
+        info.style.color      = '#dc2626';
+        info.textContent = '⚠️ Mapel asal dan tujuan tidak boleh sama.';
+        return;
+    }
+
+    info.style.display   = 'block';
+    info.style.background = '#fffbf5';
+    info.style.borderColor= '#fcd34d';
+    info.style.color      = '#92400e';
+    info.innerHTML = `Semua nilai <strong>"${fromNm}"</strong> akan dipindah ke <strong>"${toNm}"</strong>.<br>
+        Jika di mapel tujuan sudah ada nilai untuk murid yang sama, nilai lama (asal) akan dihapus.`;
+}
+
+document.getElementById('trFromMapel').addEventListener('change', trUpdateInfo);
+document.getElementById('trToMapel').addEventListener('change',   trUpdateInfo);
+
+function konfirmasiTransfer() {
+    const fromId = parseInt(document.getElementById('trFromMapel').value) || 0;
+    const toId   = parseInt(document.getElementById('trToMapel').value)   || 0;
+    const kid    = parseInt(document.getElementById('trKelasId').value)   || 0;
+    const taId   = parseInt(document.getElementById('trTaId').value)      || 0;
+
+    if (!taId)   { alert('Pilih tahun ajaran terlebih dahulu.');  return false; }
+    if (!kid)    { alert('Pilih kelas terlebih dahulu.');         return false; }
+    if (!fromId) { alert('Pilih mapel asal terlebih dahulu.');    return false; }
+    if (!toId)   { alert('Pilih mapel tujuan terlebih dahulu.');  return false; }
+    if (fromId === toId) { alert('Mapel asal dan tujuan tidak boleh sama.'); return false; }
+
+    const mapels = TR_MAPEL_PER_KELAS[kid] || [];
+    const fromNm = mapels.find(m => m.id === fromId)?.nama || '?';
+    const toNm   = mapels.find(m => m.id === toId)?.nama   || '?';
+    const kNm    = TR_KELAS_ALL.find(k => k.id === kid)?.nama || '?';
+
+    return confirm(
+        `⚠️ Konfirmasi Transfer Nilai\n\n` +
+        `Kelas     : ${kNm}\n` +
+        `Dari mapel: ${fromNm}\n` +
+        `Ke mapel  : ${toNm}\n\n` +
+        `Semua nilai mapel "${fromNm}" akan dipindah ke "${toNm}".\n` +
+        `Proses ini TIDAK DAPAT DIBATALKAN.\n\n` +
+        `Lanjutkan?`
+    );
+}
+</script>
 
 <script>
 // ── Tab switching ──────────────────────────────────────────────────────────

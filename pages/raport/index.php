@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * pages/raport/index.php
  * Daftar raport &mdash; tampilan sesuai role.
@@ -12,7 +12,7 @@ $role     = $user['role'];
 $ta_aktif = db_row('SELECT * FROM tahun_ajaran WHERE is_aktif = 1 LIMIT 1');
 $ta_id    = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 $kelas_id = (int)($_GET['kelas'] ?? 0);
-$jenis    = $_GET['jenis'] ?? 'semester';
+$jenis    = $_GET['jenis'] ?? 'bulanan';
 $bulan    = (int)($_GET['bulan'] ?? 0);
 $ta_list  = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 
@@ -367,6 +367,20 @@ if ($kelas_id) {
     }
 }
 
+// Label periode untuk subtitle Bell Curve
+$_bc_jenis_map  = ['bulanan'=>'Bulanan','sts'=>'ASTS','semester'=>'Semester'];
+$_bc_jenis_lbl  = $_bc_jenis_map[$jenis] ?? ucfirst($jenis);
+$_bc_bulan_lbl  = (in_array($jenis, ['bulanan','sts']) && $bulan) ? (BULAN_ID[$bulan] ?? '') : '';
+$_bc_ta_nama    = '';
+foreach ($ta_list as $_t) {
+    if ((int)$_t['id'] === $ta_id) {
+        $sem = (int)$_t['semester'] === 1 ? 'Ganjil' : 'Genap';
+        $_bc_ta_nama = $_t['nama'] . ' Sem. ' . $sem;
+        break;
+    }
+}
+$bc_periode_label = $_bc_jenis_lbl . ($_bc_bulan_lbl ? ' ' . $_bc_bulan_lbl : '') . ' — ' . $_bc_ta_nama;
+
 // Data Bell Curve: per-siswa per-mapel + rata semua mapel
 // Struktur BC_DATA: { mapel_list:[{id,nama},...], siswa:[{nama, by_mapel:{mapel_id:nilai,...}, avg:float|null},...] }
 $bc_data = ['mapel_list' => [], 'siswa' => []];
@@ -487,7 +501,22 @@ $bc_siswa_data = $bc_data['siswa'];
         </div>
     </form>
 
-    <?php if ($kelas_id && !empty($siswa_raport)): ?>
+    <?php
+    // Validasi: jenis bulanan/sts wajib pilih bulan sebelum tabel ditampilkan
+    $butuh_bulan   = in_array($jenis, ['bulanan','sts']);
+    $bulan_belum   = $butuh_bulan && !$bulan;
+    ?>
+    <?php if ($kelas_id && $bulan_belum): ?>
+    <div class="card">
+        <div class="card-body" style="text-align:center;padding:40px 20px">
+            <svg width="40" height="40" fill="none" stroke="#f97316" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p style="font-weight:700;color:#ea580c;font-size:.95rem;margin:0 0 6px">Pilih bulan terlebih dahulu</p>
+            <p style="color:#57606a;font-size:.85rem;margin:0">Jenis rapor <strong><?= $jenis === 'bulanan' ? 'Bulanan' : 'ASTS' ?></strong> memerlukan bulan. Pilih bulan di filter atas lalu klik <strong>Tampilkan</strong>.</p>
+        </div>
+    </div>
+    <?php elseif ($kelas_id && !empty($siswa_raport)): ?>
     <div class="card">
         <div class="card-header">
             <span>Daftar Murid &mdash; Peringkat Kelas</span>
@@ -627,10 +656,15 @@ $bc_siswa_data = $bc_data['siswa'];
                         <td class="font-bold text-orange-600"><?= number_format($s['avg_nilai'] ?? 0, 2) ?></td>
                         <td>
                             <div class="flex gap-1">
+                                <?php if ($butuh_bulan && !$bulan): ?>
+                                <button type="button" onclick="alertPilihBulan()" class="btn btn-sm btn-secondary" style="border-radius:30px;opacity:.5;cursor:not-allowed">Lihat</button>
+                                <button type="button" onclick="alertPilihBulan()" class="btn btn-sm btn-primary"   style="border-radius:30px;opacity:.5;cursor:not-allowed">Cetak</button>
+                                <?php else: ?>
                                 <a href="/raport.view?siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                                     class="btn btn-sm btn-secondary" style="border-radius:30px">Lihat</a>
                                 <a href="/raport.print?siswa=<?= $s['id'] ?>&ta=<?= $ta_id ?>&jenis=<?= $jenis ?>&bulan=<?= $bulan ?>"
                                     target="_blank" class="btn btn-sm btn-primary" style="border-radius:30px">Cetak</a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -901,6 +935,9 @@ if ($kelas_id) {
                 <div style="font-size:.78rem;color:#57606a;margin-top:3px">
                     <?= e($bc_kelas_nama) ?> &mdash; Rata-rata semua mata pelajaran
                 </div>
+                <div style="font-size:.73rem;color:#0891b2;margin-top:1px;font-weight:500">
+                    <?= e($bc_periode_label) ?>
+                </div>
             </div>
             <button onclick="tutupBellCurve()" style="background:none;border:none;cursor:pointer;
                 color:#9ca3af;font-size:1.6rem;line-height:1;padding:4px 8px">&times;</button>
@@ -1145,6 +1182,11 @@ if ($kelas_id) {
 </div>
 
 <script>
+/* ── Validasi bulan wajib diisi ──────────────────────────────────── */
+function alertPilihBulan() {
+    alert('Pilih bulan terlebih dahulu di filter atas, lalu klik Tampilkan.');
+}
+
 /* ── Data Bell Curve dari PHP ─────────────────────────────────────── */
 const BC_DATA  = <?= json_encode($bc_data) ?>;
 const BC_KRIT  = { A: <?= $bc_krit_a ?>, B: <?= $bc_krit_b ?>, C: <?= $bc_krit_c ?> };

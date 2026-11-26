@@ -79,10 +79,28 @@ function is_admin_or_super(): bool {
 }
 
 /**
- * Redirect ke login jika belum login
+ * Redirect ke login jika belum login.
+ * Menyimpan URL saat ini ke session agar setelah login bisa kembali ke halaman yang sama.
  */
 function require_login(): void {
     if (!is_logged_in()) {
+        // Simpan URL asal hanya untuk GET request (bukan POST/form submit)
+        // dan bukan halaman login/logout itu sendiri
+        if (
+            ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' &&
+            !empty($_SERVER['REQUEST_URI'])
+        ) {
+            $uri = $_SERVER['REQUEST_URI'];
+            // Jangan simpan URL login/logout
+            if (
+                strpos($uri, 'page=login') === false &&
+                strpos($uri, 'page=logout') === false &&
+                strpos($uri, '/login') === false &&
+                strpos($uri, '/logout') === false
+            ) {
+                $_SESSION['redirect_after_login'] = $uri;
+            }
+        }
         header('Location: ' . page_url('login'));
         exit;
     }

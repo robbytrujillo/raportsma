@@ -509,7 +509,7 @@ $row_no = 0;
                     <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
                 <?php endif; ?>
-                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
+                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt;text-align:justify">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
             </tr>
@@ -545,7 +545,7 @@ $row_no = 0;
                     <?= $has_data ? number_format($na, 0) : '' ?>
                 </td>
                 <?php endif; ?>
-                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt">
+                <td style="border:1px solid #000;padding:4px 8px;font-size:9.5pt;text-align:justify">
                     <?= $has_data ? htmlspecialchars($desk) : '' ?>
                 </td>
             </tr>

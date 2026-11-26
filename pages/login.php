@@ -34,7 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
         } else {
             $result = do_login($username, $password);
             if ($result['success']) {
-                header('Location: ' . page_url('dashboard'));
+                // Redirect ke halaman terakhir sebelum session expired, atau dashboard
+                $redirect = $_SESSION['redirect_after_login'] ?? '';
+                unset($_SESSION['redirect_after_login']);
+                if ($redirect && strpos($redirect, '//') === false) {
+                    header('Location: ' . $redirect);
+                } else {
+                    header('Location: ' . page_url('dashboard'));
+                }
                 exit;
             } else {
                 $error  = $result['message'];
