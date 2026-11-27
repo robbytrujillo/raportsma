@@ -97,20 +97,9 @@ if ($role === 'siswa') {
     );
     $ada_belum_rilis = (int)($ada_nilai_belum_rilis['n'] ?? 0) > 0;
 
-    // Hitung peringkat kelas
-    $rank = '-';
-    if ($siswa_data) {
-        $rank_data = db_query(
-            'SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg
-             FROM siswa sv INNER JOIN nilai n ON n.siswa_user_id = sv.user_id
-             WHERE sv.kelas_id = :kid AND n.tahun_ajaran_id = :ta
-             GROUP BY sv.user_id ORDER BY avg DESC',
-            [':kid'=>$siswa_data['kelas_id'], ':ta'=>$ta_id]
-        );
-        foreach ($rank_data as $i => $r) {
-            if ($r['user_id'] == $user['id']) { $rank = ($i+1) . ' / ' . count($rank_data); break; }
-        }
-    }
+    // Peringkat dihitung per-periode (per jenis+bulan) saat render tiap card
+    // — tidak lagi dihitung secara global di sini
+    $rank = null; // tidak digunakan di header lagi
     ?>
 <div class="page-content">
     <div class="page-header">
@@ -136,10 +125,6 @@ if ($role === 'siswa') {
                 <div>
                     <div class="text-xs font-semibold text-gray-400 uppercase mb-1">NIS</div>
                     <div class="font-semibold"><?= e($siswa_data['nis'] ?? '-') ?></div>
-                </div>
-                <div>
-                    <div class="text-xs font-semibold text-gray-400 uppercase mb-1">Peringkat</div>
-                    <div class="font-bold text-orange-600"><?= $rank ?></div>
                 </div>
             </div>
         </div>
@@ -187,6 +172,38 @@ if ($role === 'siswa') {
           $avg = (float)($r['avg_nilai'] ?? 0);
           $pred_avg = $avg > 0 ? get_predikat($avg) : '-';
           $pred_color = $pred_avg==='A' ? 'text-green-600' : ($pred_avg==='B' ? 'text-blue-600' : ($pred_avg==='C' ? 'text-yellow-600' : 'text-red-500'));
+
+          // ── Hitung peringkat per-periode (jenis + bulan + ta) ───────────────
+          $card_rank = '-'; $card_rank_total = 0;
+          if ($siswa_data && $avg > 0) {
+              $rp_bulan_cond  = '';
+              $rp_bulan_param = [];
+              if (in_array($rj, ['bulanan','sts']) && $r['bulan']) {
+                  $rp_bulan_cond  = 'AND n.bulan = :rp_bulan';
+                  $rp_bulan_param = [':rp_bulan' => (int)$r['bulan']];
+              }
+              $rp_rows = db_query(
+                  "SELECT sv.user_id, ROUND(AVG(n.nilai_akhir),2) as avg_v
+                   FROM siswa sv
+                   INNER JOIN nilai n ON n.siswa_user_id = sv.user_id
+                   WHERE sv.kelas_id = :kid
+                     AND n.tahun_ajaran_id = :ta
+                     AND n.jenis_raport  = :jenis
+                     $rp_bulan_cond
+                     AND n.nilai_akhir > 0
+                   GROUP BY sv.user_id
+                   ORDER BY avg_v DESC",
+                  array_merge([
+                      ':kid'   => $siswa_data['kelas_id'],
+                      ':ta'    => (int)$r['tahun_ajaran_id'],
+                      ':jenis' => $rj,
+                  ], $rp_bulan_param)
+              );
+              $card_rank_total = count($rp_rows);
+              foreach ($rp_rows as $ri => $rr) {
+                  if ((int)$rr['user_id'] === (int)$user['id']) { $card_rank = $ri + 1; break; }
+              }
+          }
         ?>
         <div class="card hover:shadow-md transition-all">
             <div class="card-body">
@@ -207,6 +224,14 @@ if ($role === 'siswa') {
                         <div class="text-xs text-gray-400">Rata-rata</div>
                         <div class="font-bold text-lg text-orange-600"><?= number_format($avg, 2) ?></div>
                     </div>
+                    <?php if ($card_rank !== '-'): ?>
+                    <div style="text-align:center">
+                        <div class="text-xs text-gray-400">Peringkat</div>
+                        <div class="font-bold" style="color:#eab308;font-size:1rem;line-height:1.2">
+                            <?= $card_rank ?><span style="font-size:.75rem;color:#9ca3af">/<?= $card_rank_total ?></span>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     <div class="ml-auto">
                         <div class="text-xs text-gray-400">Mapel</div>
                         <div class="font-semibold text-gray-700"><?= $r['jml_mapel'] ?></div>

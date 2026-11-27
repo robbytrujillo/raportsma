@@ -674,6 +674,12 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         #leger-zoom-wrap {
             zoom: var(--leger-zoom, 1);
         }
+
+        /* Sembunyikan chatbot saat cetak */
+        #cbotBtn, #cbotModal, #cbotBadge { display: none !important; }
+
+        /* Pastikan baris rata-rata ikut tercetak */
+        .leger-table tfoot { display: table-footer-group; }
     }
     </style>
 </head>
@@ -869,6 +875,51 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
+                <?php
+                // ── Hitung rata-rata per mapel (dari semua siswa yang punya nilai > 0) ───
+                $avg_per_mapel = [];          // mapel_id => avg
+                $avg_total_sum = 0;           // jumlah rata-rata per siswa
+                $avg_total_cnt = 0;           // jumlah siswa dengan nilai
+                foreach ($mapel_list as $m) {
+                    $sum = 0; $cnt = 0;
+                    foreach ($siswa_list as $s) {
+                        $sv = $nilai_map[(int)$s['id']][$m['id']] ?? null;
+                        if ($sv !== null && $sv > 0) { $sum += $sv; $cnt++; }
+                    }
+                    $avg_per_mapel[$m['id']] = $cnt > 0 ? round($sum / $cnt, 1) : null;
+                }
+                // Rata-rata kelas = rata-rata dari semua rata-rata siswa
+                foreach ($siswa_list as $s) {
+                    $sv_total = 0; $sv_cnt = 0;
+                    foreach ($mapel_list as $m) {
+                        $sv = $nilai_map[(int)$s['id']][$m['id']] ?? null;
+                        if ($sv !== null && $sv > 0) { $sv_total += $sv; $sv_cnt++; }
+                    }
+                    if ($sv_cnt > 0) { $avg_total_sum += round($sv_total / $sv_cnt, 1); $avg_total_cnt++; }
+                }
+                $avg_kelas = $avg_total_cnt > 0 ? round($avg_total_sum / $avg_total_cnt, 1) : 0;
+                $avg_total_nilai = 0;
+                foreach ($avg_per_mapel as $v) { if ($v !== null) $avg_total_nilai += $v; }
+                ?>
+                <tfoot>
+                    <tr style="background:#f0fdf4;font-weight:700;border-top:2px solid #16a34a">
+                        <td class="col-no" style="text-align:center;color:#15803d">—</td>
+                        <td class="col-nisn"></td>
+                        <td class="col-nama" style="color:#15803d;font-size:.78rem;white-space:nowrap">Rata-rata per Mapel</td>
+                        <?php foreach ($mapel_list as $m):
+                            $av = $avg_per_mapel[$m['id']] ?? null;
+                            $low = ($av !== null && $av > 0 && $av < $krit_c);
+                        ?>
+                        <td class="col-mapel<?= $low ? ' val-low' : '' ?>"
+                            style="font-weight:700;<?= $av !== null ? 'color:#15803d' : '' ?>">
+                            <?= $av !== null ? number_format($av, 1) : '' ?>
+                        </td>
+                        <?php endforeach; ?>
+                        <td class="col-total" style="color:#15803d"><?= $avg_total_nilai > 0 ? number_format($avg_total_nilai, 1) : '-' ?></td>
+                        <td class="col-rata" style="color:#15803d"><?= $avg_kelas > 0 ? number_format($avg_kelas, 1) : '-' ?></td>
+                        <td class="col-rank"></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
@@ -1049,6 +1100,11 @@ $tgl_cetak = ($sekolah['kota'] ?? 'Depok') . ', '
         }
     })();
     </script>
+
+<?php
+// ── Chatbot widget (inject langsung karena halaman ini standalone/tanpa layout) ──
+include __DIR__ . '/../../pages/chatbot/widget.php';
+?>
 
 </body>
 

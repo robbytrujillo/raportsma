@@ -617,8 +617,11 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                '#fef2f2','#ecfeff','#f7fee7','#fff1f2','#f5f3ff',
                '#f0f9ff','#ecfdf5','#fff7ed','#eef2ff','#f0fdfa'];
 
-    // Hitung KKM / KTP dari sekolah_info
-    $krit_c_val = (float)(sekolah_info()['kriteria_c_min'] ?? 76);
+    // Hitung kriteria nilai dari sekolah_info
+    $_si_dash    = sekolah_info();
+    $krit_c_val  = (float)($_si_dash['kriteria_c_min'] ?? 76);
+    $krit_b      = (float)($_si_dash['kriteria_b_min'] ?? 83);
+    $krit_a      = (float)($_si_dash['kriteria_a_min'] ?? 92);
   ?>
 
     <?php if (!empty($leger_rows)): ?>
@@ -671,8 +674,11 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
                 <!-- Bars -->
                 <?php foreach ($bar_data as $bi => $br):
           $bval  = (float)$br['avg_nilai'];
-          $bclr  = $pal[$bi % count($pal)];
-          $bbg   = $pal_bg[$bi % count($pal_bg)];
+          // Warna berdasarkan rentang nilai
+          if ($bval >= $krit_a)      { $bclr = '#16a34a'; $bbg = '#f0fdf4'; } // Hijau  A ≥ krit_a
+          elseif ($bval >= $krit_b)  { $bclr = '#2563eb'; $bbg = '#eff6ff'; } // Biru   B krit_b–krit_a
+          elseif ($bval >= $krit_c_val) { $bclr = '#ea580c'; $bbg = '#fff7ed'; } // Oranye C krit_c–krit_b
+          else                       { $bclr = '#dc2626'; $bbg = '#fef2f2'; } // Merah  D < krit_c
           $bx    = $pad_left + $bi * ($bar_w_per + $bar_gap) + (int)($bar_gap/2);
           $bbarw = $bar_w_per;
           $bh    = max(6, $chart_h * ($bval / $bar_max));
@@ -701,13 +707,18 @@ if (in_array($role, ['admin', 'super_admin', 'kepala_sekolah', 'guru', 'wali_kel
             </svg>
             <!-- Legend: grid 2 kolom, nomor + dot warna + nama + nilai -->
             <div class="bar-legend-grid" style="margin-top:14px;border-top:1px solid #f3f4f6;padding-top:12px">
-                <?php foreach ($bar_data as $bi => $br): ?>
+                <?php foreach ($bar_data as $bi => $br):
+                    $lv = (float)$br['avg_nilai'];
+                    if ($lv >= $krit_a)       $lclr = '#16a34a';
+                    elseif ($lv >= $krit_b)   $lclr = '#2563eb';
+                    elseif ($lv >= $krit_c_val) $lclr = '#ea580c';
+                    else                      $lclr = '#dc2626';
+                ?>
                 <div class="bar-legend-item">
-                    <span class="bar-legend-num" style="color:<?= $pal[$bi%count($pal)] ?>"><?= $bi+1 ?></span>
-                    <span class="bar-legend-dot" style="background:<?= $pal[$bi%count($pal)] ?>"></span>
+                    <span class="bar-legend-num" style="color:<?= $lclr ?>"><?= $bi+1 ?></span>
+                    <span class="bar-legend-dot" style="background:<?= $lclr ?>"></span>
                     <span class="bar-legend-name"><?= htmlspecialchars($br['nama_mapel']) ?></span>
-                    <span class="bar-legend-val"
-                        style="color:<?= $pal[$bi%count($pal)] ?>"><?= number_format((float)$br['avg_nilai'],1) ?></span>
+                    <span class="bar-legend-val" style="color:<?= $lclr ?>"><?= number_format($lv,1) ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>

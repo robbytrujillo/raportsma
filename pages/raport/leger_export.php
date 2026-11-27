@@ -435,6 +435,64 @@ foreach ($rows_data as $ri => $rd) {
     $row++;
 }
 
+// ── Baris Rata-rata per Mapel ───────────────────────────────────
+// Hitung rata-rata tiap mapel dari rows_data (hanya nilai > 0)
+$avg_mapel_ex  = [];   // mapel_id => avg
+$avg_kelas_sum = 0.0;  // akumulasi rata-rata tiap siswa
+$avg_kelas_cnt = 0;
+foreach ($mapel_list as $m) {
+    $sum = 0.0; $cnt = 0;
+    foreach ($rows_data as $rd) {
+        $entry = $rd['nilai'][$m['id']] ?? ['val'=>null,'has'=>false];
+        if ($entry['has'] && $entry['val'] > 0) { $sum += $entry['val']; $cnt++; }
+    }
+    $avg_mapel_ex[$m['id']] = $cnt > 0 ? round($sum / $cnt, 1) : null;
+}
+foreach ($rows_data as $rd) {
+    if ($rd['rata'] > 0) { $avg_kelas_sum += $rd['rata']; $avg_kelas_cnt++; }
+}
+$avg_kelas_ex       = $avg_kelas_cnt > 0 ? round($avg_kelas_sum / $avg_kelas_cnt, 1) : 0;
+$avg_total_ex       = array_sum(array_filter($avg_mapel_ex, fn($v) => $v !== null));
+
+$avgRowBg = 'FFE8F5E9'; // hijau muda
+$avgBaseStyle = [
+    'font'      => ['size'=>10,'name'=>'Arial','bold'=>true,'color'=>['argb'=>'FF1B5E20']],
+    'fill'      => ['fillType'=>Fill::FILL_SOLID,'fgColor'=>['argb'=>$avgRowBg]],
+    'alignment' => ['horizontal'=>Alignment::HORIZONTAL_CENTER,'vertical'=>Alignment::VERTICAL_CENTER],
+    'borders'   => ['allBorders'=>['borderStyle'=>Border::BORDER_THIN,'color'=>['argb'=>'FF388E3C']]],
+];
+$avgLabelStyle = array_merge($avgBaseStyle, [
+    'alignment' => ['horizontal'=>Alignment::HORIZONTAL_LEFT,'vertical'=>Alignment::VERTICAL_CENTER],
+]);
+$avgLowStyle = array_merge($avgBaseStyle, [
+    'font' => ['size'=>10,'name'=>'Arial','bold'=>true,'color'=>['argb'=>'FFC62828']],
+    'fill' => ['fillType'=>Fill::FILL_SOLID,'fgColor'=>['argb'=>'FFFFE0E0']],
+]);
+
+$ws->setCellValue('A'.$row, '—');     $ws->getStyle('A'.$row)->applyFromArray($avgBaseStyle);
+$ws->setCellValue('B'.$row, '');      $ws->getStyle('B'.$row)->applyFromArray($avgBaseStyle);
+$ws->setCellValue('C'.$row, 'Rata-rata per Mapel'); $ws->getStyle('C'.$row)->applyFromArray($avgLabelStyle);
+
+foreach ($mapel_list as $idx => $m) {
+    $col = col_letter($colMapelStart + $idx);
+    $av  = $avg_mapel_ex[$m['id']] ?? null;
+    $ws->setCellValue($col.$row, $av !== null ? $av : '');
+    $isLow = ($av !== null && $av > 0 && $av < $krit_c);
+    $ws->getStyle($col.$row)->applyFromArray($isLow ? $avgLowStyle : $avgBaseStyle);
+}
+
+$ws->setCellValue(col_letter($colTotal).$row, $avg_total_ex > 0 ? round($avg_total_ex, 1) : '-');
+$ws->getStyle(col_letter($colTotal).$row)->applyFromArray($avgBaseStyle);
+
+$ws->setCellValue(col_letter($colRata).$row, $avg_kelas_ex > 0 ? $avg_kelas_ex : '-');
+$ws->getStyle(col_letter($colRata).$row)->applyFromArray($avgBaseStyle);
+
+$ws->setCellValue(col_letter($colRank).$row, ''); // peringkat tidak diisi
+$ws->getStyle(col_letter($colRank).$row)->applyFromArray($avgBaseStyle);
+
+$ws->getRowDimension($row)->setRowHeight(16);
+$row++;
+
 // ── Tanda tangan di bawah tabel ────────────────────────────────
 $row++; // baris kosong setelah data
 

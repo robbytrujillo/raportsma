@@ -125,6 +125,24 @@ usort($nilai_list, function($a, $b) {
     return strcmp($a['nama_mapel'] ?? '', $b['nama_mapel'] ?? '');
 });
 
+// ── Hapus duplikat Kelompok C (non-pilihan) yang juga muncul di C Pilihan ──────
+// Jika ada mapel dengan kelompok = 'C' DAN nama_mapel yang sama juga ada di
+// 'C Pilihan', hapus yang kelompok = 'C' agar tidak muncul dua kali di raport.
+$nama_c_pilihan = [];
+foreach ($nilai_list as $row) {
+    if (($row['kelompok'] ?? '') === 'C Pilihan') {
+        $nama_c_pilihan[strtolower(trim($row['nama_mapel'] ?? ''))] = true;
+    }
+}
+if (!empty($nama_c_pilihan)) {
+    $nilai_list = array_values(array_filter($nilai_list, function($row) use ($nama_c_pilihan) {
+        return !(
+            ($row['kelompok'] ?? '') === 'C' &&
+            isset($nama_c_pilihan[strtolower(trim($row['nama_mapel'] ?? ''))])
+        );
+    }));
+}
+
 // Absensi
 $absensi = db_row(
     'SELECT * FROM absensi WHERE siswa_user_id = :uid AND kelas_id = :kid AND tahun_ajaran_id = :ta',

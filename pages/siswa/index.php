@@ -3,9 +3,27 @@
  * pages/siswa/index.php
  * Daftar siswa � admin / super_admin
  */
-require_role(['admin','super_admin']);
+require_role(['admin','super_admin','wali_kelas']);
 require_once __DIR__ . '/../../excel.php';
 $user = current_user();
+
+// Deteksi apakah user adalah wali_kelas (bukan admin/super_admin)
+$is_wali_kelas = ($user['role'] === 'wali_kelas');
+
+// Ambil kelas yang diwalii (dari tabel kelas berdasarkan wali_kelas_id)
+$wali_kelas_row = null;
+if ($is_wali_kelas) {
+    // Ambil kelas yang diwalii sesuai tahun ajaran aktif, fallback ke id terbesar
+    $wali_kelas_row = db_row(
+        'SELECT k.id, k.nama_kelas FROM kelas k
+         LEFT JOIN tahun_ajaran ta ON ta.id = k.tahun_ajaran_id
+         WHERE k.wali_kelas_id = :uid
+         ORDER BY ta.is_aktif DESC, k.id DESC
+         LIMIT 1',
+        [':uid' => $user['id']]
+    );
+}
+
 $_exp_uf   = get_user_unit_filter($user);
 $_exp_usql_siswa = '';
 if ($_exp_uf['units']) {
@@ -63,7 +81,26 @@ if (isset($_GET['export'])) {
 // -- Handle TOGGLE AKTIF -------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_active') {
     if (verify_csrf()) {
-        $tid     = (int)($_POST['id'] ?? 0);
+        $tid = (int)($_POST['id'] ?? 0);
+
+        // Wali kelas: validasi bahwa siswa benar-benar di kelasnya
+        if ($is_wali_kelas) {
+            if (!$wali_kelas_row) {
+                flash('error', 'Anda tidak memiliki kelas yang diwalii.');
+                $back = http_build_query(['page'=>'siswa','ta'=>$_POST['ta']??'','kelas'=>$_POST['kelas']??'','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
+                header("Location: index.php?$back"); exit;
+            }
+            $cek = db_row(
+                'SELECT u.id FROM users u INNER JOIN siswa s ON s.user_id = u.id WHERE u.id=:id AND u.role="siswa" AND s.kelas_id=:kid',
+                [':id'=>$tid, ':kid'=>$wali_kelas_row['id']]
+            );
+            if (!$cek) {
+                flash('error', 'Murid tidak ditemukan di kelas Anda.');
+                $back = http_build_query(['page'=>'siswa','ta'=>$_POST['ta']??'','kelas'=>$_POST['kelas']??'','q'=>$_POST['q']??'','per'=>$_POST['per']??'']);
+                header("Location: index.php?$back"); exit;
+            }
+        }
+
         $cur     = (int)(db_row('SELECT is_active FROM users WHERE id=:id AND role="siswa"', [':id'=>$tid])['is_active'] ?? 1);
         $new_val = $cur ? 0 : 1;
         db_execute('UPDATE users SET is_active=:a WHERE id=:id AND role="siswa"', [':a'=>$new_val,':id'=>$tid]);
@@ -73,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'toggle_
     header("Location: index.php?$back"); exit;
 }
 
-// -- Handle DELETE -------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
+// -- Handle DELETE (admin/super_admin only) ------------------------------------
+if (!$is_wali_kelas && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action']??'') === 'delete') {
     if (verify_csrf()) {
         db_execute('DELETE FROM users WHERE id = :id AND role = "siswa"', [':id'=>(int)$_POST['id']]);
         flash('success','Data murid dihapus.');
@@ -120,6 +157,11 @@ $ta_id    = (int)($_GET['ta'] ?? ($ta_aktif['id'] ?? 0));
 $kelas_id = (int)($_GET['kelas'] ?? 0);
 $search   = trim($_GET['q'] ?? '');
 
+// Wali kelas: paksa kelas_id ke kelas yang diwalii (q dari form search tetap diizinkan)
+if ($is_wali_kelas && $wali_kelas_row) {
+    $kelas_id = (int)$wali_kelas_row['id'];
+}
+
 $ta_list    = db_query('SELECT * FROM tahun_ajaran ORDER BY id DESC');
 $_unit_f   = get_user_unit_filter($user);
 $_unit_sql = $_unit_f['sql'];
@@ -142,7 +184,15 @@ if ($_unit_f['units']) {
     $where[] = "k.unit IN ('$unit_in')";
 }
 
-if ($kelas_id) {
+// Wali kelas: paksa filter ke kelas yang diwalii (tidak bisa ganti ke kelas lain)
+if ($is_wali_kelas) {
+    if ($wali_kelas_row) {
+        $where[] = 's.kelas_id = :kid';
+        $params[':kid'] = $wali_kelas_row['id'];
+    } else {
+        $where[] = '1=0'; // tidak punya kelas — tampilkan kosong
+    }
+} elseif ($kelas_id) {
     $where[] = 's.kelas_id = :kid';
     $params[':kid'] = $kelas_id;
 } else {
@@ -158,7 +208,8 @@ if ($search) {
 $whereStr = implode(' AND ', $where);
 
 $per_opts = [10, 25, 50, 100];
-$per      = in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10;
+// Wali kelas: tampil semua murid sekaligus (kelas biasanya ≤ 40 murid, tidak perlu pagination)
+$per      = $is_wali_kelas ? 9999 : (in_array((int)($_GET['per'] ?? 0), $per_opts) ? (int)$_GET['per'] : 10);
 $page_n   = max(1, (int)($_GET['p'] ?? 1));
 $offset   = ($page_n - 1) * $per;
 
@@ -186,14 +237,27 @@ $siswa_list = db_query(
     $params
 );
 
-$qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$search,'per'=>$per]);
+// qstr untuk link pagination
+if ($is_wali_kelas) {
+    $qstr = http_build_query(array_filter(['page'=>'siswa','q'=>$search]));
+} else {
+    $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$search,'per'=>$per]);
+}
 ?>
 <div class="page-content">
     <div class="page-header">
         <div>
             <h1 class="page-title">Data Murid</h1>
-            <p class="page-subtitle">Kelola data murid sekolah</p>
+            <p class="page-subtitle">
+                <?php if ($is_wali_kelas): ?>
+                Murid kelas
+                Anda<?= $wali_kelas_row ? ' &mdash; <strong>' . e($wali_kelas_row['nama_kelas']) . '</strong>' : '' ?>
+                <?php else: ?>
+                Kelola data murid sekolah
+                <?php endif; ?>
+            </p>
         </div>
+        <?php if (!$is_wali_kelas): ?>
         <div class="flex gap-2 flex-wrap">
             <a href="/siswa?export=1" class="btn btn-secondary" style="border-radius:30px">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -219,9 +283,47 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 Tambah Murid
             </a>
         </div>
+        <?php endif; ?>
     </div>
 
-    <!-- Filter -->
+    <?php if ($is_wali_kelas && !$wali_kelas_row): ?>
+    <div class="alert alert-warning" style="margin-bottom:16px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+            style="flex-shrink:0">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        Anda belum ditugaskan sebagai wali kelas. Hubungi admin untuk mengatur kelas Anda.
+    </div>
+    <?php endif; ?>
+
+    <?php if ($is_wali_kelas): ?>
+    <!-- Search khusus wali kelas -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="index.php" class="flex gap-3 items-center flex-wrap">
+                <input type="hidden" name="page" value="siswa">
+                <div style="width:280px;max-width:100%">
+                    <input type="text" name="q" class="form-control" placeholder="Cari nama murid..."
+                        value="<?= e($search) ?>" style="border-radius:30px" autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary" style="border-radius:30px">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Cari
+                </button>
+                <?php if ($search): ?>
+                <a href="?page=siswa" class="btn btn-secondary" style="border-radius:30px">Reset</a>
+                <?php endif; ?>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!$is_wali_kelas): ?>
+    <!-- Filter — hanya untuk admin/super_admin -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="index.php" class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -265,6 +367,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             </form>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- Daftar Murid -->
     <div class="card">
@@ -273,6 +376,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <span>Daftar Murid</span>
                 <span class="text-sm text-gray-500"><?= $total ?> murid</span>
             </div>
+            <?php if (!$is_wali_kelas): ?>
             <!-- Tombol Pindah Kelas Massal � muncul jika ada yang dicentang -->
             <button type="button" id="btnPindahKelas" onclick="bukaPindahKelas()" class="btn btn-sm"
                 style="border-radius:30px;background:#f97316;color:#fff;display:none">
@@ -281,23 +385,28 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 </svg>
                 Pindah Kelas (<span id="jmlDipilih">0</span>)
             </button>
+            <?php endif; ?>
         </div>
         <div class="table-container">
             <table class="data-table" id="dataTable">
                 <thead>
                     <tr>
+                        <?php if (!$is_wali_kelas): ?>
                         <!-- Kolom checkbox select-all -->
                         <th style="width:36px;text-align:center">
                             <input type="checkbox" id="chkAll" title="Pilih semua"
                                 style="width:15px;height:15px;cursor:pointer" onchange="toggleSemuaSiswa(this.checked)">
                         </th>
+                        <?php endif; ?>
                         <th>#</th>
                         <th>Nama Murid</th>
+                        <?php if (!$is_wali_kelas): ?>
                         <th>NIS</th>
                         <th>NISN</th>
                         <th>Kelas</th>
                         <th>Tempat, Tgl Lahir</th>
                         <th>Username</th>
+                        <?php endif; ?>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -305,20 +414,22 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                 <tbody>
                     <?php if (empty($siswa_list)): ?>
                     <tr>
-                        <td colspan="10" class="text-center py-8 text-gray-400">Belum ada data murid.</td>
+                        <td colspan="<?= $is_wali_kelas ? 4 : 10 ?>" class="text-center py-8 text-gray-400">Belum ada data murid.</td>
                     </tr>
                     <?php else: ?>
                     <?php foreach ($siswa_list as $i => $s): ?>
                     <tr style="<?= !($s['is_active'] ?? 1) ? 'opacity:.6' : '' ?>">
+                        <?php if (!$is_wali_kelas): ?>
                         <td style="text-align:center">
                             <input type="checkbox" class="chk-siswa" value="<?= $s['id'] ?>"
                                 style="width:15px;height:15px;cursor:pointer" onchange="updatePilihan()">
                         </td>
+                        <?php endif; ?>
                         <td class="text-gray-400 text-xs"><?= $offset + $i + 1 ?></td>
                         <td>
                             <div class="font-semibold"><?= e($s['nama_lengkap']) ?></div>
-                            <div class="text-xs text-gray-400"><?= e($s['nis'] ?: '') ?></div>
                         </td>
+                        <?php if (!$is_wali_kelas): ?>
                         <td><?= e($s['nis'] ?: '-') ?></td>
                         <td class="text-gray-400"><?= e($s['nisn'] ?: '-') ?></td>
                         <td><span class="badge badge-blue"><?= e($s['nama_kelas']) ?></span></td>
@@ -327,6 +438,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                             <?= $s['tanggal_lahir'] ? date('d/m/Y', strtotime($s['tanggal_lahir'])) : '-' ?>
                         </td>
                         <td class="text-gray-500"><?= e($s['username']) ?></td>
+                        <?php endif; ?>
                         <td>
                             <span class="badge <?= ($s['is_active'] ?? 1) ? 'badge-green' : 'badge-red' ?>">
                                 <?= ($s['is_active'] ?? 1) ? 'Aktif' : 'Nonaktif' ?>
@@ -334,8 +446,10 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                         </td>
                         <td>
                             <div class="flex gap-1">
+                                <?php if (!$is_wali_kelas): ?>
                                 <a href="/siswa.edit?id=<?= $s['id'] ?>" class="btn btn-sm btn-secondary"
                                     style="border-radius:30px">Edit</a>
+                                <?php endif; ?>
                                 <form method="POST" action="/siswa" style="display:inline"
                                     onsubmit="return confirm('<?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?> murid <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
@@ -351,6 +465,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                         <?= ($s['is_active']??1) ? 'Nonaktifkan' : 'Aktifkan' ?>
                                     </button>
                                 </form>
+                                <?php if (!$is_wali_kelas): ?>
                                 <form method="POST" action="/siswa" style="display:inline"
                                     onsubmit="return confirm('Hapus siswa <?= addslashes(e($s['nama_lengkap'])) ?>?')">
                                     <?= csrf_field() ?>
@@ -359,6 +474,7 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
                                     <button type="submit" class="btn btn-sm btn-danger"
                                         style="border-radius:30px">Hapus</button>
                                 </form>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -368,8 +484,8 @@ $qstr = http_build_query(['page'=>'siswa','ta'=>$ta_id,'kelas'=>$kelas_id,'q'=>$
             </table>
         </div>
 
-        <!-- Paginasi -->
-        <?php if ($pages > 1): ?>
+        <!-- Paginasi (hanya untuk admin, bukan wali_kelas) -->
+        <?php if (!$is_wali_kelas && $pages > 1): ?>
         <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 pagination-wrap">
             <span class="text-sm text-gray-500">Halaman <?= $page_n ?> dari <?= $pages ?> (<?= $total ?> murid)</span>
             <div class="pagination">
@@ -545,7 +661,7 @@ function konfirmasiPindah() {
     }
     return confirm(
         `Pindahkan ${jml} siswa ke kelas "${nama}"?\n\nTindakan ini akan mengubah kelas siswa. Data nilai yang ada tetap tersimpan.`
-        );
+    );
 }
 
 /* -- Keyboard: Esc menutup modal -- */

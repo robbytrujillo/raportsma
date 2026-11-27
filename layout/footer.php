@@ -62,6 +62,12 @@ if (!in_array($page ?? '', $_cbot_exclude)) {
 }
 ?>
 
+<style>
+/* Beri ruang di kanan bawah agar pagination/konten tidak tertutup chatbot button */
+.pagination-wrap { padding-right: 170px !important; }
+@media (max-width: 640px) { .pagination-wrap { padding-right: 16px !important; flex-direction: column; align-items: flex-start; gap: 8px; } }
+</style>
+
 <script>
 // ── Bersihkan preview-raport-mode jika halaman ini bukan raport.view ───
 // Melindungi dari bfcache yang merestorasi class dari halaman sebelumnya.

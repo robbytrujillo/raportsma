@@ -254,13 +254,18 @@ function get_user_unit_filter(array $user, string $alias = 'k'): array {
         return ['sql' => '', 'units' => []];
     }
 
+    // wali_kelas: bebas dari filter unit — kelas sudah dikunci by kelas_id (wali_kelas_id)
+    // sehingga tidak perlu batasan unit tambahan
+    if ($role === 'wali_kelas') {
+        return ['sql' => '', 'units' => []];
+    }
+
     // Ambil unit dari tabel guru
     $guru_row  = db_row('SELECT unit FROM guru WHERE user_id = :uid', [':uid' => $user['id']]);
-    $user_unit = $guru_row['unit'] ?? 'putra'; // default putra jika belum diset
+    $user_unit = $guru_row['unit'] ?? null;
 
-    // campuran di tabel guru → non-super_admin tidak boleh dapat akses campuran,
-    // perlakukan sama seperti putra agar tidak ada celah akses.
-    if ($user_unit === 'campuran') {
+    // Jika unit tidak diketahui / campuran → default putra (pengaman)
+    if (!$user_unit || $user_unit === 'campuran') {
         $user_unit = 'putra';
     }
 

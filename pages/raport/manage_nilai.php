@@ -68,6 +68,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     header("Location: index.php?$qs"); exit;
 }
 
+// -- Handle: Hapus semua nilai satu mapel di satu kelas (semua siswa) -----------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_mapel_kelas') {
+    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
+
+    $dm_mapel = (int)($_POST['mapel_id']       ?? 0);
+    $dm_kelas = (int)($_POST['kelas_id']        ?? 0);
+    $dm_ta    = (int)($_POST['tahun_ajaran_id'] ?? 0);
+    $dm_jenis = $_POST['jenis_raport']          ?? '';
+    $dm_bulan = (int)($_POST['bulan']           ?? 0) ?: null;
+
+    if ($dm_mapel && $dm_kelas && $dm_ta && in_array($dm_jenis, ['bulanan','sts','semester'])) {
+        $p = [':mid'=>$dm_mapel,':kid'=>$dm_kelas,':ta'=>$dm_ta,':jenis'=>$dm_jenis];
+        $bc = $dm_bulan ? 'AND bulan = :bulan' : 'AND bulan IS NULL';
+        if ($dm_bulan) $p[':bulan'] = $dm_bulan;
+        $n = db_execute(
+            "DELETE FROM nilai WHERE mapel_id=:mid AND kelas_id=:kid
+              AND tahun_ajaran_id=:ta AND jenis_raport=:jenis $bc", $p
+        );
+        flash('success', "Berhasil menghapus $n data nilai mapel dari seluruh murid di kelas ini.");
+    } else {
+        flash('error', 'Parameter tidak lengkap.');
+    }
+    $qs = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'siswa'=>$siswa_id,'jenis'=>$jenis,'bulan'=>$bulan]);
+    header("Location: index.php?$qs"); exit;
+}
+
+// -- Handle: Hapus deskripsi saja (set NULL, nilai tetap) --------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'clear_deskripsi') {
+    if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
+
+    $cd_ids_raw = $_POST['nilai_ids'] ?? '';
+    // Bisa single nilai_id (dari tombol per baris) atau comma-separated (bulk)
+    if (!$cd_ids_raw && isset($_POST['nilai_id'])) $cd_ids_raw = $_POST['nilai_id'];
+    $cd_ids = array_filter(array_map('intval', explode(',', $cd_ids_raw)));
+
+    if (!empty($cd_ids)) {
+        $ph = implode(',', array_fill(0, count($cd_ids), '?'));
+        $n = db_execute("UPDATE nilai SET deskripsi = NULL, catatan = NULL WHERE id IN ($ph)", array_values($cd_ids));
+        flash('success', "Berhasil menghapus deskripsi dari $n data nilai.");
+    } else {
+        flash('error', 'Tidak ada data yang dipilih.');
+    }
+    $qs = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$kelas_id,'siswa'=>$siswa_id,'jenis'=>$jenis,'bulan'=>$bulan]);
+    header("Location: index.php?$qs"); exit;
+}
+
 // -- Handle: Hapus banyak nilai sekaligus (bulk) ----------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_bulk') {
     if (!verify_csrf()) { flash('error', 'Token tidak valid.'); header('Location: ' . $_SERVER['HTTP_REFERER']); exit; }
@@ -274,6 +320,18 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
             </svg>
             <span id="btnBulkLabel">Hapus Terpilih</span>
         </button>
+        <!-- Tombol hapus deskripsi terpilih -->
+        <button id="btnBulkClearDesk" type="button"
+            style="display:none;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;
+                   background:#7c3aed;color:#fff;border:none;font-size:.82rem;font-weight:600;
+                   cursor:pointer;white-space:nowrap"
+            onclick="mnr_bulkClearDesk()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 20H7L3 16l9.5-9.5 5 5L20 20z"/><path d="M6.5 17.5l5-5"/>
+            </svg>
+            <span>Hapus Deskripsi Terpilih</span>
+        </button>
+
     </div>
 
     <!-- -- Tabel Nilai ---------------------------------------- -->
@@ -339,19 +397,17 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                     <td style="text-align:center;font-weight:700;color:#ea580c"><?= number_format((float)$n['nilai_akhir'], 0) ?></td>
                     <td style="text-align:center"><?= $pred ? '<span class="badge ' . $predBadge . '" style="font-size:.65rem;padding:2px 5px">' . e($pred) . '</span>' : '�' ?></td>
                     <td style="text-align:center">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
-                            <!-- Hapus 1 baris (icon trash) -->
+                        <div style="display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap">
+                            <!-- 🗑 Hapus nilai baris ini saja -->
                             <form method="POST" action="index.php?<?= $qstr ?>" style="margin:0"
                                   onsubmit="return confirm('Hapus nilai <?= e(addslashes($n['nama_mapel'])) ?> untuk <?= e(addslashes($n['nama_siswa'])) ?>?')">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="action"   value="delete_nilai">
                                 <input type="hidden" name="nilai_id" value="<?= $n['nilai_id'] ?>">
-                                <button type="submit"
-                                        title="Hapus nilai mapel ini"
+                                <button type="submit" title="Hapus nilai ini (1 murid)"
                                         style="width:28px;height:28px;border-radius:8px;border:1px solid #fecaca;
                                                background:#fff5f5;color:#dc2626;cursor:pointer;
-                                               display:inline-flex;align-items:center;justify-content:center;
-                                               transition:background .15s">
+                                               display:inline-flex;align-items:center;justify-content:center">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <polyline points="3 6 5 6 21 6"/>
                                         <path d="M19 6l-1 14H6L5 6"/>
@@ -359,13 +415,24 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
                                     </svg>
                                 </button>
                             </form>
-                            <!-- Hapus semua nilai siswa ini (icon user-x) -->
+                            <!-- ⚠ Hapus mapel ini dari SEMUA murid kelas (icon warning oranye) -->
                             <button type="button"
-                                    title="Hapus semua mapel siswa <?= e(addslashes($n['nama_siswa'])) ?> di periode ini"
+                                    title="Hapus mapel <?= e(addslashes($n['nama_mapel'])) ?> (<?= e($n['kelompok']) ?>) dari SEMUA murid kelas ini"
                                     style="width:28px;height:28px;border-radius:8px;border:1px solid #fed7aa;
                                            background:#fff7ed;color:#ea580c;cursor:pointer;
-                                           display:inline-flex;align-items:center;justify-content:center;
-                                           transition:background .15s"
+                                           display:inline-flex;align-items:center;justify-content:center"
+                                    onclick="mnr_hapusMapel(<?= (int)$n['mapel_id'] ?>,'<?= e(addslashes($n['nama_mapel'])) ?>','<?= e(addslashes($n['kelompok'])) ?>')">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </button>
+                            <!-- 👤 Hapus semua nilai siswa ini -->
+                            <button type="button"
+                                    title="Hapus semua mapel <?= e(addslashes($n['nama_siswa'])) ?> di periode ini"
+                                    style="width:28px;height:28px;border-radius:8px;border:1px solid #e5e7eb;
+                                           background:#f9fafb;color:#6b7280;cursor:pointer;
+                                           display:inline-flex;align-items:center;justify-content:center"
                                     onclick="mnr_hapusSiswa(<?= (int)$n['siswa_user_id'] ?>,<?= $kelas_id ?>,<?= $ta_id ?>,'<?= addslashes($jenis) ?>',<?= $bulan ?: 0 ?>,'<?= e(addslashes($n['nama_siswa'])) ?>')">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
@@ -482,6 +549,48 @@ $qstr = http_build_query(['page'=>'raport.manage_nilai','ta'=>$ta_id,'kelas'=>$k
     </div>
 </div>
 
+<!-- -- Modal: Konfirmasi Hapus Mapel dari Semua Murid ----------- -->
+<div id="modalHapusMapel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+     z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:480px;width:90%;
+                box-shadow:0 8px 40px rgba(0,0,0,.2)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:44px;height:44px;background:#fff7ed;border-radius:50%;display:flex;
+                        align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="22" height="22" fill="none" stroke="#ea580c" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div>
+                <h3 style="font-size:1rem;font-weight:700;color:#1f2937;margin:0">Hapus Mapel dari Semua Murid</h3>
+                <p id="mnrMapelDesc" style="font-size:.82rem;color:#6b7280;margin:2px 0 0"></p>
+            </div>
+        </div>
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;
+                    font-size:.82rem;color:#92400e;margin-bottom:16px">
+            Mapel ini beserta <strong>seluruh nilai dari semua murid</strong> di kelas ini akan dihapus
+            untuk periode yang dipilih. Tindakan ini tidak dapat dibatalkan.
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button type="button" onclick="document.getElementById('modalHapusMapel').style.display='none'"
+                    class="btn btn-secondary" style="border-radius:30px">Batal</button>
+            <form id="formHapusMapel" method="POST" action="index.php?<?= $qstr ?>" style="margin:0">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action"          value="delete_mapel_kelas">
+                <input type="hidden" name="mapel_id"        id="mnr_mapel_id">
+                <input type="hidden" name="kelas_id"        value="<?= $kelas_id ?>">
+                <input type="hidden" name="tahun_ajaran_id" value="<?= $ta_id ?>">
+                <input type="hidden" name="jenis_raport"    value="<?= e($jenis) ?>">
+                <input type="hidden" name="bulan"           value="<?= $bulan ?: '' ?>">
+                <button type="submit" class="btn btn-danger" style="border-radius:30px">
+                    Ya, Hapus Mapel Ini
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 // -- Hapus per-siswa ----------------------------------------------
 function mnr_hapusSiswa(siswaId, kelasId, taId, jenis, bulan, namaSiswa) {
@@ -509,17 +618,26 @@ function mnr_bulkDelete() {
     document.getElementById('modalBulkDelete').style.display = 'flex';
 }
 
+// -- Hapus mapel dari semua murid kelas ---------------------------
+function mnr_hapusMapel(mapelId, namaMapel, kelompok) {
+    document.getElementById('mnr_mapel_id').value = mapelId;
+    document.getElementById('mnrMapelDesc').textContent =
+        namaMapel + ' (Kelompok ' + kelompok + ') — semua murid di kelas ini';
+    document.getElementById('modalHapusMapel').style.display = 'flex';
+}
+
 // -- Tutup modal klik backdrop ------------------------------------
-['modalHapusSiswa','modalBulkDelete'].forEach(function(id) {
+['modalHapusSiswa','modalBulkDelete','modalHapusMapel'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
 });
 
 // -- Checkbox logic ------------------------------------------------
 (function() {
-    var chkAll  = document.getElementById('chkAll');
-    var btnBulk = document.getElementById('btnBulkDelete');
-    var lblBulk = document.getElementById('btnBulkLabel');
+    var chkAll       = document.getElementById('chkAll');
+    var btnBulk      = document.getElementById('btnBulkDelete');
+    var lblBulk      = document.getElementById('btnBulkLabel');
+    var btnBulkDesk  = document.getElementById('btnBulkClearDesk');
     if (!chkAll) return;
 
     function syncBulkBtn() {
@@ -528,8 +646,10 @@ function mnr_bulkDelete() {
         if (n > 0) {
             btnBulk.style.display = 'inline-flex';
             lblBulk.textContent   = 'Hapus ' + n + ' Terpilih';
+            if (btnBulkDesk) btnBulkDesk.style.display = 'inline-flex';
         } else {
             btnBulk.style.display = 'none';
+            if (btnBulkDesk) btnBulkDesk.style.display = 'none';
         }
         // Update indeterminate state of chkAll
         var allVisible = document.querySelectorAll('#tblNilai tbody tr:not(.mnr-hidden) .row-chk');
@@ -607,8 +727,26 @@ function mnr_bulkDelete() {
             var n = checked.length;
             btnBulk.style.display = n > 0 ? 'inline-flex' : 'none';
             if (n > 0 && lblBulk) lblBulk.textContent = 'Hapus ' + n + ' Terpilih';
+            var btnD = document.getElementById('btnBulkClearDesk');
+            if (btnD) btnD.style.display = n > 0 ? 'inline-flex' : 'none';
         }
         if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
     });
 })();
+
+// -- Hapus deskripsi bulk -----------------------------------------
+function mnr_bulkClearDesk() {
+    var checked = document.querySelectorAll('#tblNilai .row-chk:checked');
+    if (!checked.length) return;
+    var ids = Array.from(checked).map(function(c) { return c.value; });
+    if (!confirm('Hapus deskripsi dari ' + ids.length + ' baris yang dipilih?\nNilai angka tetap tersimpan.')) return;
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'index.php?<?= $qstr ?>';
+    form.innerHTML = '<?= csrf_field() ?>'
+        + '<input type="hidden" name="action" value="clear_deskripsi">'
+        + '<input type="hidden" name="nilai_ids" value="' + ids.join(',') + '">';
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
